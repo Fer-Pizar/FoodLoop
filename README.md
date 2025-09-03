@@ -189,8 +189,3 @@ Crea `src/server.ts` con un “Hello World” básico.
 👩‍💻 **Backend** → APIs, base de datos, autenticación.
 👩‍💻 **Fullstack/QA** → Integración, pruebas, documentación.
 
----
-
-## 💡 Inspo
-
-FoodLoop busca reducir el desperdicio de comida y apoyar a comercios locales, creando un impacto positivo en la sociedad y el medio ambiente 🌍✨.
