@@ -188,4 +188,3 @@ Crea `src/server.ts` con un “Hello World” básico.
 👩‍💻 **Frontend** → Pantallas, UI/UX, integración API.
 👩‍💻 **Backend** → APIs, base de datos, autenticación.
 👩‍💻 **Fullstack/QA** → Integración, pruebas, documentación.
-
