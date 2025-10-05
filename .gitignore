@@ -96,4 +96,5 @@ android/
 
 # --- Misc build outputs sometimes present ---
 public/build/
-.DS_Store
+.DS_Store.DS_Store
+**/.DS_Store
