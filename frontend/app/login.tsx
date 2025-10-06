@@ -92,16 +92,13 @@ export default function LoginScreen() {
 
             <Text style={styles.registerText}>
               ¿No tienes una Cuenta?{" "}
-              {/* Cuando exista pantalla de registro, activa el push */}
               {/* <Text style={styles.link} onPress={() => router.push("/register")}>Crear una Cuenta</Text> */}
               <Text style={styles.link}>Crear una Cuenta</Text>
             </Text>
           </View>
         </View>
-
-        {/* Extra: pinta el área del home-indicator en iOS por si acaso */}
-         <View style={{ height: insets.bottom, backgroundColor: "#d11212ff" }} />
       </View>
+      <View style={{ height: insets.bottom, backgroundColor: "#d11212ff" }} />
     </SafeAreaView>
   );
 }
