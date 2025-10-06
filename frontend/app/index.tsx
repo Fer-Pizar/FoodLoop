@@ -1,84 +1,145 @@
-import { View, Text, TouchableOpacity, StyleSheet, Image, Dimensions } from "react-native";
+import React from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  Image,
+  Dimensions,
+  SafeAreaView,
+} from "react-native";
 import { useRouter, Href } from "expo-router";
+import { useFonts, Comfortaa_400Regular, Comfortaa_700Bold } from "@expo-google-fonts/comfortaa";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-const { width } = Dimensions.get("window"); 
+const { width, height } = Dimensions.get("window");
+const RED = "#D82A2A";
+const LIGHT = "#F7F7F7";
 
-export default function WelcomeScreen() {
+export default function IndexScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
+
+  const [fontsLoaded] = useFonts({
+    Comfortaa_400Regular,
+    Comfortaa_700Bold,
+  });
+
+  if (!fontsLoaded) return null; 
 
   return (
-    <View style={styles.container}>
-      <View style={styles.logoContainer}>
-        <Image source={require("../assets/images/log.png")} style={styles.logo} />
+    <SafeAreaView style={styles.safe}>
+      <View style={styles.container}>
+        {/* Top content */}
+        <View style={styles.topSection}>
+
+          {/* Make the logo BIG */}
+          <Image
+            source={require("../assets/images/log.png")}
+            style={styles.logo}
+            resizeMode="contain"
+          />
+
+        </View>
+
+        {/* Bottom red area that reaches the very bottom */}
+        <View
+          style={[
+            styles.bottomSection,
+            { paddingBottom: Math.max(insets.bottom, 12) }, 
+          ]}
+        >
+          <TouchableOpacity
+            style={styles.whiteButton}
+            activeOpacity={0.9}
+            onPress={() => router.push("login" as Href)}
+          >
+            <Text style={styles.whiteButtonText}>Consumidor</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.redButton}
+            activeOpacity={0.9}
+            onPress={() => router.push("register" as Href)}
+          >
+            <Text style={styles.redButtonText}>Registrarse</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
-      <View style={styles.buttons}>
-        <TouchableOpacity
-          style={styles.btnPrimary}
-          onPress={() => router.push("login" as Href)}
-        >
-          <Text style={styles.btnText}>Iniciar Sesión</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.btnSecondary}
-          onPress={() => router.push("register" as Href)}
-        >
-          <Text style={styles.btnTextSecondary}>Registrarse</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
+      <View style={{ height: insets.bottom, backgroundColor: RED }} />
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff" },
-  
-  logoContainer: { 
-    flex: 2, 
-    justifyContent: "center", 
-    alignItems: "center" 
-  },
-  
-  logo: { 
-    width: width * 0.6,  // 60% del ancho de la pantalla
-    height: width * 0.6, // mantiene proporción cuadrada
-    resizeMode: "contain",
-  },
-  
-  buttons: {
+  safe: { flex: 1, backgroundColor: LIGHT },
+  container: {
     flex: 1,
-    backgroundColor: "#ef0505ff",
-    padding: 30,
-    borderTopLeftRadius: 40,
-    borderTopRightRadius: 40,
+    backgroundColor: LIGHT,
+    justifyContent: "space-between",
+    alignItems: "center",
   },
-  
-  btnPrimary: {
-    backgroundColor: "#fff",
-    padding: 15,
-    borderRadius: 10,
-    marginBottom: 15,
+  topSection: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: height * 0.04,
+    paddingHorizontal: 16,
   },
-  
-  btnText: { 
-    textAlign: "center", 
-    color: "#000", 
-    fontWeight: "bold" 
+  title: {
+    fontFamily: "Comfortaa_700Bold",
+    fontSize: 48,
+    color: RED,
+    letterSpacing: 2,
+    marginBottom: 12,
   },
-  
-  btnSecondary: {
-    borderWidth: 1,
-    borderColor: "#fff",
-    padding: 15,
-    borderRadius: 10,
+  logo: {
+    width: width * 0.77,  
+    height: width * 0.77,
+    marginBottom: 10,
   },
-  
-  btnTextSecondary: { 
-    textAlign: "center", 
-    color: "#fff", 
-    fontWeight: "bold" 
+  subtitle: {
+    fontFamily: "Comfortaa_400Regular",
+    fontSize: 15,
+    color: RED,
+    letterSpacing: 1.6,
+  },
+  bottomSection: {
+    width: "100%",
+    backgroundColor: RED,
+    height: height * 0.33,
+    borderTopLeftRadius: 50,
+    borderTopRightRadius: 50,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 14,
+  },
+  whiteButton: {
+    backgroundColor: "#FFF",
+    width: "80%",
+    height: 54,
+    borderRadius: 27,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  whiteButtonText: {
+    fontFamily: "Comfortaa_700Bold",
+    color: RED,
+    fontSize: 22,
+  },
+  redButton: {
+    borderWidth: 2,
+    borderColor: "#FFF",
+    width: "80%",
+    height: 54,
+    borderRadius: 27,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  redButtonText: {
+    fontFamily: "Comfortaa_700Bold",
+    color: "#FFF",
+    fontSize: 22,
   },
 });
-
-
