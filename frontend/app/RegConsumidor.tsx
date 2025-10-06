@@ -19,7 +19,6 @@ import { useFonts, Comfortaa_400Regular, Comfortaa_700Bold } from "@expo-google-
 
 const { width } = Dimensions.get("window");
 
-// 🎨 Paleta FoodLoop
 const RED = "#d11212ff";
 const LIGHT = "#F7F7F7";
 const WHITE = "#FFFFFF";
