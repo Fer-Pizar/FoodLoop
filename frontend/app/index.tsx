@@ -67,7 +67,7 @@ export default function IndexScreen() {
         </View>
       </View>
 
-      <View style={{ height: insets.bottom, backgroundColor: RED }} />
+      <View style={{ height: insets.bottom, backgroundColor: "#b71818ff" }} />
     </SafeAreaView>
   );
 }
@@ -99,15 +99,10 @@ const styles = StyleSheet.create({
     height: width * 0.77,
     marginBottom: 10,
   },
-  subtitle: {
-    fontFamily: "Comfortaa_400Regular",
-    fontSize: 15,
-    color: RED,
-    letterSpacing: 1.6,
-  },
+ 
   bottomSection: {
     width: "100%",
-    backgroundColor: RED,
+    backgroundColor: "#b71818ff",
     height: height * 0.33,
     borderTopLeftRadius: 50,
     borderTopRightRadius: 50,
