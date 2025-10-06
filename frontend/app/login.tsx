@@ -92,7 +92,6 @@ export default function LoginScreen() {
 
             <Text style={styles.registerText}>
               ¿No tienes una Cuenta?{" "}
-              {/* <Text style={styles.link} onPress={() => router.push("/register")}>Crear una Cuenta</Text> */}
               <Text style={styles.link}>Crear una Cuenta</Text>
             </Text>
           </View>
@@ -156,7 +155,7 @@ const styles = StyleSheet.create({
   formCard: {
     backgroundColor: WHITE,
     width: width * 0.86,
-    height: height * 0.27,
+    height: height * 0.28,
     borderRadius: 20,
     padding: 9,
     alignItems: "center",
@@ -164,7 +163,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.12,
     shadowRadius: 7,
-    elevation: 4,
+    elevation: 0,
   },
 
   inputContainer: {
