@@ -1,19 +1,11 @@
 import React from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  Image,
-  Dimensions,
-  SafeAreaView,
-} from "react-native";
+import {View,Text,TouchableOpacity,StyleSheet,Image,Dimensions,SafeAreaView,} from "react-native";
 import { useRouter, Href } from "expo-router";
 import { useFonts, Comfortaa_400Regular, Comfortaa_700Bold } from "@expo-google-fonts/comfortaa";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const { width, height } = Dimensions.get("window");
-const RED = "#D82A2A";
+const RED = "#d11212ff";
 const LIGHT = "#F7F7F7";
 
 export default function IndexScreen() {
@@ -33,7 +25,7 @@ export default function IndexScreen() {
         {/* Top content */}
         <View style={styles.topSection}>
 
-          {/* Make the logo BIG */}
+          {/* Make the logo */}
           <Image
             source={require("../assets/images/log.png")}
             style={styles.logo}
@@ -42,7 +34,6 @@ export default function IndexScreen() {
 
         </View>
 
-        {/* Bottom red area that reaches the very bottom */}
         <View
           style={[
             styles.bottomSection,
@@ -67,7 +58,7 @@ export default function IndexScreen() {
         </View>
       </View>
 
-      <View style={{ height: insets.bottom, backgroundColor: "#b71818ff" }} />
+      <View style={{ height: insets.bottom, backgroundColor: "#d11212ff" }} />
     </SafeAreaView>
   );
 }
@@ -102,7 +93,7 @@ const styles = StyleSheet.create({
  
   bottomSection: {
     width: "100%",
-    backgroundColor: "#b71818ff",
+    backgroundColor: "#d11212ff",
     height: height * 0.33,
     borderTopLeftRadius: 50,
     borderTopRightRadius: 50,
