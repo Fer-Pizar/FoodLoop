@@ -7,6 +7,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 const { width, height } = Dimensions.get("window");
 const RED = "#d11212ff";
 const LIGHT = "#F7F7F7";
+const LINK_BLUE = "#4997fdff";
+
 
 export default function IndexScreen() {
   const router = useRouter();
@@ -43,20 +45,28 @@ export default function IndexScreen() {
           <TouchableOpacity
             style={styles.whiteButton}
             activeOpacity={0.9}
-            onPress={() => router.push("login" as Href)}
+            onPress={() => router.push("RegConsumidor" as Href)}
           >
-            <Text style={styles.whiteButtonText}>Iniciar Sesión</Text>
+            <Text style={styles.whiteButtonText}>Consumidor</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             style={styles.redButton}
             activeOpacity={0.9}
-            onPress={() => router.push("Registro" as Href)}
+            onPress={() => router.push("RegNegocio" as Href)}
           >
-            <Text style={styles.redButtonText}>Registrarse</Text>
+            <Text style={styles.redButtonText}>Negocio</Text>
           </TouchableOpacity>
+
+          <Text style={styles.registerText}>
+                        ¿Ya tienes una Cuenta?{" "}
+                        {/* <Text style={styles.link} onPress={() => router.push("/register")}>Crear una Cuenta</Text> */}
+                        <Text style={styles.link}>Inicia Sesión</Text>
+                        
+                      </Text>
         </View>
       </View>
+
       <View style={{ height: insets.bottom, backgroundColor: "#d11212ff" }} />
     </SafeAreaView>
   );
@@ -94,8 +104,8 @@ const styles = StyleSheet.create({
     width: "100%",
     backgroundColor: "#d11212ff",
     height: height * 0.33,
-    borderTopLeftRadius: 50,
-    borderTopRightRadius: 50,
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
     alignItems: "center",
     justifyContent: "center",
     gap: 14,
@@ -104,27 +114,36 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFF",
     width: "80%",
     height: 54,
-    borderRadius: 27,
+    borderRadius: 17,
     justifyContent: "center",
     alignItems: "center",
   },
   whiteButtonText: {
     fontFamily: "Comfortaa_700Bold",
-    color: RED,
-    fontSize: 22,
+    color: "#d11212ff",
+    fontSize: 24,
   },
   redButton: {
     borderWidth: 2,
-    borderColor: "#FFF",
+    borderColor: "#ae0202ff",
+    backgroundColor: "#aeaeaeff",
     width: "80%",
     height: 54,
-    borderRadius: 27,
+    borderRadius: 17,
     justifyContent: "center",
     alignItems: "center",
   },
   redButtonText: {
     fontFamily: "Comfortaa_700Bold",
-    color: "#FFF",
-    fontSize: 22,
+    color: "#d11212ff",
+    fontSize: 24,
   },
+  registerText: {
+    color: "#ffffffff",
+    marginTop: 12,
+    fontSize: 15,
+    fontFamily: "Comfortaa_400Regular",
+  },
+    link: { color: LINK_BLUE, textDecorationLine: "underline", fontFamily: "Comfortaa_700Bold" },
+
 });
