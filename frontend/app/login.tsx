@@ -15,6 +15,7 @@ import {
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import Constants from "expo-constants";
 import { useFonts, Comfortaa_400Regular, Comfortaa_700Bold } from "@expo-google-fonts/comfortaa";
 
 const { width } = Dimensions.get("window");
@@ -33,19 +34,26 @@ export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  // Obtener la URL del backend desde app.config.js
+  const API_URL = Constants.manifest?.extra?.BACKEND_URL;
+
   const [fontsLoaded] = useFonts({ Comfortaa_400Regular, Comfortaa_700Bold });
   if (!fontsLoaded) return null;
 
   const handleLogin = async () => {
     try {
-      const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/auth/login`, {
+      const response = await fetch(`${API_URL}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
+
       if (!response.ok) throw new Error("Error al iniciar sesión");
+
       const data = await response.json();
       console.log("Login success:", data);
+
+      // Aquí rediriges al usuario a la pantalla principal
       router.push("/(tabs)");
     } catch (error) {
       console.error(error);
@@ -73,14 +81,13 @@ export default function LoginScreen() {
               <Text style={styles.backText}>Atrás</Text>
             </TouchableOpacity>
 
-            {/* Parte superior: logo */}
+            {/* Logo */}
             <View style={styles.topContainer}>
               <Image source={require("../assets/images/log.png")} style={styles.logo} />
             </View>
 
             {/* Footer rojo curvo */}
             <View style={[styles.redFooter, { paddingBottom: Math.max(insets.bottom, 12) }]}>
-              {/* Tarjeta blanca */}
               <View style={styles.formCard}>
                 <View style={styles.inputContainer}>
                   <Ionicons name="mail-outline" size={20} color={GRAY_TEXT} style={styles.icon} />
@@ -148,12 +155,7 @@ const styles = StyleSheet.create({
   },
   backText: { color: WHITE, marginLeft: 6, fontSize: 14, fontFamily: "Comfortaa_700Bold" },
 
-  topContainer: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "flex-end",
-    paddingBottom: 36,
-  },
+  topContainer: { flex: 1, alignItems: "center", justifyContent: "flex-end", paddingBottom: 36 },
   logo: { width: width * 0.7, height: width * 0.7, resizeMode: "contain" },
 
   redFooter: {
@@ -191,33 +193,11 @@ const styles = StyleSheet.create({
     height: 48,
   },
   icon: { marginRight: 8 },
-  input: {
-    flex: 1,
-    height: "100%",
-    fontSize: 14,
-    color: "#333",
-    fontFamily: "Comfortaa_400Regular",
-  },
+  input: { flex: 1, height: "100%", fontSize: 14, color: "#333", fontFamily: "Comfortaa_400Regular" },
 
-  loginBtn: {
-    backgroundColor: RED,
-    borderRadius: 26,
-    paddingVertical: 12,
-    width: "100%",
-    marginTop: 6,
-  },
-  loginText: {
-    color: WHITE,
-    textAlign: "center",
-    fontSize: 20,
-    fontFamily: "Comfortaa_700Bold",
-  },
+  loginBtn: { backgroundColor: RED, borderRadius: 26, paddingVertical: 12, width: "100%", marginTop: 6 },
+  loginText: { color: WHITE, textAlign: "center", fontSize: 20, fontFamily: "Comfortaa_700Bold" },
 
-  registerText: {
-    color: "#666",
-    marginTop: 12,
-    fontSize: 13,
-    fontFamily: "Comfortaa_400Regular",
-  },
+  registerText: { color: "#666", marginTop: 12, fontSize: 13, fontFamily: "Comfortaa_400Regular" },
   link: { color: LINK_BLUE, textDecorationLine: "underline", fontFamily: "Comfortaa_700Bold" },
 });
