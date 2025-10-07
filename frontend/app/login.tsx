@@ -1,13 +1,23 @@
 import { useState } from "react";
 import {
-  View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Dimensions, SafeAreaView,
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  Image,
+  Dimensions,
+  SafeAreaView,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useFonts, Comfortaa_400Regular, Comfortaa_700Bold } from "@expo-google-fonts/comfortaa";
 
-const { width, height } = Dimensions.get("window");
+const { width } = Dimensions.get("window");
 
 const RED = "#d11212ff";
 const LIGHT = "#F7F7F7";
@@ -45,59 +55,73 @@ export default function LoginScreen() {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <View style={styles.container}>
-        {/* 🔙 Back */}
-        <TouchableOpacity style={[styles.backButton, { top: insets.top - 37 }]} onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={30} color={WHITE} />
-          <Text style={styles.backText}>Atrás</Text>
-        </TouchableOpacity>
-
-        {/* Parte superior clara: logo grande */}
-        <View style={styles.topContainer}>
-          <Image source={require("../assets/images/log.png")} style={styles.logo} />
-        </View>
-
-        {/* Footer rojo curvo que cubre todo el fondo inferior */}
-        <View style={[styles.redFooter, { paddingBottom: Math.max(insets.bottom, 12) }]}>
-          {/* Tarjeta blanca flotante */}
-          <View style={styles.formCard}>
-            <View style={styles.inputContainer}>
-              <Ionicons name="mail-outline" size={20} color={GRAY_TEXT} style={styles.icon} />
-              <TextInput
-                style={styles.input}
-                placeholder="Correo"
-                placeholderTextColor={GRAY_TEXT}
-                autoCapitalize="none"
-                keyboardType="email-address"
-                value={email}
-                onChangeText={setEmail}
-              />
-            </View>
-
-            <View style={styles.inputContainer}>
-              <Ionicons name="lock-closed-outline" size={20} color={GRAY_TEXT} style={styles.icon} />
-              <TextInput
-                style={styles.input}
-                placeholder="Contraseña"
-                placeholderTextColor={GRAY_TEXT}
-                secureTextEntry
-                value={password}
-                onChangeText={setPassword}
-              />
-            </View>
-
-            <TouchableOpacity style={styles.loginBtn} activeOpacity={0.9} onPress={handleLogin}>
-              <Text style={styles.loginText}>Iniciar Sesión</Text>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+      >
+        <ScrollView
+          contentContainerStyle={{ flexGrow: 1 }}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View style={styles.container}>
+            {/* Back */}
+            <TouchableOpacity
+              style={[styles.backButton, { top: insets.top + 8 }]}
+              onPress={() => router.back()}
+            >
+              <Ionicons name="arrow-back" size={24} color={WHITE} />
+              <Text style={styles.backText}>Atrás</Text>
             </TouchableOpacity>
 
-            <Text style={styles.registerText}>
-              ¿No tienes una Cuenta?{" "}
-              <Text style={styles.link}>Crear una Cuenta</Text>
-            </Text>
+            {/* Parte superior: logo */}
+            <View style={styles.topContainer}>
+              <Image source={require("../assets/images/log.png")} style={styles.logo} />
+            </View>
+
+            {/* Footer rojo curvo */}
+            <View style={[styles.redFooter, { paddingBottom: Math.max(insets.bottom, 12) }]}>
+              {/* Tarjeta blanca */}
+              <View style={styles.formCard}>
+                <View style={styles.inputContainer}>
+                  <Ionicons name="mail-outline" size={20} color={GRAY_TEXT} style={styles.icon} />
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Correo"
+                    placeholderTextColor={GRAY_TEXT}
+                    autoCapitalize="none"
+                    keyboardType="email-address"
+                    value={email}
+                    onChangeText={setEmail}
+                  />
+                </View>
+
+                <View style={styles.inputContainer}>
+                  <Ionicons name="lock-closed-outline" size={20} color={GRAY_TEXT} style={styles.icon} />
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Contraseña"
+                    placeholderTextColor={GRAY_TEXT}
+                    secureTextEntry
+                    value={password}
+                    onChangeText={setPassword}
+                  />
+                </View>
+
+                <TouchableOpacity style={styles.loginBtn} activeOpacity={0.9} onPress={handleLogin}>
+                  <Text style={styles.loginText}>Iniciar Sesión</Text>
+                </TouchableOpacity>
+
+                <Text style={styles.registerText}>
+                  ¿No tienes una Cuenta?{" "}
+                  <Text style={styles.link} onPress={() => router.push("/Registro")}>
+                    Crear una Cuenta
+                  </Text>
+                </Text>
+              </View>
+            </View>
           </View>
-        </View>
-      </View>
-      <View style={{ height: insets.bottom, backgroundColor: "#d11212ff" }} />
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
@@ -130,16 +154,8 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
     paddingBottom: 36,
   },
-  logo: { width: width * 0.77, height: width * 0.77, resizeMode: "contain" },
-  slogan: {
-    marginTop: 7,
-    fontSize: 13,
-    color: RED,
-    letterSpacing: 1.2,
-    fontFamily: "Comfortaa_700Bold",
-  },
+  logo: { width: width * 0.7, height: width * 0.7, resizeMode: "contain" },
 
-  // 🔻 Footer rojo curvo
   redFooter: {
     width: "100%",
     backgroundColor: RED,
@@ -151,19 +167,17 @@ const styles = StyleSheet.create({
     paddingTop: 37,
   },
 
-  // 🃏 Tarjeta blanca flotante dentro del footer
   formCard: {
     backgroundColor: WHITE,
-    width: width * 0.86,
-    height: height * 0.28,
+    width: "86%",
     borderRadius: 20,
-    padding: 9,
+    padding: 16,
     alignItems: "center",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.12,
     shadowRadius: 7,
-    elevation: 0,
+    elevation: 3,
   },
 
   inputContainer: {
