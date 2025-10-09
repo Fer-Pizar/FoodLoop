@@ -3,8 +3,8 @@ import {View,Text,TextInput,TouchableOpacity,StyleSheet,Image,Dimensions,SafeAre
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import Constants from "expo-constants";
 import { useFonts, Comfortaa_400Regular, Comfortaa_700Bold } from "@expo-google-fonts/comfortaa";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const { width } = Dimensions.get("window");
 
@@ -22,16 +22,14 @@ export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  // Obtener la URL del backend desde app.config.js
   const API_URL = process.env.EXPO_PUBLIC_API_URL;
-
 
   const [fontsLoaded] = useFonts({ Comfortaa_400Regular, Comfortaa_700Bold });
   if (!fontsLoaded) return null;
 
   const handleLogin = async () => {
     try {
-      const response = await fetch(`${API_URL}/api/auth/login`, {
+      const response = await fetch(`${API_URL}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -42,8 +40,16 @@ export default function LoginScreen() {
       const data = await response.json();
       console.log("Login success:", data);
 
-      // Aquí rediriges al usuario a la pantalla principal
-      router.push("/(tabs)");
+      // Guardar info del usuario en AsyncStorage
+      await AsyncStorage.setItem("user", JSON.stringify({
+        id: data.user.id_usuario,
+        nombre: data.user.nombre,
+        email: data.user.email,
+        foto_perfil: data.user.foto_perfil || null, // si backend envía foto
+      }));
+
+      // Redirigir al usuario a la pantalla principal
+      router.push("/(tabs)/Perfil");
     } catch (error) {
       console.error(error);
       alert("Credenciales incorrectas");
@@ -125,68 +131,18 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: LIGHT },
   container: { flex: 1, backgroundColor: LIGHT, alignItems: "center" },
-
-  backButton: {
-    position: "absolute",
-    left: 16,
-    backgroundColor: RED,
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 20,
-    zIndex: 10,
-    shadowColor: "#000",
-    shadowOpacity: 0.12,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 3,
-  },
+  backButton: { position: "absolute", left: 16, backgroundColor: RED, flexDirection: "row", alignItems: "center", paddingVertical: 6, paddingHorizontal: 12, borderRadius: 20, zIndex: 10 },
   backText: { color: WHITE, marginLeft: 6, fontSize: 14, fontFamily: "Comfortaa_700Bold" },
-
   topContainer: { flex: 1, alignItems: "center", justifyContent: "flex-end", paddingBottom: 36 },
   logo: { width: width * 0.7, height: width * 0.7, resizeMode: "contain" },
-
-  redFooter: {
-    width: "100%",
-    backgroundColor: RED,
-    borderTopLeftRadius: 50,
-    borderTopRightRadius: 50,
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 14,
-    paddingTop: 37,
-  },
-
-  formCard: {
-    backgroundColor: WHITE,
-    width: "86%",
-    borderRadius: 20,
-    padding: 16,
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.12,
-    shadowRadius: 7,
-    elevation: 3,
-  },
-
-  inputContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: INPUT_BG,
-    borderRadius: 14,
-    marginBottom: 12,
-    paddingHorizontal: 10,
-    width: "100%",
-    height: 48,
-  },
+  redFooter: { width: "100%", backgroundColor: RED, borderTopLeftRadius: 50, borderTopRightRadius: 50, alignItems: "center", justifyContent: "center", gap: 14, paddingTop: 37 },
+  formCard: { backgroundColor: WHITE, width: "86%", borderRadius: 20, padding: 16, alignItems: "center" },
+  inputContainer: { flexDirection: "row", alignItems: "center", backgroundColor: INPUT_BG, borderRadius: 14, marginBottom: 12, paddingHorizontal: 10, width: "100%", height: 48 },
   icon: { marginRight: 8 },
   input: { flex: 1, height: "100%", fontSize: 14, color: "#333", fontFamily: "Comfortaa_400Regular" },
-
   loginBtn: { backgroundColor: RED, borderRadius: 26, paddingVertical: 12, width: "100%", marginTop: 6 },
   loginText: { color: WHITE, textAlign: "center", fontSize: 20, fontFamily: "Comfortaa_700Bold" },
-
   registerText: { color: "#666", marginTop: 12, fontSize: 13, fontFamily: "Comfortaa_400Regular" },
   link: { color: LINK_BLUE, textDecorationLine: "underline", fontFamily: "Comfortaa_700Bold" },
 });
+

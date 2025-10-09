@@ -1,13 +1,28 @@
-import { useState } from "react";
-import {View,Text,StyleSheet,TouchableOpacity,Image,Dimensions,Modal,} from "react-native";
+import { useState, useEffect } from "react";
+import {View,Text,TouchableOpacity,StyleSheet,Image,Dimensions,Modal,} from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const { width } = Dimensions.get("window");
 
 export default function ProfileScreen() {
   const router = useRouter();
   const [modalVisible, setModalVisible] = useState(false);
+  const [user, setUser] = useState<{ nombre: string; foto_perfil?: string } | null>(null);
+
+  // Cargar usuario desde AsyncStorage al montar el componente
+  useEffect(() => {
+    const loadUser = async () => {
+      try {
+        const json = await AsyncStorage.getItem("user");
+        if (json) setUser(JSON.parse(json));
+      } catch (error) {
+        console.error("Error al cargar usuario:", error);
+      }
+    };
+    loadUser();
+  }, []);
 
   return (
     <View style={styles.container}>
@@ -19,12 +34,16 @@ export default function ProfileScreen() {
         </TouchableOpacity>
 
         {/* Saludo */}
-        <Text style={styles.greeting}>¡Hola, Jiara!</Text>
+        <Text style={styles.greeting}>
+          ¡Hola, {user?.nombre || "Usuario"}!
+        </Text>
 
         {/* Foto de perfil */}
         <TouchableOpacity onPress={() => setModalVisible(true)}>
           <Image
-            source={{ uri: "https://i.pravatar.cc/150?img=47" }}
+            source={{
+              uri: user?.foto_perfil || "https://i.pravatar.cc/150?img=47",
+            }}
             style={styles.avatar}
           />
         </TouchableOpacity>
@@ -49,7 +68,10 @@ export default function ProfileScreen() {
           <Text style={styles.optionText}>Registrar mi Negocio</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.option}>
+        <TouchableOpacity style={styles.option} onPress={async () => {
+          await AsyncStorage.removeItem("user"); // cerrar sesión
+          router.push("/login"); // redirigir a login
+        }}>
           <Ionicons name="exit-outline" size={20} color="#777" />
           <Text style={styles.optionText}>Cerrar Sesión</Text>
         </TouchableOpacity>
@@ -99,7 +121,6 @@ export default function ProfileScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fff", paddingHorizontal: 20 },
-
   header: {
     flexDirection: "row",
     alignItems: "center",
@@ -107,13 +128,11 @@ const styles = StyleSheet.create({
     marginTop: 50,
     paddingBottom: 10,
   },
-
   backButton: {
     backgroundColor: "#ef0505",
     padding: 8,
     borderRadius: 20,
   },
-
   greeting: {
     fontSize: 22,
     fontWeight: "bold",
@@ -121,24 +140,20 @@ const styles = StyleSheet.create({
     flex: 1,
     textAlign: "center",
   },
-
   avatar: {
     width: 55,
     height: 55,
     borderRadius: 27.5,
     borderWidth: 2,
-    borderColor: "#ccc", // color del borde cambiado de rojo a gris claro
+    borderColor: "#ccc",
   },
-
   separator: {
     borderBottomWidth: 1,
     borderBottomColor: "#ddd",
     marginBottom: 25,
   },
-
   section: { backgroundColor: "#fff", marginBottom: 20 },
   subtitle: { fontWeight: "bold", fontSize: 16, marginBottom: 10, color: "#555" },
-
   option: {
     flexDirection: "row",
     alignItems: "center",
@@ -147,8 +162,6 @@ const styles = StyleSheet.create({
     borderColor: "#eee",
   },
   optionText: { marginLeft: 10, fontSize: 15, color: "#333" },
-
-  // Modal estilo Bottom Sheet
   modalOverlay: {
     flex: 1,
     justifyContent: "flex-end",
