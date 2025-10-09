@@ -1,7 +1,13 @@
-import { Platform } from 'react-native';
+import { Platform } from "react-native";
 
-// For testing Expo Go with your Mac IP
+// 👇 This automatically picks the right URL
+// 💻 On Web or Emulator → localhost
+// 📱 On a real phone (mobile data or Wi-Fi) → use your ngrok URL
 export const BASE_URL =
-  Platform.OS === 'web'
-    ? 'http://localhost:3000'
-    : 'http://192.168.100.16:3000'
+  Platform.OS === "web"
+    ? "http://localhost:3000/api"
+    : "https://fergie.ngrok-free.app/api"; 
+
+// ✅ Example final URLs that will be used:
+// - Web or simulator → http://localhost:3000/api
+// - Real phone → https://fergie.ngrok-free.app/api

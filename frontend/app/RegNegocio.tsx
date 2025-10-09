@@ -247,7 +247,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 14,
     borderRadius: 22,
-    marginBottom: 14,
+    marginBottom: 14, 
     shadowColor: "#000",
     shadowOpacity: 0.12,
     shadowRadius: 4,
