@@ -1,13 +1,5 @@
 import { useState } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Image,
-  Dimensions,
-  Modal,
-} from "react-native";
+import {View,Text,StyleSheet,TouchableOpacity,Image,Dimensions,Modal,} from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 

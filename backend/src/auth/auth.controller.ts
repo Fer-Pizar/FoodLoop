@@ -11,4 +11,11 @@ export class AuthController {
   register(@Body() dto: RegisterDto) {
     return this.auth.register(dto);
   }
+
+  @Post('login')
+  @HttpCode(HttpStatus.OK)
+  login(@Body() data: { email: string; password: string }) {
+    return this.auth.login(data);
+  }
 }
+

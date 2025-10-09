@@ -98,3 +98,6 @@ android/
 public/build/
 .DS_Store.DS_Store
 **/.DS_Store
+#json
+package-lock.json
+package.json

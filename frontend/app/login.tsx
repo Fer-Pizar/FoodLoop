@@ -1,17 +1,5 @@
 import { useState } from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  Image,
-  Dimensions,
-  SafeAreaView,
-  ScrollView,
-  KeyboardAvoidingView,
-  Platform,
-} from "react-native";
+import {View,Text,TextInput,TouchableOpacity,StyleSheet,Image,Dimensions,SafeAreaView,ScrollView,KeyboardAvoidingView,Platform,} from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -35,14 +23,15 @@ export default function LoginScreen() {
   const [password, setPassword] = useState("");
 
   // Obtener la URL del backend desde app.config.js
-  const API_URL = Constants.manifest?.extra?.BACKEND_URL;
+  const API_URL = process.env.EXPO_PUBLIC_API_URL;
+
 
   const [fontsLoaded] = useFonts({ Comfortaa_400Regular, Comfortaa_700Bold });
   if (!fontsLoaded) return null;
 
   const handleLogin = async () => {
     try {
-      const response = await fetch(`${API_URL}/auth/login`, {
+      const response = await fetch(`${API_URL}/api/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
