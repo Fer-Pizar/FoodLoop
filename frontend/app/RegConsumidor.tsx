@@ -1,28 +1,22 @@
 // app/RegConsumidor.tsx
 import React, { useState } from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  Dimensions,
-  SafeAreaView,
-  ScrollView,
-  KeyboardAvoidingView,
-  Platform,
-} from "react-native";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Dimensions, SafeAreaView, ScrollView, KeyboardAvoidingView, Platform,} from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useFonts, Comfortaa_400Regular, Comfortaa_700Bold } from "@expo-google-fonts/comfortaa";
+import {
+  useFonts,
+  Comfortaa_400Regular,
+  Comfortaa_700Bold,
+} from "@expo-google-fonts/comfortaa";
+import { registerUser } from "../src/lib/api";
 
 const { width } = Dimensions.get("window");
 
 const RED = "#d11212ff";
 const LIGHT = "#F7F7F7";
 const WHITE = "#FFFFFF";
-const INPUT_RED = "rgba(237, 234, 234, 0.67)"; 
+const INPUT_RED = "rgba(237, 234, 234, 0.67)";
 const GRAY_TEXT = "#EEEEEE";
 const DISABLED_BTN = "#CFCFCF";
 const LINK_BLUE = "#2F80ED";
@@ -36,14 +30,41 @@ export default function RegConsumidor() {
   const [pass, setPass] = useState("");
   const [confirm, setConfirm] = useState("");
 
+  const [showPw, setShowPw] = useState(false);   
+  const [showPw2, setShowPw2] = useState(false); 
+
+  const [loading, setLoading] = useState(false);
+  const [msg, setMsg] = useState("");
+
   const [fontsLoaded] = useFonts({ Comfortaa_400Regular, Comfortaa_700Bold });
   if (!fontsLoaded) return null;
 
-  const canSubmit = name.trim() && email.trim() && pass.trim() && confirm.trim() && pass === confirm;
+  const canSubmit =
+    !!name.trim() &&
+    !!email.trim() &&
+    !!pass.trim() &&
+    !!confirm.trim() &&
+    pass === confirm;
 
   const handleRegister = async () => {
-    if (!canSubmit) return;
-    router.push("/login");
+    if (!canSubmit || loading) return;
+    setMsg("");
+    try {
+      setLoading(true);
+      const res = await registerUser(name.trim(), email.trim(), pass, confirm);
+      if (res?.ok) {
+        setMsg("¡Cuenta creada! Redirigiendo…");
+        setTimeout(() => router.push("/login"), 1000);
+      } else {
+        setMsg("No se pudo crear la cuenta.");
+      }
+    } catch (err: any) {
+      const text =
+        err?.response?.data?.message || err?.message || "Error al registrarse";
+      setMsg(Array.isArray(text) ? text.join(", ") : text);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -54,7 +75,11 @@ export default function RegConsumidor() {
       >
         <View style={[styles.container, { paddingTop: insets.top + 8 }]}>
           {/* 🔙 Back */}
-          <TouchableOpacity style={styles.back} onPress={() => router.back()} activeOpacity={0.9}>
+          <TouchableOpacity
+            style={styles.back}
+            onPress={() => router.back()}
+            activeOpacity={0.9}
+          >
             <Ionicons name="arrow-back" size={20} color={WHITE} />
             <Text style={styles.backText}>Atrás</Text>
           </TouchableOpacity>
@@ -65,6 +90,19 @@ export default function RegConsumidor() {
           >
             <View style={styles.redPanel}>
               <Text style={styles.title}>Crear una{"\n"}cuenta</Text>
+
+              {!!msg && (
+                <Text
+                  style={{
+                    color: WHITE,
+                    marginBottom: 8,
+                    textAlign: "center",
+                    fontFamily: "Comfortaa_700Bold",
+                  }}
+                >
+                  {msg}
+                </Text>
+              )}
 
               {/* Nombre */}
               <Text style={styles.label}>NOMBRE</Text>
@@ -102,8 +140,21 @@ export default function RegConsumidor() {
                   placeholder=""
                   placeholderTextColor={GRAY_TEXT}
                   style={styles.input}
-                  secureTextEntry
+                  secureTextEntry={!showPw}
+                  autoCapitalize="none"
                 />
+                <TouchableOpacity
+                  style={styles.eyeBtn}
+                  onPress={() => setShowPw((s) => !s)}
+                  activeOpacity={0.7}
+                  accessibilityLabel="Mostrar u ocultar contraseña"
+                >
+                  <Ionicons
+                    name={showPw ? "eye-off" : "eye"}
+                    size={20}
+                    color="#7A7A7A"
+                  />
+                </TouchableOpacity>
               </View>
 
               {/* Confirmar */}
@@ -115,15 +166,32 @@ export default function RegConsumidor() {
                   placeholder=""
                   placeholderTextColor={GRAY_TEXT}
                   style={styles.input}
-                  secureTextEntry
+                  secureTextEntry={!showPw2}
+                  autoCapitalize="none"
                 />
+                <TouchableOpacity
+                  style={styles.eyeBtn}
+                  onPress={() => setShowPw2((s) => !s)}
+                  activeOpacity={0.7}
+                  accessibilityLabel="Mostrar u ocultar confirmación de contraseña"
+                >
+                  <Ionicons
+                    name={showPw2 ? "eye-off" : "eye"}
+                    size={20}
+                    color="#7A7A7A"
+                  />
+                </TouchableOpacity>
               </View>
 
+              {/* Botón */}
               <TouchableOpacity
-                style={[styles.primaryBtn, { backgroundColor: canSubmit ? WHITE : DISABLED_BTN }]}
+                style={[
+                  styles.primaryBtn,
+                  { backgroundColor: canSubmit ? WHITE : DISABLED_BTN },
+                ]}
                 activeOpacity={0.9}
                 onPress={handleRegister}
-                disabled={!canSubmit}
+                disabled={!canSubmit || loading}
               >
                 <Text
                   style={[
@@ -131,14 +199,17 @@ export default function RegConsumidor() {
                     { color: canSubmit ? RED : "#7A7A7A" },
                   ]}
                 >
-                  Registrarse
+                  {loading ? "Creando…" : "Registrarse"}
                 </Text>
               </TouchableOpacity>
 
               {/* Link Login */}
               <Text style={styles.helper}>
-                Ya tienes cuenta?{" "}
-                <Text style={styles.link} onPress={() => router.push("/login")}>
+                ¿Ya tienes cuenta?{" "}
+                <Text
+                  style={styles.link}
+                  onPress={() => router.push("/login")}
+                >
                   Inicia Sesión
                 </Text>
               </Text>
@@ -210,11 +281,20 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     paddingHorizontal: 14,
     marginBottom: 6,
+    position: "relative",
   },
   input: {
     color: "#030000ff",
     fontSize: 17,
     fontFamily: "Comfortaa_400Regular",
+    paddingRight: 40, // espacio para el icono 👁️
+  },
+  eyeBtn: {
+    position: "absolute",
+    right: 12,
+    height: "100%",
+    justifyContent: "center",
+    alignItems: "center",
   },
 
   primaryBtn: {

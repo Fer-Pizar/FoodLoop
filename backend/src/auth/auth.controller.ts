@@ -1,9 +1,8 @@
 import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { AuthService } from './auth.service';
+import { RegisterDto } from './dto/register.dto';
 
-type RegisterDto = { nombre: string; email: string; password: string };
-
-@Controller('auth') 
+@Controller('auth')
 export class AuthController {
   constructor(private readonly auth: AuthService) {}
 
