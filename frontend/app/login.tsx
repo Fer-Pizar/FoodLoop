@@ -1,10 +1,12 @@
+// FoodLoop/frontend/app/login.tsx
 import { useState } from "react";
-import {View,Text,TextInput,TouchableOpacity,StyleSheet,Image,Dimensions,SafeAreaView,ScrollView,KeyboardAvoidingView,Platform,} from "react-native";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Dimensions, SafeAreaView, ScrollView, KeyboardAvoidingView, Platform, Alert,} from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useFonts, Comfortaa_400Regular, Comfortaa_700Bold } from "@expo-google-fonts/comfortaa";
+import { useFonts, Comfortaa_400Regular, Comfortaa_700Bold,} from "@expo-google-fonts/comfortaa";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { loginUser } from "../src/api/auth";
 
 const { width } = Dimensions.get("window");
 
@@ -21,38 +23,35 @@ export default function LoginScreen() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
-  const API_URL = process.env.EXPO_PUBLIC_API_URL;
-
-  const [fontsLoaded] = useFonts({ Comfortaa_400Regular, Comfortaa_700Bold });
+  const [fontsLoaded] = useFonts({
+    Comfortaa_400Regular,
+    Comfortaa_700Bold,
+  });
   if (!fontsLoaded) return null;
 
   const handleLogin = async () => {
+    if (!email || !password) {
+      Alert.alert("Campos requeridos", "Ingresa correo y contraseña.");
+      return;
+    }
+
     try {
-      const response = await fetch(`${API_URL}/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
+      const data = await loginUser(email, password);
+      console.log("✅ Login success:", data);
 
-      if (!response.ok) throw new Error("Error al iniciar sesión");
+      const userPayload = {
+        id: data?.user?.id_usuario ?? data?.user?.id ?? null,
+        nombre: data?.user?.nombre ?? "",
+        email: data?.user?.email ?? email,
+        foto_perfil: data?.user?.foto_perfil ?? null,
+        token: data?.token ?? null,
+      };
+      await AsyncStorage.setItem("user", JSON.stringify(userPayload));
 
-      const data = await response.json();
-      console.log("Login success:", data);
-
-      // Guardar info del usuario en AsyncStorage
-      await AsyncStorage.setItem("user", JSON.stringify({
-        id: data.user.id_usuario,
-        nombre: data.user.nombre,
-        email: data.user.email,
-        foto_perfil: data.user.foto_perfil || null, // si backend envía foto
-      }));
-
-      // Redirigir al usuario a la pantalla principal
       router.push("/(tabs)/Perfil");
-    } catch (error) {
-      console.error(error);
-      alert("Credenciales incorrectas");
+    } catch (error: any) {
+      console.error("❌ Login failed:", error?.message || error);
+      Alert.alert("Login fallido", error?.message || "Credenciales incorrectas");
     }
   };
 
@@ -78,14 +77,27 @@ export default function LoginScreen() {
 
             {/* Logo */}
             <View style={styles.topContainer}>
-              <Image source={require("../assets/images/log.png")} style={styles.logo} />
+              <Image
+                source={require("../assets/images/log.png")}
+                style={styles.logo}
+              />
             </View>
 
             {/* Footer rojo curvo */}
-            <View style={[styles.redFooter, { paddingBottom: Math.max(insets.bottom, 12) }]}>
+            <View
+              style={[
+                styles.redFooter,
+                { paddingBottom: Math.max(insets.bottom, 12) },
+              ]}
+            >
               <View style={styles.formCard}>
                 <View style={styles.inputContainer}>
-                  <Ionicons name="mail-outline" size={20} color={GRAY_TEXT} style={styles.icon} />
+                  <Ionicons
+                    name="mail-outline"
+                    size={20}
+                    color={GRAY_TEXT}
+                    style={styles.icon}
+                  />
                   <TextInput
                     style={styles.input}
                     placeholder="Correo"
@@ -98,7 +110,12 @@ export default function LoginScreen() {
                 </View>
 
                 <View style={styles.inputContainer}>
-                  <Ionicons name="lock-closed-outline" size={20} color={GRAY_TEXT} style={styles.icon} />
+                  <Ionicons
+                    name="lock-closed-outline"
+                    size={20}
+                    color={GRAY_TEXT}
+                    style={styles.icon}
+                  />
                   <TextInput
                     style={styles.input}
                     placeholder="Contraseña"
@@ -109,13 +126,20 @@ export default function LoginScreen() {
                   />
                 </View>
 
-                <TouchableOpacity style={styles.loginBtn} activeOpacity={0.9} onPress={handleLogin}>
+                <TouchableOpacity
+                  style={styles.loginBtn}
+                  activeOpacity={0.9}
+                  onPress={handleLogin}
+                >
                   <Text style={styles.loginText}>Iniciar Sesión</Text>
                 </TouchableOpacity>
 
                 <Text style={styles.registerText}>
                   ¿No tienes una Cuenta?{" "}
-                  <Text style={styles.link} onPress={() => router.push("/Registro")}>
+                  <Text
+                    style={styles.link}
+                    onPress={() => router.push("/Registro")}
+                  >
                     Crear una Cuenta
                   </Text>
                 </Text>
@@ -131,18 +155,87 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: LIGHT },
   container: { flex: 1, backgroundColor: LIGHT, alignItems: "center" },
-  backButton: { position: "absolute", left: 16, backgroundColor: RED, flexDirection: "row", alignItems: "center", paddingVertical: 6, paddingHorizontal: 12, borderRadius: 20, zIndex: 10 },
-  backText: { color: WHITE, marginLeft: 6, fontSize: 14, fontFamily: "Comfortaa_700Bold" },
-  topContainer: { flex: 1, alignItems: "center", justifyContent: "flex-end", paddingBottom: 36 },
+  backButton: {
+    position: "absolute",
+    left: 16,
+    backgroundColor: RED,
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 20,
+    zIndex: 10,
+  },
+  backText: {
+    color: WHITE,
+    marginLeft: 6,
+    fontSize: 14,
+    fontFamily: "Comfortaa_700Bold",
+  },
+  topContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "flex-end",
+    paddingBottom: 36,
+  },
   logo: { width: width * 0.7, height: width * 0.7, resizeMode: "contain" },
-  redFooter: { width: "100%", backgroundColor: RED, borderTopLeftRadius: 50, borderTopRightRadius: 50, alignItems: "center", justifyContent: "center", gap: 14, paddingTop: 37 },
-  formCard: { backgroundColor: WHITE, width: "86%", borderRadius: 20, padding: 16, alignItems: "center" },
-  inputContainer: { flexDirection: "row", alignItems: "center", backgroundColor: INPUT_BG, borderRadius: 14, marginBottom: 12, paddingHorizontal: 10, width: "100%", height: 48 },
+  redFooter: {
+    width: "100%",
+    backgroundColor: RED,
+    borderTopLeftRadius: 50,
+    borderTopRightRadius: 50,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 14,
+    paddingTop: 37,
+  },
+  formCard: {
+    backgroundColor: WHITE,
+    width: "86%",
+    borderRadius: 20,
+    padding: 16,
+    alignItems: "center",
+  },
+  inputContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: INPUT_BG,
+    borderRadius: 14,
+    marginBottom: 12,
+    paddingHorizontal: 10,
+    width: "100%",
+    height: 48,
+  },
   icon: { marginRight: 8 },
-  input: { flex: 1, height: "100%", fontSize: 14, color: "#333", fontFamily: "Comfortaa_400Regular" },
-  loginBtn: { backgroundColor: RED, borderRadius: 26, paddingVertical: 12, width: "100%", marginTop: 6 },
-  loginText: { color: WHITE, textAlign: "center", fontSize: 20, fontFamily: "Comfortaa_700Bold" },
-  registerText: { color: "#666", marginTop: 12, fontSize: 13, fontFamily: "Comfortaa_400Regular" },
-  link: { color: LINK_BLUE, textDecorationLine: "underline", fontFamily: "Comfortaa_700Bold" },
+  input: {
+    flex: 1,
+    height: "100%",
+    fontSize: 14,
+    color: "#333",
+    fontFamily: "Comfortaa_400Regular",
+  },
+  loginBtn: {
+    backgroundColor: RED,
+    borderRadius: 26,
+    paddingVertical: 12,
+    width: "100%",
+    marginTop: 6,
+  },
+  loginText: {
+    color: WHITE,
+    textAlign: "center",
+    fontSize: 20,
+    fontFamily: "Comfortaa_700Bold",
+  },
+  registerText: {
+    color: "#666",
+    marginTop: 12,
+    fontSize: 13,
+    fontFamily: "Comfortaa_400Regular",
+  },
+  link: {
+    color: LINK_BLUE,
+    textDecorationLine: "underline",
+    fontFamily: "Comfortaa_700Bold",
+  },
 });
-
