@@ -11,3 +11,5 @@ export const BASE_URL =
 // ✅ Example final URLs that will be used:
 // - Web or simulator → http://localhost:3000/api
 // - Real phone → https://fergie.ngrok-free.app/api
+export const API_BASE =
+  process.env.EXPO_PUBLIC_API_BASE ?? 'http://localhost:3000/api';

@@ -1,10 +1,26 @@
-// FoodLoop/frontend/app/login.tsx
 import { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Dimensions, SafeAreaView, ScrollView, KeyboardAvoidingView, Platform, Alert,} from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  Image,
+  Dimensions,
+  SafeAreaView,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+  Alert,
+} from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useFonts, Comfortaa_400Regular, Comfortaa_700Bold,} from "@expo-google-fonts/comfortaa";
+import {
+  useFonts,
+  Comfortaa_400Regular,
+  Comfortaa_700Bold,
+} from "@expo-google-fonts/comfortaa";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { loginUser } from "../src/api/auth";
 
@@ -23,6 +39,8 @@ export default function LoginScreen() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+
   const [fontsLoaded] = useFonts({
     Comfortaa_400Regular,
     Comfortaa_700Bold,
@@ -91,6 +109,7 @@ export default function LoginScreen() {
               ]}
             >
               <View style={styles.formCard}>
+                {/* Email */}
                 <View style={styles.inputContainer}>
                   <Ionicons
                     name="mail-outline"
@@ -117,15 +136,26 @@ export default function LoginScreen() {
                     style={styles.icon}
                   />
                   <TextInput
-                    style={styles.input}
+                    style={[styles.input, { paddingRight: 36 }]}
                     placeholder="Contraseña"
                     placeholderTextColor={GRAY_TEXT}
-                    secureTextEntry
+                    secureTextEntry={!showPassword}
                     value={password}
                     onChangeText={setPassword}
                   />
+                  <TouchableOpacity
+                    style={styles.eyeButton}
+                    onPress={() => setShowPassword((prev) => !prev)}
+                  >
+                    <Ionicons
+                      name={showPassword ? "eye-outline" : "eye-off-outline"}
+                      size={20}
+                      color={GRAY_TEXT}
+                    />
+                  </TouchableOpacity>
                 </View>
 
+                {/* Button */}
                 <TouchableOpacity
                   style={styles.loginBtn}
                   activeOpacity={0.9}
@@ -213,6 +243,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#333",
     fontFamily: "Comfortaa_400Regular",
+  },
+  eyeButton: {
+    position: "absolute",
+    right: 10,
+    padding: 4,
   },
   loginBtn: {
     backgroundColor: RED,

@@ -1,39 +1,34 @@
+// FoodLoop/frontend/src/lib/api.ts
 import axios, { AxiosError } from "axios";
-import { BASE_URL } from "../config/env"; 
+import { API_BASE } from "../config/env"; 
 
-// Small helper: normalize baseURL (avoid double slashes)
+// Helper: remove trailing slashes
 function trimSlash(s?: string | null) {
   return (s || "").replace(/\/+$/, "");
 }
 
-// 1) Preferred: Expo public env (available at runtime in Expo)
+// 1️⃣ Try Expo public env first
 const expoBase = trimSlash(process.env.EXPO_PUBLIC_API_BASE);
 
-// 2) Fallback: your existing config value
-const cfgBase = trimSlash(BASE_URL);
+// 2️⃣ Fallback: value from config/env (e.g. ngrok or static URL)
+const cfgBase = trimSlash(API_BASE);
 
+// 3️⃣ Last fallback: localhost for dev
+const defaultBase = "http://localhost:3000/api";
 
-const defaultBase = trimSlash(
-  // If running on Android emulator, you might prefer uncommenting next line:
-  // Platform.OS === "android" ? "http://10.0.2.2:3000/api" :
-  "http://localhost:3000/api"
-);
-
+// 4️⃣ Final resolved baseURL
 const baseURL = expoBase || cfgBase || defaultBase;
 
 if (!expoBase) {
-  console.warn(
-    "[api] EXPO_PUBLIC_API_BASE is not set. Using fallback:",
-    baseURL
-  );
+  console.warn("[api] EXPO_PUBLIC_API_BASE not set. Using fallback:", baseURL);
 }
 
+// ✅ Single shared axios instance
 export const api = axios.create({
   baseURL,
   timeout: 15000,
   headers: { "Content-Type": "application/json" },
 });
-
 
 export async function getHealth() {
   const res = await api.get("/health");
@@ -43,15 +38,13 @@ export async function getHealth() {
 export async function registerUser(
   nombre: string,
   email: string,
-  password: string,
-  confirmPassword: string
+  password: string
 ) {
   try {
     const res = await api.post("/auth/register", {
       nombre,
       email,
       password,
-      confirmPassword,
     });
     return res.data;
   } catch (err) {
