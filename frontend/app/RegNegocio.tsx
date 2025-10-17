@@ -13,21 +13,28 @@ import {
   Platform,
   Modal,
   Pressable,
+  Alert, 
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useFonts, Comfortaa_400Regular, Comfortaa_700Bold } from "@expo-google-fonts/comfortaa";
+import {
+  useFonts,
+  Comfortaa_400Regular,
+  Comfortaa_700Bold,
+} from "@expo-google-fonts/comfortaa";
+
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { registerNegocio } from "../src/api/auth";
 
 const { width } = Dimensions.get("window");
 
-// 🎨 Palette (FoodLoop)
 const RED = "#D82A2A";
 const LIGHT = "#F7F7F7";
 const WHITE = "#FFFFFF";
-const PANEL_GRAY = "#BDBDBD";   
-const INPUT_BG = "#F2F2F2";      
-const BORDER_RED = "#cc2424ff";    
+const PANEL_GRAY = "#BDBDBD";
+const INPUT_BG = "#F2F2F2";
+const BORDER_RED = "#cc2424ff";
 const LINK_BLUE = "#2F80ED";
 
 const CATEGORIES = [
@@ -46,6 +53,7 @@ export default function RegNegocio() {
   const insets = useSafeAreaInsets();
 
   const [name, setName] = useState("");
+  const [email, setEmail] = useState(""); 
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
   const [category, setCategory] = useState<string>("");
@@ -58,17 +66,39 @@ export default function RegNegocio() {
   if (!fontsLoaded) return null;
 
   const canSubmit =
-    name.trim() &&
-    phone.trim() &&
-    address.trim() &&
-    category.trim() &&
-    pass.trim() &&
-    confirm.trim() &&
+    !!name.trim() &&
+    !!email.trim() && 
+    !!phone.trim() &&
+    !!address.trim() &&
+    !!category.trim() &&
+    !!pass.trim() &&
+    !!confirm.trim() &&
     pass === confirm;
 
   const handleRegister = async () => {
-    if (!canSubmit) return;
-    router.push("/login");
+    try {
+      if (!canSubmit) return;
+
+      const resp = await registerNegocio({
+        nombre: name,
+        email,
+        password: pass,
+        telefono: phone || undefined,
+        direccion: address || undefined,
+        categoria: category || undefined,
+      });
+
+      if (resp?.access_token) {
+        await AsyncStorage.setItem("foodloop_token", resp.access_token);
+      }
+
+      router.replace("/");
+    } catch (e: any) {
+      Alert.alert(
+        "Error",
+        e?.message || "No se pudo registrar el negocio. Inténtalo de nuevo."
+      );
+    }
   };
 
   return (
@@ -78,18 +108,24 @@ export default function RegNegocio() {
         behavior={Platform.select({ ios: "padding", android: undefined })}
       >
         <View style={[styles.container, { paddingTop: insets.top + 8 }]}>
-          {/* 🔙 Back */}
-          <TouchableOpacity style={styles.back} onPress={() => router.back()} activeOpacity={0.9}>
+          <TouchableOpacity
+            style={styles.back}
+            onPress={() => router.back()}
+            activeOpacity={0.9}
+          >
             <Ionicons name="arrow-back" size={20} color={WHITE} />
             <Text style={styles.backText}>Atrás</Text>
           </TouchableOpacity>
 
-          <ScrollView contentContainerStyle={{ paddingBottom: 28 }} showsVerticalScrollIndicator={false}>
-            {/* Grey rounded panel */}
+          <ScrollView
+            contentContainerStyle={{ paddingBottom: 28 }}
+            showsVerticalScrollIndicator={false}
+          >
             <View style={styles.grayPanel}>
-              <Text style={styles.title}>Registra tu{"\n"}negocio</Text>
+              <Text style={styles.title}>
+                Registra tu{"\n"}negocio
+              </Text>
 
-              {/* Nombre */}
               <Text style={styles.label}>NOMBRE</Text>
               <View style={styles.inputOutline}>
                 <TextInput
@@ -99,6 +135,19 @@ export default function RegNegocio() {
                   placeholder=""
                   placeholderTextColor="#9A9A9A"
                   autoCapitalize="words"
+                />
+              </View>
+
+              <Text style={styles.label}>EMAIL</Text>
+              <View style={styles.inputOutline}>
+                <TextInput
+                  value={email}
+                  onChangeText={setEmail}
+                  style={styles.input}
+                  placeholder=""
+                  placeholderTextColor="#9A9A9A"
+                  autoCapitalize="none"
+                  keyboardType="email-address"
                 />
               </View>
 
@@ -127,7 +176,7 @@ export default function RegNegocio() {
                 />
               </View>
 
-              {/* Categoría (custom white dropdown modal) */}
+              {/* Categoría (dropdown) */}
               <Text style={styles.label}>CATEGORÍA</Text>
               <TouchableOpacity
                 activeOpacity={0.9}
@@ -184,7 +233,10 @@ export default function RegNegocio() {
               {/* Link a Login */}
               <Text style={styles.helper}>
                 Ya tienes cuenta?{" "}
-                <Text style={styles.link} onPress={() => router.push("/login")}>
+                <Text
+                  style={styles.link}
+                  onPress={() => router.push("/login")}
+                >
                   Inicia Sesión
                 </Text>
               </Text>
@@ -193,14 +245,16 @@ export default function RegNegocio() {
         </View>
       </KeyboardAvoidingView>
 
-      {/* White dropdown modal */}
       <Modal
         visible={catOpen}
         transparent
         animationType="fade"
         onRequestClose={() => setCatOpen(false)}
       >
-        <Pressable style={styles.modalBackdrop} onPress={() => setCatOpen(false)}>
+        <Pressable
+          style={styles.modalBackdrop}
+          onPress={() => setCatOpen(false)}
+        >
           <View style={styles.modalCard}>
             <Text style={styles.modalTitle}>Selecciona una categoría</Text>
             <ScrollView
@@ -222,7 +276,10 @@ export default function RegNegocio() {
                 </TouchableOpacity>
               ))}
             </ScrollView>
-            <TouchableOpacity style={styles.modalClose} onPress={() => setCatOpen(false)}>
+            <TouchableOpacity
+              style={styles.modalClose}
+              onPress={() => setCatOpen(false)}
+            >
               <Text style={styles.modalCloseText}>Cerrar</Text>
             </TouchableOpacity>
           </View>
@@ -247,7 +304,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 14,
     borderRadius: 22,
-    marginBottom: 14, 
+    marginBottom: 14,
     shadowColor: "#000",
     shadowOpacity: 0.12,
     shadowRadius: 4,
