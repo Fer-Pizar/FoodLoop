@@ -4,8 +4,8 @@ generator client {
 
 datasource db {
   provider  = "postgresql"
-  url       = env("DATABASE_URL")  
-  directUrl = env("DIRECT_URL")    
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model categorias {
@@ -16,22 +16,23 @@ model categorias {
   productos    productos[]
 }
 
-model comercios {
-  id_comercio    BigInt      @id @default(autoincrement())
-  id_usuario     BigInt
-  nombre_negocio String      @db.VarChar(100)
-  telefono       String?     @db.VarChar(20)
-  direccion      String?     @db.VarChar(200)
-  latitud        Decimal?    @db.Decimal(9, 6)
-  longitud       Decimal?    @db.Decimal(9, 6)
-  categoria      String?     @db.VarChar(50)
-  fecha_registro DateTime    @default(now()) @db.Timestamptz(6)
-  estado         Boolean     @default(true)
-  updated_at     DateTime    @default(now()) @db.Timestamptz(6)
-  usuarios       usuarios    @relation(fields: [id_usuario], references: [id_usuario], onDelete: Cascade, onUpdate: NoAction)
-  productos      productos[]
+model Comercio {
+  idComercio    BigInt      @id @default(autoincrement()) @map("id_comercio")
+  idUsuario     BigInt      @unique @map("id_usuario") 
+  nombreNegocio String      @map("nombre_negocio") @db.VarChar(100)
+  telefono      String?     @db.VarChar(20)
+  direccion     String?     @db.VarChar(200)
+  latitud       Decimal?    @db.Decimal(9, 6)
+  longitud      Decimal?    @db.Decimal(9, 6)
+  categoria     String?     @db.VarChar(50)
+  fechaRegistro DateTime    @default(now()) @map("fecha_registro") @db.Timestamptz(6)
+  estado        Boolean     @default(true)
+  updatedAt     DateTime    @default(now()) @map("updated_at") @db.Timestamptz(6)
+  usuario       Usuario     @relation(fields: [idUsuario], references: [idUsuario], onDelete: Cascade, onUpdate: NoAction)
+  productos     productos[]
 
-  @@index([id_usuario], map: "idx_comercios_id_usuario")
+  @@index([idUsuario], map: "idx_comercios_id_usuario")
+  @@map("comercios")
 }
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
@@ -44,7 +45,7 @@ model notificaciones {
   fecha_envio     DateTime @default(now()) @db.Timestamptz(6)
   leido           Boolean  @default(false)
   updated_at      DateTime @default(now()) @db.Timestamptz(6)
-  usuarios        usuarios @relation(fields: [id_usuario], references: [id_usuario], onDelete: Cascade, onUpdate: NoAction)
+  usuario         Usuario  @relation(fields: [id_usuario], references: [idUsuario], onDelete: Cascade, onUpdate: NoAction)
 }
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
@@ -63,7 +64,7 @@ model productos {
   estado              Boolean    @default(true)
   updated_at          DateTime   @default(now()) @db.Timestamptz(6)
   categorias          categorias @relation(fields: [id_categoria], references: [id_categoria], onDelete: NoAction, onUpdate: NoAction)
-  comercios           comercios  @relation(fields: [id_comercio], references: [id_comercio], onDelete: Cascade, onUpdate: NoAction)
+  comercio            Comercio   @relation(fields: [id_comercio], references: [idComercio], onDelete: Cascade, onUpdate: NoAction)
   reservas            reservas[]
 
   @@index([estado, fecha_publicacion(sort: Desc)], map: "idx_productos_estado_fecha_pub")
@@ -85,26 +86,29 @@ model reservas {
   ventana_retiro_inicio DateTime?      @db.Timestamptz(6)
   ventana_retiro_fin    DateTime?      @db.Timestamptz(6)
   updated_at            DateTime       @default(now()) @db.Timestamptz(6)
-  productos             productos      @relation(fields: [id_producto], references: [id_producto], onDelete: Cascade, onUpdate: NoAction)
-  usuarios              usuarios       @relation(fields: [id_usuario], references: [id_usuario], onDelete: Cascade, onUpdate: NoAction)
+  producto              productos      @relation(fields: [id_producto], references: [id_producto], onDelete: Cascade, onUpdate: NoAction)
+  usuario               Usuario        @relation(fields: [id_usuario], references: [idUsuario], onDelete: Cascade, onUpdate: NoAction)
 
   @@index([id_producto], map: "idx_reservas_id_producto")
   @@index([id_usuario], map: "idx_reservas_id_usuario")
 }
 
-model usuarios {
-  id_usuario       BigInt           @id @default(autoincrement())
-  nombre           String           @db.VarChar(100)
-  email            String           @unique @db.VarChar(100)
-  contrasena_hash  String
-  fecha_nacimiento DateTime?        @db.Date
-  foto_perfil      String?
-  fecha_registro   DateTime         @default(now()) @db.Timestamptz(6)
-  estado           Boolean          @default(true)
-  updated_at       DateTime         @default(now()) @db.Timestamptz(6)
-  comercios        comercios[]
-  notificaciones   notificaciones[]
-  reservas         reservas[]
+model Usuario {
+  idUsuario       BigInt           @id @default(autoincrement()) @map("id_usuario")
+  nombre          String           @db.VarChar(100)
+  email           String           @unique @db.VarChar(100)
+  contrasenaHash  String           @map("contrasena_hash")
+  fechaNacimiento DateTime?        @map("fecha_nacimiento") @db.Date
+  fotoPerfil      String?          @map("foto_perfil")
+  fechaRegistro   DateTime         @default(now()) @map("fecha_registro") @db.Timestamptz(6)
+  estado          Boolean          @default(true)
+  updatedAt       DateTime         @default(now()) @map("updated_at") @db.Timestamptz(6)
+  rol             String           @default("consumidor") // 'consumidor' | 'comercio' | 'admin'
+  comercio        Comercio?
+  notificaciones  notificaciones[]
+  reservas        reservas[]
+
+  @@map("usuarios")
 }
 
 enum reserva_estado {

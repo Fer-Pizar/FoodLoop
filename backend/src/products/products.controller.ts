@@ -9,7 +9,7 @@ export class ProductsController {
   async findAll() {
     return this.prisma.productos.findMany({
       where: { estado: true },
-      include: { categorias: true, comercios: true },
+      include: { categorias: true, comercio: true },
       orderBy: { fecha_publicacion: 'desc' },
     });
   }
