@@ -7,6 +7,3 @@ expo-env.d.ts
 .env
 .env.ts
 
-package.json
-package-lock.json
-

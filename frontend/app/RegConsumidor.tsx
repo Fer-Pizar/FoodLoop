@@ -308,7 +308,7 @@ const styles = StyleSheet.create({
     color: "#030000ff",
     fontSize: 17,
     fontFamily: "Comfortaa_400Regular",
-    paddingRight: 40, // espacio para el icono 👁️
+    paddingRight: 40, 
   },
   eyeBtn: {
     position: "absolute",

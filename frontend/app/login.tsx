@@ -1,25 +1,9 @@
 import { useState } from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  Image,
-  Dimensions,
-  SafeAreaView,
-  ScrollView,
-  KeyboardAvoidingView,
-  Platform,
-  Alert,
-} from "react-native";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Dimensions, SafeAreaView, ScrollView, KeyboardAvoidingView, Platform, Alert,} from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import {
-  useFonts,
-  Comfortaa_400Regular,
-  Comfortaa_700Bold,
+import { useFonts, Comfortaa_400Regular, Comfortaa_700Bold,
 } from "@expo-google-fonts/comfortaa";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { loginUser } from "../src/api/auth";
@@ -40,6 +24,7 @@ export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const [fontsLoaded] = useFonts({
     Comfortaa_400Regular,
@@ -47,29 +32,63 @@ export default function LoginScreen() {
   });
   if (!fontsLoaded) return null;
 
+  const extractRole = (data: any): string | null => {
+    return (
+      data?.role ??
+      data?.user?.role ??
+      data?.user?.rol ??
+      data?.user?.tipo ??
+      data?.user?.roles?.[0]?.name ??
+      data?.user?.roles?.[0]?.role ??
+      null
+    );
+  };
+
   const handleLogin = async () => {
     if (!email || !password) {
       Alert.alert("Campos requeridos", "Ingresa correo y contraseña.");
       return;
     }
 
+    setLoading(true);
     try {
-      const data = await loginUser(email, password);
+      const data = await loginUser(email.trim().toLowerCase(), password);
       console.log("✅ Login success:", data);
 
+      const token = data?.access_token ?? data?.token ?? null;
+      if (token) {
+        await AsyncStorage.setItem("foodloop_token", token);
+      }
+
       const userPayload = {
-        id: data?.user?.id_usuario ?? data?.user?.id ?? null,
-        nombre: data?.user?.nombre ?? "",
-        email: data?.user?.email ?? email,
+        id:
+          data?.user?.id_usuario ??
+          data?.user?.id ??
+          data?.id_usuario ??
+          data?.id ??
+          null,
+        nombre: data?.user?.nombre ?? data?.nombre ?? "",
+        email: data?.user?.email ?? data?.email ?? email,
         foto_perfil: data?.user?.foto_perfil ?? null,
-        token: data?.token ?? null,
+        role: extractRole(data), 
       };
       await AsyncStorage.setItem("user", JSON.stringify(userPayload));
 
-      router.push("/(tabs)/Perfil");
+      const role = userPayload.role?.toString().toLowerCase() ?? "consumidor";
+      if (role === "comercio" || role === "negocio") {
+        router.replace("/(tabs)/PerfilNegocio");
+      } else {
+        router.replace("/(tabs)/Perfil");
+      }
     } catch (error: any) {
       console.error("❌ Login failed:", error?.message || error);
-      Alert.alert("Login fallido", error?.message || "Credenciales incorrectas");
+      const msg =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Credenciales incorrectas";
+      Alert.alert("Login fallido", Array.isArray(msg) ? msg.join("\n") : msg);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -128,7 +147,8 @@ export default function LoginScreen() {
                   />
                 </View>
 
-                <View style={styles.inputContainer}>
+                {/* Password */}
+                <View className="inputContainer" style={styles.inputContainer}>
                   <Ionicons
                     name="lock-closed-outline"
                     size={20}
@@ -157,11 +177,14 @@ export default function LoginScreen() {
 
                 {/* Button */}
                 <TouchableOpacity
-                  style={styles.loginBtn}
+                  style={[styles.loginBtn, loading && { opacity: 0.7 }]}
                   activeOpacity={0.9}
                   onPress={handleLogin}
+                  disabled={loading}
                 >
-                  <Text style={styles.loginText}>Iniciar Sesión</Text>
+                  <Text style={styles.loginText}>
+                    {loading ? "Ingresando..." : "Iniciar Sesión"}
+                  </Text>
                 </TouchableOpacity>
 
                 <Text style={styles.registerText}>
