@@ -1,28 +1,9 @@
-// app/RegNegocio.tsx
 import React, { useState } from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  Dimensions,
-  SafeAreaView,
-  ScrollView,
-  KeyboardAvoidingView,
-  Platform,
-  Modal,
-  Pressable,
-  Alert, 
-} from "react-native";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Dimensions, SafeAreaView, ScrollView, KeyboardAvoidingView, Platform, Modal, Pressable, Alert,} from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import {
-  useFonts,
-  Comfortaa_400Regular,
-  Comfortaa_700Bold,
-} from "@expo-google-fonts/comfortaa";
+import { useFonts, Comfortaa_400Regular, Comfortaa_700Bold,} from "@expo-google-fonts/comfortaa";
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { registerNegocio } from "../src/api/auth";
@@ -42,32 +23,29 @@ const CATEGORIES = [
   "Restaurante",
   "Cafetería",
   "Supermercado",
-  "Frutería",
-  "Heladería",
-  "Pastelería",
   "Comida Rápida",
 ];
 
 export default function RegNegocio() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-
   const [name, setName] = useState("");
-  const [email, setEmail] = useState(""); 
+  const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
   const [category, setCategory] = useState<string>("");
   const [pass, setPass] = useState("");
   const [confirm, setConfirm] = useState("");
-
   const [catOpen, setCatOpen] = useState(false);
-
+  const [successVisible, setSuccessVisible] = useState(false);
+  const [showPass, setShowPass] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const [fontsLoaded] = useFonts({ Comfortaa_400Regular, Comfortaa_700Bold });
   if (!fontsLoaded) return null;
 
   const canSubmit =
     !!name.trim() &&
-    !!email.trim() && 
+    !!email.trim() &&
     !!phone.trim() &&
     !!address.trim() &&
     !!category.trim() &&
@@ -92,7 +70,12 @@ export default function RegNegocio() {
         await AsyncStorage.setItem("foodloop_token", resp.access_token);
       }
 
-      router.replace("/");
+      setSuccessVisible(true);
+
+      setTimeout(() => {
+        setSuccessVisible(false);
+        router.replace("/");
+      }, 2000);
     } catch (e: any) {
       Alert.alert(
         "Error",
@@ -126,26 +109,23 @@ export default function RegNegocio() {
                 Registra tu{"\n"}negocio
               </Text>
 
+              {/* Nombre */}
               <Text style={styles.label}>NOMBRE</Text>
               <View style={styles.inputOutline}>
                 <TextInput
                   value={name}
                   onChangeText={setName}
                   style={styles.input}
-                  placeholder=""
-                  placeholderTextColor="#9A9A9A"
-                  autoCapitalize="words"
                 />
               </View>
 
+              {/* Email */}
               <Text style={styles.label}>EMAIL</Text>
               <View style={styles.inputOutline}>
                 <TextInput
                   value={email}
                   onChangeText={setEmail}
                   style={styles.input}
-                  placeholder=""
-                  placeholderTextColor="#9A9A9A"
                   autoCapitalize="none"
                   keyboardType="email-address"
                 />
@@ -158,8 +138,6 @@ export default function RegNegocio() {
                   value={phone}
                   onChangeText={setPhone}
                   style={styles.input}
-                  placeholder=""
-                  placeholderTextColor="#9A9A9A"
                   keyboardType="phone-pad"
                 />
               </View>
@@ -171,12 +149,10 @@ export default function RegNegocio() {
                   value={address}
                   onChangeText={setAddress}
                   style={styles.input}
-                  placeholder=""
-                  placeholderTextColor="#9A9A9A"
                 />
               </View>
 
-              {/* Categoría (dropdown) */}
+              {/* Categoría */}
               <Text style={styles.label}>CATEGORÍA</Text>
               <TouchableOpacity
                 activeOpacity={0.9}
@@ -194,30 +170,44 @@ export default function RegNegocio() {
                 <Ionicons name="chevron-down" size={18} color="#6E6E6E" />
               </TouchableOpacity>
 
-              {/* Contraseña */}
               <Text style={styles.label}>CONTRASEÑA</Text>
               <View style={styles.inputOutline}>
                 <TextInput
                   value={pass}
                   onChangeText={setPass}
-                  style={styles.input}
-                  placeholder=""
-                  placeholderTextColor="#9A9A9A"
-                  secureTextEntry
+                  style={[styles.input, { flex: 1 }]}
+                  secureTextEntry={!showPass} 
                 />
+                <TouchableOpacity
+                  onPress={() => setShowPass(!showPass)}
+                  style={styles.eyeBtn}
+                >
+                  <Ionicons
+                    name={showPass ? "eye" : "eye-off"} 
+                    size={22}
+                    color="#777"
+                  />
+                </TouchableOpacity>
               </View>
 
-              {/* Confirmar Contraseña */}
               <Text style={styles.label}>CONFIRMAR CONTRASEÑA</Text>
               <View style={styles.inputOutline}>
                 <TextInput
                   value={confirm}
                   onChangeText={setConfirm}
-                  style={styles.input}
-                  placeholder=""
-                  placeholderTextColor="#9A9A9A"
-                  secureTextEntry
+                  style={[styles.input, { flex: 1 }]}
+                  secureTextEntry={!showConfirm} 
                 />
+                <TouchableOpacity
+                  onPress={() => setShowConfirm(!showConfirm)}
+                  style={styles.eyeBtn}
+                >
+                  <Ionicons
+                    name={showConfirm ? "eye" : "eye-off"} 
+                    size={22}
+                    color="#777"
+                  />
+                </TouchableOpacity>
               </View>
 
               {/* CTA */}
@@ -233,10 +223,7 @@ export default function RegNegocio() {
               {/* Link a Login */}
               <Text style={styles.helper}>
                 Ya tienes cuenta?{" "}
-                <Text
-                  style={styles.link}
-                  onPress={() => router.push("/login")}
-                >
+                <Text style={styles.link} onPress={() => router.push("/login")}>
                   Inicia Sesión
                 </Text>
               </Text>
@@ -285,16 +272,30 @@ export default function RegNegocio() {
           </View>
         </Pressable>
       </Modal>
+
+      <Modal
+        visible={successVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setSuccessVisible(false)}
+      >
+        <View style={styles.successBackdrop}>
+          <View style={styles.successCard}>
+            <Ionicons name="checkmark-circle" size={64} color="#4BB543" />
+            <Text style={styles.successTitle}>
+              Cuenta registrada exitosamente!
+            </Text>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
 
 const RADIUS = 26;
-
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: LIGHT },
   container: { flex: 1, backgroundColor: LIGHT, paddingHorizontal: 16 },
-
   back: {
     alignSelf: "flex-start",
     backgroundColor: RED,
@@ -316,7 +317,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: "Comfortaa_700Bold",
   },
-
   grayPanel: {
     backgroundColor: PANEL_GRAY,
     width: width - 24,
@@ -326,7 +326,6 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 26,
     padding: 20,
   },
-
   title: {
     fontFamily: "Comfortaa_700Bold",
     fontSize: 31,
@@ -335,7 +334,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginBottom: 14,
   },
-
   label: {
     marginTop: 10,
     marginBottom: 6,
@@ -345,7 +343,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontFamily: "Comfortaa_700Bold",
   },
-
   inputOutline: {
     width: "100%",
     height: 48,
@@ -356,14 +353,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     justifyContent: "center",
     marginBottom: 8,
+    flexDirection: "row", 
+    alignItems: "center",
   },
   input: {
     color: "#333",
     fontSize: 17,
     fontFamily: "Comfortaa_400Regular",
+    textAlign: "left", 
+    flex: 1,           
+    paddingLeft: 2,
   },
-
-  // Select
+  eyeBtn: {
+    padding: 4,
+  },
   selectTrigger: {
     width: "100%",
     height: 48,
@@ -381,7 +384,6 @@ const styles = StyleSheet.create({
     fontFamily: "Comfortaa_400Regular",
     fontSize: 17,
   },
-
   primaryBtn: {
     marginTop: 12,
     width: "100%",
@@ -396,7 +398,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: "Comfortaa_700Bold",
   },
-
   helper: {
     textAlign: "center",
     marginTop: 12,
@@ -410,8 +411,6 @@ const styles = StyleSheet.create({
     textDecorationLine: "underline",
     fontFamily: "Comfortaa_700Bold",
   },
-
-  // Modal
   modalBackdrop: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.35)",
@@ -453,5 +452,30 @@ const styles = StyleSheet.create({
   modalCloseText: {
     fontFamily: "Comfortaa_700Bold",
     color: "#555",
+  },
+  successBackdrop: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.35)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  successCard: {
+    width: "80%",
+    backgroundColor: WHITE,
+    borderRadius: 20,
+    paddingVertical: 28,
+    paddingHorizontal: 20,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    elevation: 5,
+  },
+  successTitle: {
+    marginTop: 12,
+    fontFamily: "Comfortaa_700Bold",
+    fontSize: 18,
+    color: "#333",
+    textAlign: "center",
   },
 });

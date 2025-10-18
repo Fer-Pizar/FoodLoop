@@ -1,25 +1,9 @@
 import { useState } from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  Image,
-  Dimensions,
-  SafeAreaView,
-  ScrollView,
-  KeyboardAvoidingView,
-  Platform,
-  Alert,
-} from "react-native";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Dimensions, SafeAreaView, ScrollView, KeyboardAvoidingView, Platform, Alert,} from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import {
-  useFonts,
-  Comfortaa_400Regular,
-  Comfortaa_700Bold,
+import { useFonts, Comfortaa_400Regular, Comfortaa_700Bold,
 } from "@expo-google-fonts/comfortaa";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { loginUser } from "../src/api/auth";
@@ -49,7 +33,6 @@ export default function LoginScreen() {
   if (!fontsLoaded) return null;
 
   const extractRole = (data: any): string | null => {
-    // Soporta varios formatos posibles
     return (
       data?.role ??
       data?.user?.role ??
@@ -72,13 +55,11 @@ export default function LoginScreen() {
       const data = await loginUser(email.trim().toLowerCase(), password);
       console.log("✅ Login success:", data);
 
-      // 1) Token: acepta access_token o token
       const token = data?.access_token ?? data?.token ?? null;
       if (token) {
         await AsyncStorage.setItem("foodloop_token", token);
       }
 
-      // 2) Mini perfil (opcional pero útil)
       const userPayload = {
         id:
           data?.user?.id_usuario ??
@@ -89,18 +70,14 @@ export default function LoginScreen() {
         nombre: data?.user?.nombre ?? data?.nombre ?? "",
         email: data?.user?.email ?? data?.email ?? email,
         foto_perfil: data?.user?.foto_perfil ?? null,
-        role: extractRole(data), // guardamos el rol detectado
+        role: extractRole(data), 
       };
       await AsyncStorage.setItem("user", JSON.stringify(userPayload));
 
-      // 3) Redirección por rol (por ahora ambos a /(tabs)/index)
       const role = userPayload.role?.toString().toLowerCase() ?? "consumidor";
       if (role === "comercio" || role === "negocio") {
-        // Futuro: router.replace("/(tabs)/PerfilNegocio") cuando lo tengas listo
         router.replace("/(tabs)/PerfilNegocio");
       } else {
-        // consumidor
-        // Tu Perfil.tsx actual es para consumidor: /(tabs)/Perfil
         router.replace("/(tabs)/Perfil");
       }
     } catch (error: any) {

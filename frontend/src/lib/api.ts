@@ -31,11 +31,7 @@ export async function registerUser(
   password: string
 ) {
   try {
-    const res = await api.post("/auth/register", {
-      nombre,
-      email,
-      password,
-    });
+    const res = await api.post("/auth/register", { nombre, email, password });
     return res.data;
   } catch (err) {
     const error = err as AxiosError<any>;
@@ -52,14 +48,15 @@ export async function registerUser(
 export async function loginUser(email: string, password: string) {
   try {
     const res = await api.post("/auth/login", { email, password });
-    return res.data;
+    return res.data; 
   } catch (err) {
     const error = err as AxiosError<any>;
     const msg =
       error.response?.data?.message ||
       error.response?.data?.error ||
+      error.message ||
       "Error al iniciar sesión";
-    throw new Error(msg);
+    throw new Error(Array.isArray(msg) ? msg.join(", ") : msg);
   }
 }
 
@@ -85,4 +82,3 @@ export async function registerNegocio(payload: {
     throw new Error(msg);
   }
 }
-

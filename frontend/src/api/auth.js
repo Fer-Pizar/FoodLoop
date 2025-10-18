@@ -1,7 +1,5 @@
-// frontend/src/api/auth.js
 import { api } from "../lib/api";
 
-// 🧍‍♀️ Registro de usuario (consumidor)
 export const registerUser = async (nombre, email, password, confirmPassword) => {
   try {
     const payload = {
@@ -25,7 +23,6 @@ export const registerUser = async (nombre, email, password, confirmPassword) => 
   }
 };
 
-// 🔐 Login de usuario (consumidor o comercio)
 export const loginUser = async (email, password) => {
   try {
     const { data } = await api.post("/auth/login", {
@@ -43,7 +40,6 @@ export const loginUser = async (email, password) => {
   }
 };
 
-// 🏪 Registro de negocio
 export const registerNegocio = async (payload) => {
   try {
     const body = {
@@ -66,7 +62,6 @@ export const registerNegocio = async (payload) => {
   }
 };
 
-// ❤️ Health check del backend
 export const health = async () => {
   try {
     const { data } = await api.get("/health");

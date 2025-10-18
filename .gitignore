@@ -98,10 +98,3 @@ android/
 public/build/
 .DS_Store.DS_Store
 **/.DS_Store
-# Ignorar JSON de backend
-/backend/package.json
-/backend/package-lock.json
-
-# Ignorar JSON de frontend
-/frontend/package.json
-/frontend/package-lock.json
