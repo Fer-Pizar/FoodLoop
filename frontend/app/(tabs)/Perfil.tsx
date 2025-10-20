@@ -34,9 +34,7 @@ export default function ProfileScreen() {
         </TouchableOpacity>
 
         {/* Saludo */}
-        <Text style={styles.greeting}>
-          ¡Hola, {user?.nombre || "Usuario"}!
-        </Text>
+        <Text style={styles.greeting}>¡Hola, {user?.nombre || "Usuario"}!</Text>
 
         {/* Foto de perfil */}
         <TouchableOpacity onPress={() => setModalVisible(true)}>
@@ -54,7 +52,10 @@ export default function ProfileScreen() {
 
       {/* Información personal */}
       <View style={styles.section}>
-        <TouchableOpacity style={styles.option}>
+        <TouchableOpacity
+          style={styles.option}
+          onPress={() => router.push("../infoPersonal")}
+        >
           <Ionicons name="person-outline" size={20} color="#777" />
           <Text style={styles.optionText}>Información Personal</Text>
         </TouchableOpacity>
@@ -68,10 +69,13 @@ export default function ProfileScreen() {
           <Text style={styles.optionText}>Registrar mi Negocio</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.option} onPress={async () => {
-          await AsyncStorage.removeItem("user"); // cerrar sesión
-          router.push("/login"); // redirigir a login
-        }}>
+        <TouchableOpacity
+          style={styles.option}
+          onPress={async () => {
+            await AsyncStorage.removeItem("user"); // cerrar sesión
+            router.push("/login"); // redirigir a login
+          }}
+        >
           <Ionicons name="exit-outline" size={20} color="#777" />
           <Text style={styles.optionText}>Cerrar Sesión</Text>
         </TouchableOpacity>

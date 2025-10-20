@@ -53,7 +53,7 @@ export default function LoginScreen() {
     setLoading(true);
     try {
       const data = await loginUser(email.trim().toLowerCase(), password);
-      console.log("✅ Login success:", data);
+      console.log("Login success:", data);
 
       const token = data?.access_token ?? data?.token ?? null;
       if (token) {
@@ -81,7 +81,7 @@ export default function LoginScreen() {
         router.replace("/(tabs)/Perfil");
       }
     } catch (error: any) {
-      console.error("❌ Login failed:", error?.message || error);
+      console.error("Login failed:", error?.message || error);
       const msg =
         error?.response?.data?.message ||
         error?.message ||
