@@ -11,11 +11,17 @@ import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 
+// Usamos la variable de entorno del archivo .env
+const API_BASE = process.env.EXPO_PUBLIC_API_BASE;
+
 export default function MisDatosPersonales() {
   const router = useRouter();
   const [nombre, setNombre] = useState("");
   const [fechaNacimiento, setFechaNacimiento] = useState("");
+  const [userId, setUserId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
+  // Cargar los datos guardados localmente
   useEffect(() => {
     const cargarDatos = async () => {
       try {
@@ -23,7 +29,12 @@ export default function MisDatosPersonales() {
         if (json) {
           const user = JSON.parse(json);
           setNombre(user.nombre || "");
-          setFechaNacimiento(user.fecha_nacimiento || "");
+          setFechaNacimiento(
+            user.fechaNacimiento
+              ? new Date(user.fechaNacimiento).toISOString().split("T")[0]
+              : ""
+          );
+          setUserId(user.idUsuario?.toString() || null);
         }
       } catch (error) {
         console.error("Error al cargar datos:", error);
@@ -32,17 +43,47 @@ export default function MisDatosPersonales() {
     cargarDatos();
   }, []);
 
+  // 🔹 Guardar cambios en el backend y actualizar AsyncStorage
   const guardarDatos = async () => {
+    if (!userId) {
+      Alert.alert("Error", "No se encontró el ID del usuario.");
+      return;
+    }
+
+    if (!API_BASE) {
+      Alert.alert("Error", "No se configuró la URL base de la API.");
+      return;
+    }
+
+    setLoading(true);
     try {
-      const json = await AsyncStorage.getItem("user");
-      const user = json ? JSON.parse(json) : {};
-      const actualizado = { ...user, nombre, fecha_nacimiento: fechaNacimiento };
+      console.log("Enviando a backend:", { nombre, fechaNacimiento }); // 👈 Agrega esto
+    const response = await fetch(`${API_BASE}/users/${userId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ nombre, fechaNacimiento }),
+         });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Respuesta del servidor:", errorText);
+        throw new Error("Error al actualizar los datos");
+      }
+
+      const actualizado = await response.json();
 
       await AsyncStorage.setItem("user", JSON.stringify(actualizado));
-      Alert.alert("Datos guardados", "Tu información personal ha sido actualizada.");
+
+      Alert.alert("✅ Éxito", "Tu información ha sido actualizada correctamente.");
       router.back();
     } catch (error) {
       console.error("Error al guardar datos:", error);
+      Alert.alert(
+        "Error",
+        "No se pudo actualizar la información. Verifica tu conexión o inténtalo más tarde."
+      );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -53,7 +94,7 @@ export default function MisDatosPersonales() {
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={22} color="#fff" />
         </TouchableOpacity>
-        <Text style={styles.title}>Mis datos Personales</Text>
+        <Text style={styles.title}>Mis Datos Personales</Text>
       </View>
 
       {/* Campos editables */}
@@ -69,15 +110,21 @@ export default function MisDatosPersonales() {
         <Text style={styles.label}>FECHA DE NACIMIENTO</Text>
         <TextInput
           style={styles.input}
-          placeholder="DD/MM/AAAA"
+          placeholder="AAAA-MM-DD"
           value={fechaNacimiento}
           onChangeText={setFechaNacimiento}
         />
       </View>
 
       {/* Botón guardar */}
-      <TouchableOpacity style={styles.saveButton} onPress={guardarDatos}>
-        <Text style={styles.saveButtonText}>Guardar Datos</Text>
+      <TouchableOpacity
+        style={[styles.saveButton, loading && { opacity: 0.7 }]}
+        onPress={guardarDatos}
+        disabled={loading}
+      >
+        <Text style={styles.saveButtonText}>
+          {loading ? "Guardando..." : "Guardar Datos"}
+        </Text>
       </TouchableOpacity>
     </View>
   );
@@ -121,7 +168,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   saveButton: {
-    backgroundColor: "#ef6605",
+    backgroundColor: "#ef0505",
     borderRadius: 10,
     paddingVertical: 14,
     alignItems: "center",
