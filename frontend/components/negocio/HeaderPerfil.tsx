@@ -1,6 +1,6 @@
 import { View, Image, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import T from "../common/T";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import TBold from "../common/TBold";
 
 const RED = "#d11212ff";
@@ -19,11 +19,14 @@ export function HeaderPerfil({
   onBack?: () => void;
   onAvatarPress?: () => void;
 }) {
+  const { top } = useSafeAreaInsets(); // 👈 obtiene el espacio superior
+  const hasAvatar = !!(avatarUrl && avatarUrl.trim().length);
+
   return (
     <View
       style={{
         backgroundColor: "#fff",
-        paddingTop: 8,
+        paddingTop: top + 8, // 👈 respeta notch + margen extra
         paddingBottom: 12,
         borderBottomWidth: 1,
         borderColor: "#eee",
@@ -38,7 +41,6 @@ export function HeaderPerfil({
           gap: 12,
         }}
       >
-        {/* Botón atrás: redondo y rojo */}
         {onBack ? (
           <TouchableOpacity
             onPress={onBack}
@@ -51,36 +53,43 @@ export function HeaderPerfil({
               alignItems: "center",
               justifyContent: "center",
             }}
-            hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
           >
             <Ionicons name="chevron-back" size={20} color="#fff" />
           </TouchableOpacity>
         ) : (
-          // Espaciador para mantener el título centrado si no hay back
           <View style={{ width: BTN_SIZE, height: BTN_SIZE }} />
         )}
 
-        {/* Saludo con cierre "!" y Comfortaa en bold */}
         <View style={{ flex: 1, alignItems: "center" }}>
-          <TBold
-            numberOfLines={1}
-            style={{ fontSize: 18, textAlign: "center" }}
-          >
+          <TBold numberOfLines={1} style={{ fontSize: 18, textAlign: "center" }}>
             {`${saludo}, ${nombre}!`}
           </TBold>
         </View>
 
-        {/* Avatar / icono tienda (mismo ancho que el botón back para centrar título) */}
         <TouchableOpacity
           onPress={onAvatarPress}
           activeOpacity={0.8}
-          style={{ width: BTN_SIZE, height: BTN_SIZE, alignItems: "center", justifyContent: "center" }}
-          hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
+          style={{
+            width: BTN_SIZE,
+            height: BTN_SIZE,
+            alignItems: "center",
+            justifyContent: "center",
+          }}
         >
-          {avatarUrl ? (
+          {hasAvatar ? (
             <Image
-              source={{ uri: avatarUrl }}
-              style={{ width: BTN_SIZE, height: BTN_SIZE, borderRadius: BTN_SIZE / 2 }}
+              key={avatarUrl || "avatar"}
+              source={{ uri: avatarUrl! }}
+              style={{
+                width: BTN_SIZE,
+                height: BTN_SIZE,
+                borderRadius: BTN_SIZE / 2,
+                backgroundColor: "#eee",
+              }}
+              resizeMode="cover"
+              onError={(e) =>
+                console.warn("avatar onError:", e.nativeEvent?.error, "url:", avatarUrl)
+              }
             />
           ) : (
             <View
@@ -103,5 +112,3 @@ export function HeaderPerfil({
     </View>
   );
 }
-
-
