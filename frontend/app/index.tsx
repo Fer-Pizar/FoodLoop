@@ -1,13 +1,24 @@
+// app/index.tsx
 import React, { useEffect, useState } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, Image, Dimensions, SafeAreaView, Platform, StatusBar, ActivityIndicator,} from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  Image,
+  Dimensions,
+  Platform,
+  StatusBar,
+  ActivityIndicator,
+} from "react-native";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { router } from "expo-router";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   useFonts,
   Comfortaa_400Regular,
   Comfortaa_700Bold,
 } from "@expo-google-fonts/comfortaa";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { verifySession, logout } from "../src/auth/session";
 
 const { width } = Dimensions.get("window");
 const RED = "#d11212ff";
@@ -21,24 +32,26 @@ export default function IndexScreen() {
     Comfortaa_700Bold,
   });
 
-  // Modo “decido si redirijo o muestro bienvenida”
+  // Estado: chequeo de sesión al abrir la app
   const [checkingSession, setCheckingSession] = useState(true);
 
   useEffect(() => {
     (async () => {
       try {
-        const raw = await AsyncStorage.getItem("user");
-        const user = raw ? JSON.parse(raw) : null;
-        const role = (user?.role ?? user?.rol ?? "").toString().toLowerCase();
+        // ✅ Verifica token contra backend. Si no sirve, NO redirige a tabs.
+        const ok = await verifySession();
 
-        if (role === "comercio" || role === "negocio") {
+        // Redirección solo si el token es válido
+        if (ok?.role === "comercio") {
           router.replace("/(tabs-negocio)/Negocio/PerfilNegocioHome");
           return;
         }
-        if (role) {
+        if (ok?.role === "consumidor") {
           router.replace("/(tabs-consumidor)/Consumidor/Perfil");
           return;
         }
+
+        await logout();
       } finally {
         setCheckingSession(false);
       }
@@ -57,7 +70,7 @@ export default function IndexScreen() {
     );
   }
 
-  // Pantalla de bienvenida (sin sesión)
+  // Pantalla de bienvenida (sin sesión válida)
   return (
     <SafeAreaView style={[styles.safe, { paddingTop: insets.top }]}>
       <StatusBar barStyle="dark-content" backgroundColor={LIGHT} />
@@ -141,7 +154,7 @@ const styles = StyleSheet.create({
     height: 54,
     borderRadius: 27,
     justifyContent: "center",
-    alignItems: "center", 
+    alignItems: "center",
   },
   whiteButtonText: {
     fontFamily: "Comfortaa_700Bold",

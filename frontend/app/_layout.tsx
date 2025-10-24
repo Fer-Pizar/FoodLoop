@@ -28,7 +28,7 @@ export default function RootLayout() {
       { fontFamily: "Comfortaa_400Regular" },
     ];
 
-    T.__comfortaaApplied = true; // bandera para evitar re-aplicarlo en fast refresh
+    T.__comfortaaApplied = true; 
   }
 
   return (
