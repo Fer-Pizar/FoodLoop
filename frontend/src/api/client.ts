@@ -70,6 +70,23 @@ export const api = {
       headers: { "Content-Type": "application/json", ...authHeaders() },
       body: JSON.stringify(body),
     }).then(handle<T>),
+
+  // ⬇️⬇️⬇️  AÑADIDOS SOLO PARA FOTOS  ⬇️⬇️⬇️
+
+  // POST multipart/form-data (subir imagen/archivo)
+  upload: <T>(path: string, form: FormData) =>
+    fetch(`${BASE}${path}`, {
+      method: "POST",
+      headers: { ...authHeaders() }, // NO seteamos Content-Type; fetch pone el boundary
+      body: form,
+    }).then(handle<T>),
+
+  // DELETE (eliminar recurso, p.ej. foto)
+  del: <T>(path: string) =>
+    fetch(`${BASE}${path}`, {
+      method: "DELETE",
+      headers: authHeaders(),
+    }).then(handle<T>),
 };
 
 export const setToken = setAuthToken;
@@ -86,3 +103,36 @@ export async function logout() {
     AUTH_TOKEN = null;
   }
 }
+
+// ⬇️⬇️⬇️  HELPERS específicos para avatar del negocio  ⬇️⬇️⬇️
+
+// Sube avatar del comercio desde un URI local (cámara/galería)
+export async function uploadMyAvatarFromUri(uri: string) {
+  const filename = uri.split("/").pop() ?? "avatar.jpg";
+  const ext = filename.split(".").pop()?.toLowerCase();
+  const mime =
+    ext === "png" ? "image/png" :
+    ext === "webp" ? "image/webp" :
+    "image/jpeg";
+  const form = new FormData();
+  form.append("file", { uri, name: filename, type: mime } as any);
+  return api.upload<{ ok?: boolean; url?: string; usuario?: any; comercio?: any }>("/negocio/me/avatar", form);
+}
+
+// Elimina avatar del comercio
+export async function deleteMyAvatar() {
+  return api.del<{ ok?: boolean }>("/negocio/me/avatar");
+}
+
+export function toAbsoluteUrl(p?: string | null): string | undefined {
+  if (!p) return undefined;
+  const base = (process.env.EXPO_PUBLIC_API_BASE ?? "").replace(/\/api\/?$/, "");
+  let url = p.startsWith("http") ? p : `${base}${p.startsWith("/") ? "" : "/"}${p}`;
+  // 👇 ngrok exige el query correcto con GUIONES
+  if (/ngrok/.test(url) && !/[?&]ngrok-skip-browser-warning=/.test(url)) {
+    url += (url.includes("?") ? "&" : "?") + "ngrok-skip-browser-warning=true";
+  }
+  return url;
+}
+
+

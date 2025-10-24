@@ -1,18 +1,20 @@
 import { View, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
-import T from "../common/T";
-import TBold from "../common/TBold"; 
-
+import { useSafeAreaInsets } from "react-native-safe-area-context"; 
+import TBold from "../common/TBold";
 
 const RED = "#d11212ff";
 
 export default function HeaderSimple({ title }: { title: string }) {
+  const { top } = useSafeAreaInsets(); 
+
   return (
     <View
       style={{
         flexDirection: "row",
         alignItems: "center",
+        paddingTop: top + 8, 
         paddingVertical: 14,
         paddingHorizontal: 12,
         backgroundColor: "#fff",
@@ -43,15 +45,9 @@ export default function HeaderSimple({ title }: { title: string }) {
       </TouchableOpacity>
 
       {/* Título */}
-      <TBold
-        style={{
-          fontSize: 18,
-          color: "#000",
-        }}
-      >
-        {title}
-      </TBold>
+      <TBold style={{ fontSize: 18, color: "#000" }}>{title}</TBold>
     </View>
   );
 }
+
 
