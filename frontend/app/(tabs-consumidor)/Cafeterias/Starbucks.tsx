@@ -3,10 +3,11 @@ import { SafeAreaView, View, Text, TextInput, StyleSheet, ScrollView, FlatList, 
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useFonts, Comfortaa_400Regular, Comfortaa_700Bold,} from "@expo-google-fonts/comfortaa";
-import SandwichImg     from "../../assets/Starbucks/Sandwich.jpg";
-import CarrotCakeImg   from "../../assets/Starbucks/Carrot cake.jpg";
-import CroissantImg    from "../../assets/Starbucks/Croissant.jpg";
-import CinnamonRollImg from "../../assets/Starbucks/Cinnamon roll.jpg";
+import SandwichImg     from "../../../assets/Starbucks/Sandwich.jpg";
+import CarrotCakeImg   from "../../../assets/Starbucks/Carrot cake.jpg";
+import CroissantImg    from "../../../assets/Starbucks/Croissant.jpg";
+import CinnamonRollImg from "../../../assets/Starbucks/Cinnamon roll.jpg";
+
 
 
 const DAILY_DESSERTS: Product[] = [

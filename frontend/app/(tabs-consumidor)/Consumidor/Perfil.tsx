@@ -1,8 +1,17 @@
 import { useState, useEffect } from "react";
-import {View,Text,TouchableOpacity,StyleSheet,Image,Dimensions,Modal,} from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  Image,
+  Dimensions,
+  Modal,
+} from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import ConsumidorFooter from "@/components/ConsumidorFooter"; 
 
 const { width } = Dimensions.get("window");
 
@@ -11,7 +20,6 @@ export default function ProfileScreen() {
   const [modalVisible, setModalVisible] = useState(false);
   const [user, setUser] = useState<{ nombre: string; foto_perfil?: string } | null>(null);
 
-  // Cargar usuario desde AsyncStorage al montar el componente
   useEffect(() => {
     const loadUser = async () => {
       try {
@@ -25,106 +33,116 @@ export default function ProfileScreen() {
   }, []);
 
   return (
-    <View style={styles.container}>
-      {/* HEADER */}
-      <View style={styles.header}>
-        {/* Botón de retroceso */}
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color="#fff" />
-        </TouchableOpacity>
+    <>
+      {/* 👇 Contenido principal del perfil */}
+      <View style={styles.container}>
+        {/* HEADER */}
+        <View style={styles.header}>
+          {/* Botón de retroceso */}
+          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+            <Ionicons name="arrow-back" size={24} color="#fff" />
+          </TouchableOpacity>
 
-        {/* Saludo */}
-        <Text style={styles.greeting}>¡Hola, {user?.nombre || "Usuario"}!</Text>
+          {/* Saludo */}
+          <Text style={styles.greeting}>¡Hola, {user?.nombre || "Usuario"}!</Text>
 
-        {/* Foto de perfil */}
-        <TouchableOpacity onPress={() => setModalVisible(true)}>
-          <Image
-            source={{
-              uri: user?.foto_perfil || "https://i.pravatar.cc/150?img=47",
-            }}
-            style={styles.avatar}
-          />
-        </TouchableOpacity>
-      </View>
-
-      {/* Línea separadora */}
-      <View style={styles.separator} />
-
-      {/* Información personal */}
-      <View style={styles.section}>
-        <TouchableOpacity
-          style={styles.option}
-          onPress={() => router.push("../infoPersonal")}
-        >
-          <Ionicons name="person-outline" size={20} color="#777" />
-          <Text style={styles.optionText}>Información Personal</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Configuración */}
-      <Text style={styles.subtitle}>Configuración</Text>
-      <View style={styles.section}>
-        <TouchableOpacity style={styles.option}>
-          <Ionicons name="business-outline" size={20} color="#777" />
-          <Text style={styles.optionText}>Registrar mi Negocio</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.option}
-          onPress={async () => {
-            await AsyncStorage.removeItem("user"); // cerrar sesión
-            router.push("/login"); // redirigir a login
-          }}
-        >
-          <Ionicons name="exit-outline" size={20} color="#777" />
-          <Text style={styles.optionText}>Cerrar Sesión</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Modal estilo Bottom Sheet */}
-      <Modal
-        visible={modalVisible}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setModalVisible(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.sheetTitle}>Editar Foto</Text>
-
-            <TouchableOpacity style={styles.sheetOption}>
-              <Ionicons name="camera-outline" size={20} color="#333" />
-              <Text style={styles.sheetOptionText}>Tomar una Foto</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.sheetOption}>
-              <Ionicons name="image-outline" size={20} color="#333" />
-              <Text style={styles.sheetOptionText}>Elegir de la galería</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.sheetOption}>
-              <Ionicons name="trash-outline" size={20} color="red" />
-              <Text style={[styles.sheetOptionText, { color: "red" }]}>
-                Eliminar Foto
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.closeBtn}
-              onPress={() => setModalVisible(false)}
-            >
-              <Ionicons name="close" size={20} color="#777" />
-              <Text style={styles.closeText}>Cerrar</Text>
-            </TouchableOpacity>
-          </View>
+          {/* Foto de perfil */}
+          <TouchableOpacity onPress={() => setModalVisible(true)}>
+            <Image
+              source={{
+                uri: user?.foto_perfil || "https://i.pravatar.cc/150?img=47",
+              }}
+              style={styles.avatar}
+            />
+          </TouchableOpacity>
         </View>
-      </Modal>
-    </View>
+
+        {/* Línea separadora */}
+        <View style={styles.separator} />
+
+        {/* Información personal */}
+        <View style={styles.section}>
+          <TouchableOpacity
+            style={styles.option}
+            onPress={() => router.push("../infoPersonal")}
+          >
+            <Ionicons name="person-outline" size={20} color="#777" />
+            <Text style={styles.optionText}>Información Personal</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Configuración */}
+        <Text style={styles.subtitle}>Configuración</Text>
+        <View style={styles.section}>
+          <TouchableOpacity style={styles.option}>
+            <Ionicons name="business-outline" size={20} color="#777" />
+            <Text style={styles.optionText}>Registrar mi Negocio</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.option}
+            onPress={async () => {
+              await AsyncStorage.removeItem("user");
+              router.push("/login"); 
+            }}
+          >
+            <Ionicons name="exit-outline" size={20} color="#777" />
+            <Text style={styles.optionText}>Cerrar Sesión</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Modal estilo Bottom Sheet */}
+        <Modal
+          visible={modalVisible}
+          transparent
+          animationType="slide"
+          onRequestClose={() => setModalVisible(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <Text style={styles.sheetTitle}>Editar Foto</Text>
+
+              <TouchableOpacity style={styles.sheetOption}>
+                <Ionicons name="camera-outline" size={20} color="#333" />
+                <Text style={styles.sheetOptionText}>Tomar una Foto</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.sheetOption}>
+                <Ionicons name="image-outline" size={20} color="#333" />
+                <Text style={styles.sheetOptionText}>Elegir de la galería</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.sheetOption}>
+                <Ionicons name="trash-outline" size={20} color="red" />
+                <Text style={[styles.sheetOptionText, { color: "red" }]}>
+                  Eliminar Foto
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.closeBtn}
+                onPress={() => setModalVisible(false)}
+              >
+                <Ionicons name="close" size={20} color="#777" />
+                <Text style={styles.closeText}>Cerrar</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+      </View>
+
+      <ConsumidorFooter />
+    </>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff", paddingHorizontal: 20 },
+  container: {
+    flex: 1,
+    backgroundColor: "#fff",
+    paddingHorizontal: 20,
+    paddingBottom: 90, 
+  },
   header: {
     flexDirection: "row",
     alignItems: "center",
