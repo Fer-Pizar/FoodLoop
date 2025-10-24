@@ -36,4 +36,27 @@ export class UsersService {
       select: { idUsuario: true, nombre: true, email: true, rol: true },
     });
   }
+
+  async updateUser(
+  id: number | string | bigint,
+  data: { nombre?: string; fechaNacimiento?: string }
+) {
+  const idBigInt = typeof id === 'bigint' ? id : BigInt(id);
+
+  return this.prisma.usuario.update({
+    where: { idUsuario: idBigInt },
+    data: {
+      ...(data.nombre && { nombre: data.nombre }),
+      ...(data.fechaNacimiento && { fechaNacimiento: new Date(data.fechaNacimiento) }),
+      updatedAt: new Date(),
+    },
+    select: {
+      idUsuario: true,
+      nombre: true,
+      email: true,
+      rol: true,
+      fechaNacimiento: true,
+    },
+  });
+}
 }
