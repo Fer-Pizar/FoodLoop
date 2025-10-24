@@ -1,16 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  Image,
-  Dimensions,
-  SafeAreaView,
-  Platform,
-  StatusBar,
-  ActivityIndicator,
-} from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, Image, Dimensions, SafeAreaView, Platform, StatusBar, ActivityIndicator,} from "react-native";
 import { router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
@@ -43,11 +32,11 @@ export default function IndexScreen() {
         const role = (user?.role ?? user?.rol ?? "").toString().toLowerCase();
 
         if (role === "comercio" || role === "negocio") {
-          router.replace("/(tabs-negocio)/negocio/PerfilNegocioHome");
+          router.replace("/(tabs-negocio)/Negocio/PerfilNegocioHome");
           return;
         }
         if (role) {
-          router.replace("/(tabs-consumidor)/consumidor/Perfil");
+          router.replace("/(tabs-consumidor)/Consumidor/Perfil");
           return;
         }
       } finally {
@@ -152,7 +141,7 @@ const styles = StyleSheet.create({
     height: 54,
     borderRadius: 27,
     justifyContent: "center",
-    alignItems: "center",
+    alignItems: "center", 
   },
   whiteButtonText: {
     fontFamily: "Comfortaa_700Bold",

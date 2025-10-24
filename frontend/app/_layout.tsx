@@ -18,7 +18,6 @@ export default function RootLayout() {
     );
   }
 
-  // Aplica Comfortaa global a <Text> una sola vez (soporta style objeto/array)
   const T: any = Text;
   if (!T.__comfortaaApplied) {
     T.defaultProps = T.defaultProps || {};
