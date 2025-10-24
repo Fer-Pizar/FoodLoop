@@ -88,7 +88,7 @@ export default function Starbucks() {
               </TouchableOpacity>
             </View>
 
-            <Text style={styles.heroTitle}>Coffee Time!</Text>
+            <Text style={styles.heroTitle}>Starbucks</Text>
 
             {/* SEARCH BAR */}
             <View style={styles.searchBox}>

@@ -13,12 +13,13 @@ model categorias {
   nombre       String      @db.VarChar(50)
   descripcion  String?
   updated_at   DateTime    @default(now()) @db.Timestamptz(6)
+  comercios    Comercio[]
   productos    productos[]
 }
 
 model Comercio {
   idComercio    BigInt      @id @default(autoincrement()) @map("id_comercio")
-  idUsuario     BigInt      @unique @map("id_usuario") 
+  idUsuario     BigInt      @unique(map: "ux_comercios_id_usuario") @map("id_usuario")
   nombreNegocio String      @map("nombre_negocio") @db.VarChar(100)
   telefono      String?     @db.VarChar(20)
   direccion     String?     @db.VarChar(200)
@@ -28,7 +29,9 @@ model Comercio {
   fechaRegistro DateTime    @default(now()) @map("fecha_registro") @db.Timestamptz(6)
   estado        Boolean     @default(true)
   updatedAt     DateTime    @default(now()) @map("updated_at") @db.Timestamptz(6)
+  id_categoria  BigInt
   usuario       Usuario     @relation(fields: [idUsuario], references: [idUsuario], onDelete: Cascade, onUpdate: NoAction)
+  categorias    categorias  @relation(fields: [id_categoria], references: [id_categoria], onDelete: NoAction, onUpdate: NoAction, map: "fk_comercio_categoria")
   productos     productos[]
 
   @@index([idUsuario], map: "idx_comercios_id_usuario")
@@ -63,7 +66,7 @@ model productos {
   fecha_publicacion   DateTime   @default(now()) @db.Timestamptz(6)
   estado              Boolean    @default(true)
   updated_at          DateTime   @default(now()) @db.Timestamptz(6)
-  categorias          categorias @relation(fields: [id_categoria], references: [id_categoria], onDelete: NoAction, onUpdate: NoAction)
+  categorias          categorias @relation(fields: [id_categoria], references: [id_categoria], onDelete: NoAction, onUpdate: NoAction, map: "fk_producto_categoria")
   comercio            Comercio   @relation(fields: [id_comercio], references: [idComercio], onDelete: Cascade, onUpdate: NoAction)
   reservas            reservas[]
 
@@ -103,7 +106,7 @@ model Usuario {
   fechaRegistro   DateTime         @default(now()) @map("fecha_registro") @db.Timestamptz(6)
   estado          Boolean          @default(true)
   updatedAt       DateTime         @default(now()) @map("updated_at") @db.Timestamptz(6)
-  rol             String           @default("consumidor") // 'consumidor' | 'comercio' | 'admin'
+  rol             String?          @default("consumidor") @db.VarChar(20)
   comercio        Comercio?
   notificaciones  notificaciones[]
   reservas        reservas[]
