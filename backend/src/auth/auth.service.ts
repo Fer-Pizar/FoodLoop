@@ -1,6 +1,6 @@
-import {Injectable, BadRequestException, ConflictException, NotFoundException, UnauthorizedException,} from '@nestjs/common';
+import { Injectable, BadRequestException, ConflictException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-  import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { Prisma } from '@prisma/client';
 import { CrearNegocioDto } from './dto/crear-negocio.dto';
@@ -21,9 +21,7 @@ export class AuthService {
 
   async register({ nombre, email, password, confirmPassword }: RegisterInput) {
     if (!nombre || !email || !password || !confirmPassword) {
-      throw new BadRequestException(
-        'nombre, email, password y confirmPassword son obligatorios',
-      );
+      throw new BadRequestException('nombre, email, password y confirmPassword son obligatorios');
     }
     if (password !== confirmPassword) {
       throw new BadRequestException('Las contraseñas no coinciden');
@@ -88,7 +86,7 @@ export class AuthService {
       ok: true,
       mensaje: 'Inicio de sesión exitoso',
       access_token,
-      role: user.rol, 
+      role: user.rol,
       user: safeUser,
     };
   }
@@ -118,21 +116,37 @@ export class AuthService {
         },
       });
 
+      let id_categoria: number | undefined = dto.idCategoria;
+
+      if (!id_categoria && dto.categoria) {
+        const cat = await tx.categorias.findFirst({
+          where: { nombre: dto.categoria },
+          select: { id_categoria: true },
+        });
+        if (cat) id_categoria = Number(cat.id_categoria);
+      }
+
+      if (!id_categoria) {
+        const fallback = await tx.categorias.findFirst({
+          where: { nombre: 'Cafetería' },
+          select: { id_categoria: true },
+        });
+        id_categoria = fallback ? Number(fallback.id_categoria) : undefined;
+      }
+
+      if (!id_categoria) {
+        throw new BadRequestException('No se pudo asignar una categoría válida');
+      }
+
       const comercio = await tx.comercio.create({
         data: {
           idUsuario: user.idUsuario,
           nombreNegocio: nombre,
           telefono: dto.telefono ?? null,
           direccion: dto.direccion ?? null,
-          categoria: dto.categoria ?? null,
-          latitud:
-            dto.latitud === null || dto.latitud === undefined
-              ? null
-              : new Prisma.Decimal(dto.latitud as any),
-          longitud:
-            dto.longitud === null || dto.longitud === undefined
-              ? null
-              : new Prisma.Decimal(dto.longitud as any),
+          id_categoria, 
+          latitud: dto.latitud ? new Prisma.Decimal(dto.latitud as any) : null,
+          longitud: dto.longitud ? new Prisma.Decimal(dto.longitud as any) : null,
         },
       });
 
@@ -150,7 +164,7 @@ export class AuthService {
       comercio: {
         id: String(comercio.idComercio),
         nombre: comercio.nombreNegocio,
-        categoria: comercio.categoria,
+        id_categoria: comercio.id_categoria,
       },
     };
   }

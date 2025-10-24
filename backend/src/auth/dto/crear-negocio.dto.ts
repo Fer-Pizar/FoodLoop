@@ -1,12 +1,37 @@
-import { IsEmail, IsNotEmpty, MinLength, IsOptional } from 'class-validator';
+import { IsEmail, IsNotEmpty, MinLength, IsOptional, IsInt, IsString,IsNumberString,} from 'class-validator';
 
 export class CrearNegocioDto {
-  @IsNotEmpty() nombre!: string;
-  @IsEmail() email!: string;
-  @MinLength(6) password!: string;
-  @IsOptional() telefono?: string;
-  @IsOptional() direccion?: string;
-  @IsOptional() categoria?: string;
-  @IsOptional() latitud?: string;  
-  @IsOptional() longitud?: string;  
+  @IsNotEmpty()
+  @IsString()
+  nombre!: string;
+
+  @IsEmail()
+  email!: string;
+
+  @MinLength(6)
+  password!: string;
+
+  @IsOptional()
+  @IsString()
+  telefono?: string;
+
+  @IsOptional()
+  @IsString()
+  direccion?: string;
+
+  @IsOptional()
+  @IsInt()
+  idCategoria?: number;
+
+  @IsOptional()
+  @IsString()
+  categoria?: string;
+
+  @IsOptional()
+  @IsNumberString()
+  latitud?: string;
+
+  @IsOptional()
+  @IsNumberString()
+  longitud?: string;
 }

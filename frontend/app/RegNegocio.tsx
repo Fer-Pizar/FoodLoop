@@ -19,11 +19,10 @@ const BORDER_RED = "#cc2424ff";
 const LINK_BLUE = "#2F80ED";
 
 const CATEGORIES = [
-  "Panadería",
+  "Pastelería",
   "Restaurante",
   "Cafetería",
   "Supermercado",
-  "Comida Rápida",
 ];
 
 export default function RegNegocio() {

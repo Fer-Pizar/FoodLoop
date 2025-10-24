@@ -7,6 +7,7 @@ import { useFonts, Comfortaa_400Regular, Comfortaa_700Bold,
 } from "@expo-google-fonts/comfortaa";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { loginUser } from "../src/api/auth";
+import { setAuthToken } from "../src/api/client";
 
 const { width } = Dimensions.get("window");
 
@@ -51,46 +52,41 @@ export default function LoginScreen() {
     }
 
     setLoading(true);
-    try {
-      const data = await loginUser(email.trim().toLowerCase(), password);
-      console.log("✅ Login success:", data);
+  try {
+    const data = await loginUser(email.trim().toLowerCase(), password);
+    console.log("Login success:", data);
 
-      const token = data?.access_token ?? data?.token ?? null;
-      if (token) {
-        await AsyncStorage.setItem("foodloop_token", token);
-      }
+    const token = data?.access_token ?? data?.token ?? null;
+    if (!token) throw new Error("No llegó access_token del backend");
 
-      const userPayload = {
-        id:
-          data?.user?.id_usuario ??
-          data?.user?.id ??
-          data?.id_usuario ??
-          data?.id ??
-          null,
-        nombre: data?.user?.nombre ?? data?.nombre ?? "",
-        email: data?.user?.email ?? data?.email ?? email,
-        foto_perfil: data?.user?.foto_perfil ?? null,
-        role: extractRole(data), 
-      };
-      await AsyncStorage.setItem("user", JSON.stringify(userPayload));
+    setAuthToken(token);                              
+    await AsyncStorage.setItem("foodloop_token", token); 
 
-      const role = userPayload.role?.toString().toLowerCase() ?? "consumidor";
-      if (role === "comercio" || role === "negocio") {
-        router.replace("/(tabs)/PerfilNegocio");
-      } else {
-        router.replace("/(tabs)/Perfil");
-      }
-    } catch (error: any) {
-      console.error("❌ Login failed:", error?.message || error);
-      const msg =
-        error?.response?.data?.message ||
-        error?.message ||
-        "Credenciales incorrectas";
-      Alert.alert("Login fallido", Array.isArray(msg) ? msg.join("\n") : msg);
-    } finally {
-      setLoading(false);
+    // (opcional) log para confirmar
+    console.log("🔑 Token seteado:", token.slice(0,16) + "...");
+
+    const userPayload = {
+      id: data?.user?.id_usuario ?? data?.id_usuario ?? data?.user?.id ?? data?.id ?? null,
+      nombre: data?.user?.nombre ?? data?.nombre ?? "",
+      email: data?.user?.email ?? data?.email ?? email,
+      foto_perfil: data?.user?.foto_perfil ?? null,
+      role: extractRole(data),
+    };
+    await AsyncStorage.setItem("user", JSON.stringify(userPayload));
+
+    const role = (userPayload.role ?? "consumidor").toString().toLowerCase();
+    if (role === "comercio" ) {
+      router.replace("/(tabs-negocio)/Negocio/PerfilNegocioHome");  
+    } else {
+      router.replace("/(tabs-consumidor)/Consumidor/Perfil");
     }
-  };
+  } catch (e:any) {
+    console.error("Login failed:", e?.message || e);
+    Alert.alert("Login fallido", e?.message ?? "Credenciales incorrectas");
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <SafeAreaView style={styles.safe}>
