@@ -1,25 +1,10 @@
 // File: FoodLoop/frontend/app/RegConsumidor.tsx
 import React, { useState } from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  Dimensions,
-  SafeAreaView,
-  ScrollView,
-  KeyboardAvoidingView,
-  Platform,
-} from "react-native";
+import {View,Text,TextInput,TouchableOpacity,StyleSheet,Dimensions,SafeAreaView,ScrollView,KeyboardAvoidingView,Platform,} from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import {
-  useFonts,
-  Comfortaa_400Regular,
-  Comfortaa_700Bold,
-} from "@expo-google-fonts/comfortaa";
+import {useFonts,Comfortaa_400Regular,Comfortaa_700Bold,} from "@expo-google-fonts/comfortaa";
 
 // <-- IMPORTANT: this is the auth helper that posts to /auth/register
 import { registerUser } from "../src/api/auth";

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -9,34 +9,71 @@ import {
   SafeAreaView,
   Platform,
   StatusBar,
+  ActivityIndicator,
 } from "react-native";
-import { useRouter, Href } from "expo-router";
+import { router } from "expo-router";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   useFonts,
   Comfortaa_400Regular,
   Comfortaa_700Bold,
 } from "@expo-google-fonts/comfortaa";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const { width, height } = Dimensions.get("window");
-const RED = "#D82A2A";
+const { width } = Dimensions.get("window");
+const RED = "#d11212ff";
 const LIGHT = "#F7F7F7";
 
 export default function IndexScreen() {
-  const router = useRouter();
   const insets = useSafeAreaInsets();
 
   const [fontsLoaded] = useFonts({
     Comfortaa_400Regular,
     Comfortaa_700Bold,
   });
-  if (!fontsLoaded) return null;
 
+  // Modo “decido si redirijo o muestro bienvenida”
+  const [checkingSession, setCheckingSession] = useState(true);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const raw = await AsyncStorage.getItem("user");
+        const user = raw ? JSON.parse(raw) : null;
+        const role = (user?.role ?? user?.rol ?? "").toString().toLowerCase();
+
+        if (role === "comercio" || role === "negocio") {
+          router.replace("/(tabs-negocio)/negocio/PerfilNegocioHome");
+          return;
+        }
+        if (role) {
+          router.replace("/(tabs-consumidor)/consumidor/Perfil");
+          return;
+        }
+      } finally {
+        setCheckingSession(false);
+      }
+    })();
+  }, []);
+
+  if (!fontsLoaded || checkingSession) {
+    return (
+      <SafeAreaView style={[styles.safe, { paddingTop: insets.top }]}>
+        <StatusBar barStyle="dark-content" backgroundColor={LIGHT} />
+        <View style={styles.loader}>
+          <ActivityIndicator size="large" color={RED} />
+          <Text style={[styles.subtitle, { marginTop: 8 }]}>Cargando…</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  // Pantalla de bienvenida (sin sesión)
   return (
     <SafeAreaView style={[styles.safe, { paddingTop: insets.top }]}>
       <StatusBar barStyle="dark-content" backgroundColor={LIGHT} />
 
-      {/* Top section with logo */}
+      {/* Logo */}
       <View style={styles.topSection}>
         <Image
           source={require("../assets/images/log.png")}
@@ -45,7 +82,7 @@ export default function IndexScreen() {
         />
       </View>
 
-      {/* Bottom red curved area */}
+      {/* Footer rojo curvo */}
       <View
         style={[
           styles.bottomSection,
@@ -55,7 +92,7 @@ export default function IndexScreen() {
         <TouchableOpacity
           style={styles.whiteButton}
           activeOpacity={0.9}
-          onPress={() => router.push("login" as Href)}
+          onPress={() => router.push("/login")}
         >
           <Text style={styles.whiteButtonText}>Iniciar Sesión</Text>
         </TouchableOpacity>
@@ -63,7 +100,7 @@ export default function IndexScreen() {
         <TouchableOpacity
           style={styles.redButton}
           activeOpacity={0.9}
-          onPress={() => router.push("Registro" as Href)}
+          onPress={() => router.push("/Registro")}
         >
           <Text style={styles.redButtonText}>Registrarse</Text>
         </TouchableOpacity>
@@ -76,6 +113,11 @@ const styles = StyleSheet.create({
   safe: {
     flex: 1,
     backgroundColor: LIGHT,
+  },
+  loader: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
   },
   topSection: {
     flex: 1,
@@ -90,10 +132,9 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontFamily: "Comfortaa_400Regular",
-    color: "#D82A2A",
+    color: RED,
     fontSize: 18,
-    letterSpacing: 2,
-    marginTop: 5,
+    letterSpacing: 0.5,
   },
   bottomSection: {
     width: "100%",
