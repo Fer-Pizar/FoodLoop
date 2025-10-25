@@ -2,6 +2,7 @@ import React, { useMemo } from "react";
 import { SafeAreaView, View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { useRouter, Href } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import ConsumidorFooter from "../../../components/ConsumidorFooter"; 
 
 const RED = "#D82A2A";
 const LIGHT = "#F7F7F7";
@@ -22,7 +23,7 @@ export default function CafeteriasList() {
 
   const handlePress = (slug: string) => {
     if (slug.toLowerCase() === "starbucks") {
-      router.push("/(tabs-consumidor)/Cafeterias/Starbucks" as Href); 
+      router.push("/(tabs-consumidor)/Cafeterias/Starbucks" as Href);
       return;
     }
 
@@ -33,30 +34,35 @@ export default function CafeteriasList() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: LIGHT }}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color={RED} />
-        </TouchableOpacity>
-        <Text style={styles.title}>Cafeterías</Text>
-        <View style={{ width: 24 }} />
-      </View>
-
-      <View style={{ padding: 16, gap: 12 }}>
-        {items.map((c) => (
-          <TouchableOpacity
-            key={c.id}
-            style={styles.item}
-            onPress={() => handlePress(c.slug)}
-          >
-            <Text style={styles.itemText}>{c.nombre}</Text>
-            <Ionicons name="chevron-forward" size={22} color={RED} />
+    <>
+      <SafeAreaView style={{ flex: 1, backgroundColor: LIGHT }}>
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => router.back()}>
+            <Ionicons name="arrow-back" size={24} color={RED} />
           </TouchableOpacity>
-        ))}
-      </View>
+          <Text style={styles.title}>Cafeterías</Text>
+          <View style={{ width: 24 }} />
+        </View>
 
-      <View style={{ height: 90 }} />
-    </SafeAreaView>
+        <View style={{ padding: 16, gap: 12 }}>
+          {items.map((c) => (
+            <TouchableOpacity
+              key={c.id}
+              style={styles.item}
+              onPress={() => handlePress(c.slug)}
+              activeOpacity={0.9}
+            >
+              <Text style={styles.itemText}>{c.nombre}</Text>
+              <Ionicons name="chevron-forward" size={22} color={RED} />
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        <View style={{ height: 90 }} />
+      </SafeAreaView>
+
+      <ConsumidorFooter />
+    </>
   );
 }
 
@@ -68,7 +74,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
   },
-  title: { fontSize: 22, fontWeight: "700", color: "#222" },
+  title: {
+    fontSize: 22,
+    fontWeight: "700",
+    color: "#222",
+  },
   item: {
     padding: 16,
     backgroundColor: WHITE,
@@ -81,5 +91,9 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
     elevation: 2,
   },
-  itemText: { fontSize: 18, color: "#222", flex: 1 },
+  itemText: {
+    fontSize: 18,
+    color: "#222",
+    flex: 1,
+  },
 });
