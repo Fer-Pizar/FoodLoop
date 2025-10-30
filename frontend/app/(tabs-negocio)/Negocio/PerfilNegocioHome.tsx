@@ -20,7 +20,7 @@ export default function PerfilNegocioHome() {
       await negocioApi.uploadAvatar(uri);
       await refetch();
       setSheetOpen(false);
-      Alert.alert("Listo", "Foto actualizada ✅");
+      Alert.alert("Listo", "Foto actualizada");
     } catch (e: any) {
       Alert.alert("Error subiendo foto", e?.message ?? "Intenta de nuevo");
     } finally {
@@ -60,7 +60,7 @@ export default function PerfilNegocioHome() {
             await negocioApi.deleteAvatar();
             await refetch();
             setSheetOpen(false);
-            Alert.alert("Listo", "Foto eliminada ✅");
+            Alert.alert("Listo", "Foto eliminada");
           } catch (e: any) {
             Alert.alert("Error", e?.message ?? "No se pudo eliminar");
           } finally {
