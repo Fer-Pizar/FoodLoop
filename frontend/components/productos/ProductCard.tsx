@@ -13,32 +13,41 @@ export default function ProductCard({
   onEdit,
   onDelete,
 }: {
-  producto: Producto;
+  producto: Producto & {
+    // opcionales que puede traer el backend con la lógica auto
+    precioFinal?: number | null;
+    descuentoPct?: number | null;
+  };
   onEdit: () => void;
   onDelete: () => void;
 }) {
-  const precio = producto.precio_actual ?? producto.precio_base;
-  const tieneDesc =
-    producto.precio_actual && producto.precio_actual < producto.precio_base;
+  // 1) Precio a mostrar (preferimos el calculado del backend)
+  const precioMostrar =
+    (producto.precioFinal ?? producto.precio_actual ?? producto.precio_base);
 
-  const pct = tieneDesc
-    ? Math.round(
-        ((producto.precio_base - (producto.precio_actual ?? 0)) /
-          producto.precio_base) *
-          100
-      )
-    : 0;
+  // 2) ¿Hay descuento?
+  const tieneDesc = Number(precioMostrar) < Number(producto.precio_base);
 
-  // 🎨 Color dinámico según reglas de descuento
-  const getBadgeColor = (pct: number) => {
-    if (pct >= 50) return "#d11212"; // rojo
-    if (pct >= 40) return "#f59e0b"; // naranja fuerte
-    if (pct >= 30) return "#facc15"; // amarillo
-    if (pct >= 20) return "#16a34a"; // verde
-    return "#9ca3af"; // gris neutro (sin descuento)
-  };
+  // 3) Porcentaje (si viene del backend lo usamos; si no, lo calculamos)
+  const pct = typeof producto.descuentoPct === "number"
+    ? producto.descuentoPct
+    : tieneDesc
+      ? Math.round(
+          ((Number(producto.precio_base) - Number(precioMostrar)) /
+            Number(producto.precio_base)) * 100
+        )
+      : 0;
 
-  const badgeColor = getBadgeColor(pct);
+  // 4) Colores por “regla” (0–1 = 50%, 2 = 40%, 3 = 30%, 4+ = 20%)
+  const badgeColor = pct >= 50
+    ? "#d11212"       // rojo
+    : pct >= 40
+    ? "#f59e0b"       // naranja fuerte
+    : pct >= 30
+    ? "#facc15"       // amarillo
+    : pct >= 20
+    ? "#16a34a"       // verde
+    : "#9ca3af";      // gris (sin descuento)
 
   return (
     <View
@@ -61,47 +70,25 @@ export default function ProductCard({
       {/* Imagen */}
       <Image
         source={{ uri: toAbsoluteUrl(producto.imagen_url) ?? undefined }}
-        style={{
-          width: 72,
-          height: 72,
-          borderRadius: 10,
-          backgroundColor: "#eee",
-        }}
+        style={{ width: 72, height: 72, borderRadius: 10, backgroundColor: "#eee" }}
       />
 
-      {/* Info principal */}
+      {/* Info */}
       <View style={{ flex: 1, marginLeft: 10 }}>
-        <TBold numberOfLines={1} style={{ fontSize: 15 }}>
-          {producto.nombre}
-        </TBold>
+        <TBold numberOfLines={1} style={{ fontSize: 15 }}>{producto.nombre}</TBold>
         <T numberOfLines={1} style={{ opacity: 0.6, marginBottom: 6 }}>
           {producto.categorias?.nombre ?? ""}
         </T>
 
         <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <TBold>Bs{precio}</TBold>
+          <TBold>Bs{precioMostrar}</TBold>
 
           {tieneDesc && (
             <>
-              <T
-                style={{
-                  marginLeft: 8,
-                  textDecorationLine: "line-through",
-                  opacity: 0.6,
-                }}
-              >
+              <T style={{ marginLeft: 8, textDecorationLine: "line-through", opacity: 0.6 }}>
                 Bs{producto.precio_base}
               </T>
-
-              <View
-                style={{
-                  marginLeft: 8,
-                  backgroundColor: badgeColor,
-                  paddingHorizontal: 6,
-                  paddingVertical: 2,
-                  borderRadius: 6,
-                }}
-              >
+              <View style={{ marginLeft: 8, backgroundColor: badgeColor, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6 }}>
                 <T style={{ color: "#fff", fontSize: 12 }}>-{pct}%</T>
               </View>
             </>
@@ -118,22 +105,13 @@ export default function ProductCard({
       {/* Acciones */}
       <View style={{ alignItems: "flex-end", justifyContent: "space-between" }}>
         <T style={{ opacity: 0.6, textAlign: "right" }}>
-          Stock{"\n"}
-          {producto.cantidad_disponible ?? 0} unid.
+          Stock{"\n"}{producto.cantidad_disponible ?? 0} unid.
         </T>
-
         <View style={{ flexDirection: "row", gap: 14 }}>
-          <TouchableOpacity
-            onPress={onEdit}
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-          >
+          <TouchableOpacity onPress={onEdit} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
             <Ionicons name="pencil" size={18} color="#6b7280" />
           </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={onDelete}
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-          >
+          <TouchableOpacity onPress={onDelete} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
             <Ionicons name="trash" size={18} color={RED} />
           </TouchableOpacity>
         </View>
