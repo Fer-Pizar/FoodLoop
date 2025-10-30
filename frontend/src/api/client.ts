@@ -63,7 +63,12 @@ async function handle<T>(res: Response): Promise<T> {
 export const api = {
   get: <T>(path: string) =>
     fetch(`${BASE}${path}`, { headers: authHeaders() }).then(handle<T>),
-
+  post: <T>(path: string, body: any) =>
+  fetch(`${BASE}${path}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...authHeaders() },
+    body: JSON.stringify(body),
+  }).then(handle<T>),
   patch: <T>(path: string, body: any) =>
     fetch(`${BASE}${path}`, {
       method: "PATCH",
@@ -77,7 +82,7 @@ export const api = {
   upload: <T>(path: string, form: FormData) =>
     fetch(`${BASE}${path}`, {
       method: "POST",
-      headers: { ...authHeaders() }, // NO seteamos Content-Type; fetch pone el boundary
+      headers: { ...authHeaders() }, 
       body: form,
     }).then(handle<T>),
 

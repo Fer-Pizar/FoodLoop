@@ -44,7 +44,7 @@ export default function MisDatosPersonales() {
         telefono: telefono?.trim() || null,
         direccion: direccion?.trim() || null,
       });
-      Alert.alert("Éxito", "Datos guardados ✅", [{ text: "OK", onPress: () => router.back() }]);
+      Alert.alert("Éxito", "Datos guardados", [{ text: "OK", onPress: () => router.back() }]);
     } catch (e: any) {
       Alert.alert("Error", e?.message ?? "No se pudo guardar");
     } finally {
