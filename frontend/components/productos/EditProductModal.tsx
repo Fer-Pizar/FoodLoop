@@ -1,22 +1,12 @@
-// components/productos/EditProductModal.tsx
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useState } from "react";
 import { View, TextInput, TouchableOpacity, ScrollView, Platform, Image, Switch } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import T from "../common/T";
 import TBold from "../common/TBold";
-import { toAbsoluteUrl } from "../../src/api/client";
 import { type Producto } from "../../src/api/producto";
 
 const RED = "#d11212ff";
-
-type SaveOptions = {
-  /** si pasas un string => reemplazar con esa imagen  */
-  replaceImageUri?: string;
-  /** si true => quitar imagen en el backend */
-  removeImage?: boolean;
-};
 
 export default function EditProductModal({
   producto,
@@ -30,202 +20,163 @@ export default function EditProductModal({
       nombre: string;
       descripcion?: string | null;
       precio_base: number;
-      precio_actual?: number | null;
       cantidad_disponible?: number;
       fecha_vencimiento?: string | null;
       estado?: boolean;
     },
-    options?: SaveOptions
+    options?: { replaceImageUri?: string; removeImage?: boolean }
   ) => Promise<void> | void;
 }) {
-  const { top } = useSafeAreaInsets();
   const [saving, setSaving] = useState(false);
-
-  // Imagen actual absoluta (si existe en DB)
-  const currentImageAbs = useMemo(() => toAbsoluteUrl(producto.imagen_url) ?? undefined, [producto.imagen_url]);
-
-  // Estado de imagen en edición
-  // - undefined => conservar
-  // - string (uri) => reemplazar
-  // - null => quitar
-  const [imageState, setImageState] = useState<string | null | undefined>(undefined);
-
   const [form, setForm] = useState({
-    nombre: "",
-    descripcion: "",
-    precio_base: "",
-    precio_actual: "",
-    cantidad_disponible: "",
-    fecha_vencimiento: "",
-    estado: true,
+    nombre: producto.nombre ?? "",
+    descripcion: producto.descripcion ?? "",
+    precio_base: String(producto.precio_base ?? ""),
+    cantidad_disponible: String(producto.cantidad_disponible ?? ""),
+    fecha_vencimiento: producto.fecha_vencimiento ? new Date(producto.fecha_vencimiento).toISOString().slice(0, 10) : "",
+    estado: Boolean(producto.estado),
   });
 
-  useEffect(() => {
-    setForm({
-      nombre: producto.nombre ?? "",
-      descripcion: producto.descripcion ?? "",
-      precio_base: String(producto.precio_base ?? ""),
-      precio_actual: producto.precio_actual != null ? String(producto.precio_actual) : "",
-      cantidad_disponible: producto.cantidad_disponible != null ? String(producto.cantidad_disponible) : "",
-      fecha_vencimiento: producto.fecha_vencimiento ? new Date(producto.fecha_vencimiento).toISOString().slice(0, 10) : "",
-      estado: producto.estado !== false,
-    });
-    setImageState(undefined); // por defecto conservar
-  }, [producto]);
+  // imagen actual (preview) y cambios
+  const [imageUri, setImageUri] = useState<string | undefined>(undefined);
+  const [removeImage, setRemoveImage] = useState<boolean>(false);
 
-  const pickImage = async () => {
+  const pickFromGallery = async () => {
     const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (perm.status !== "granted") {
-      alert("Activa el permiso de galería para elegir una imagen 📷");
-      return;
-    }
-    const r = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      quality: 0.9,
-    });
+    if (perm.status !== "granted") return alert("Activa el permiso de galería para elegir una imagen 📷");
+    const r = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, quality: 0.9 });
     if (!r.canceled && r.assets?.[0]?.uri) {
-      setImageState(r.assets[0].uri); // reemplazar
+      setImageUri(r.assets[0].uri);
+      setRemoveImage(false);
     }
   };
 
-  const keepImage = () => setImageState(undefined);
-  const removeImage = () => setImageState(null);
-  const clearPicked = () => setImageState(undefined);
+  const pickFromCamera = async () => {
+    const perm = await ImagePicker.requestCameraPermissionsAsync();
+    if (perm.status !== "granted") return alert("Activa el permiso de cámara para tomar una foto 📸");
+    const r = await ImagePicker.launchCameraAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, quality: 0.9 });
+    if (!r.canceled && r.assets?.[0]?.uri) {
+      setImageUri(r.assets[0].uri);
+      setRemoveImage(false);
+    }
+  };
+
+  const clearLocalImage = () => setImageUri(undefined);
+  const markRemoveServerImage = () => setRemoveImage(true);
 
   const submit = async () => {
     const nombre = form.nombre.trim();
     const precio_base = Number(form.precio_base);
-    const precio_actual = form.precio_actual ? Number(form.precio_actual) : null;
     const cantidad_disponible = form.cantidad_disponible ? Number(form.cantidad_disponible) : 0;
 
     if (!nombre) return alert("Ingresa el nombre");
-    if (isNaN(precio_base) || precio_base < 0) return alert("Precio base inválido (≥ 0)");
-    if (precio_actual !== null && (isNaN(precio_actual) || precio_actual < 0)) return alert("Precio actual inválido (≥ 0 o vacío)");
-    if (precio_actual !== null && precio_actual > precio_base) return alert("El precio actual no puede ser mayor al base");
-    if (isNaN(cantidad_disponible) || cantidad_disponible < 0) return alert("Stock inválido (≥ 0)");
+    if (isNaN(precio_base) || precio_base < 0) return alert("Precio base inválido (debe ser ≥ 0)");
+    if (isNaN(cantidad_disponible) || cantidad_disponible < 0) return alert("Stock inválido (debe ser ≥ 0)");
 
     const fecha_vencimiento = form.fecha_vencimiento ? new Date(form.fecha_vencimiento).toISOString() : null;
 
     try {
       setSaving(true);
-      const options: SaveOptions = {};
-      if (imageState === null) options.removeImage = true;          // quitar
-      if (typeof imageState === "string") options.replaceImageUri = imageState; // reemplazar
-
       await onSave(
         {
           nombre,
           descripcion: form.descripcion?.trim() ? form.descripcion.trim() : null,
           precio_base,
-          precio_actual,
           cantidad_disponible,
           fecha_vencimiento,
           estado: form.estado,
         },
-        options
+        imageUri
+          ? { replaceImageUri: imageUri }
+          : removeImage
+          ? { removeImage: true }
+          : undefined
       );
     } finally {
       setSaving(false);
     }
   };
 
-  // ¿Qué imagen mostramos en el preview?
-  const previewUri =
-    imageState === null
-      ? undefined // el usuario pidió quitar
-      : typeof imageState === "string"
-      ? imageState // nueva elegida
-      : currentImageAbs; // conservar la actual
-
   return (
-    <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.4)", paddingTop: top + 30 }}>
-      <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ flexGrow: 1, justifyContent: "center", padding: 16 }}>
-        <View style={{ backgroundColor: "#fff", borderRadius: 14, padding: 16, shadowColor: "#000", shadowOpacity: 0.2, shadowRadius: 5, elevation: 5 }}>
-          {/* Header */}
-          <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
-            <TBold style={{ fontSize: 16 }}>Editar producto</TBold>
-            <TouchableOpacity onPress={onCancel}>
-              <Ionicons name="close" size={22} color="#6b7280" />
-            </TouchableOpacity>
-          </View>
+    <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.35)", justifyContent: "center", padding: 16 }}>
+      <View style={{ backgroundColor: "#fff", borderRadius: 14, padding: 16, maxHeight: "88%" }}>
+        {/* Header */}
+        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+          <TBold style={{ fontSize: 16 }}>Editar Producto</TBold>
+          <TouchableOpacity onPress={onCancel} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+            <Ionicons name="close" size={20} color="#6b7280" />
+          </TouchableOpacity>
+        </View>
 
-          {/* Imagen */}
+        <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingBottom: 8 }}>
+          {/* Imagen (una sola) */}
           <View style={{ marginBottom: 12 }}>
             <T style={{ marginBottom: 6, opacity: 0.8 }}>Imagen</T>
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
-              <TouchableOpacity
-                onPress={pickImage}
-                activeOpacity={0.85}
-                style={{ backgroundColor: "#f6f7f9", borderWidth: 1, borderColor: "#e5e7eb", borderRadius: 10, paddingVertical: 10, paddingHorizontal: 12 }}
-              >
-                <TBold style={{ fontSize: 14, color: RED }}>Cambiar</TBold>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+              <TouchableOpacity onPress={pickFromCamera} activeOpacity={0.85} style={{ backgroundColor: "#f6f7f9", borderWidth: 1, borderColor: "#e5e7eb", borderRadius: 10, paddingVertical: 10, paddingHorizontal: 12 }}>
+                <TBold style={{ fontSize: 14, color: RED }}>Tomar foto</TBold>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={pickFromGallery} activeOpacity={0.85} style={{ backgroundColor: "#f6f7f9", borderWidth: 1, borderColor: "#e5e7eb", borderRadius: 10, paddingVertical: 10, paddingHorizontal: 12 }}>
+                <TBold style={{ fontSize: 14, color: RED }}>{imageUri ? "Cambiar imagen" : (producto.imagen_url ? "Reemplazar imagen" : "Elegir de la galería")}</TBold>
               </TouchableOpacity>
 
-              {previewUri ? (
+              {(imageUri || producto.imagen_url) ? (
                 <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-                  <Image source={{ uri: previewUri }} style={{ width: 64, height: 64, borderRadius: 8, backgroundColor: "#eee" }} />
-                  {/* Botones imagen */}
-                  {typeof imageState === "string" ? (
-                    <TouchableOpacity onPress={clearPicked} style={{ padding: 6 }}>
-                      <T style={{ color: "#ef4444" }}>Descartar nueva</T>
-                    </TouchableOpacity>
-                  ) : (
-                    <TouchableOpacity onPress={removeImage} style={{ padding: 6 }}>
+                  <Image source={{ uri: imageUri ?? (producto.imagen_url as string) }} style={{ width: 64, height: 64, borderRadius: 8, backgroundColor: "#eee" }} />
+                  {imageUri ? (
+                    <TouchableOpacity onPress={clearLocalImage} style={{ padding: 6 }}>
                       <T style={{ color: "#ef4444" }}>Quitar</T>
                     </TouchableOpacity>
-                  )}
+                  ) : producto.imagen_url ? (
+                    <TouchableOpacity onPress={markRemoveServerImage} style={{ padding: 6 }}>
+                      <T style={{ color: "#ef4444" }}>Eliminar</T>
+                    </TouchableOpacity>
+                  ) : null}
                 </View>
               ) : (
                 <T style={{ opacity: 0.6 }}>Sin imagen</T>
               )}
             </View>
-
-            {/* Mostrar “Conservar actual” si el usuario marcó quitar o eligió una nueva */}
-            {(imageState === null || typeof imageState === "string") && currentImageAbs ? (
-              <TouchableOpacity onPress={keepImage} style={{ marginTop: 8 }}>
-                <T style={{ color: "#2563eb" }}>Conservar imagen actual</T>
-              </TouchableOpacity>
-            ) : null}
           </View>
 
           {/* Campos */}
           <Field label="Nombre del producto" value={form.nombre} onChangeText={(v) => setForm((s) => ({ ...s, nombre: v }))} />
+
           <Field label="Descripción (opcional)" value={form.descripcion} onChangeText={(v) => setForm((s) => ({ ...s, descripcion: v }))} multiline />
+
           <Field label="Precio base (Bs) *" keyboardType="numeric" value={form.precio_base} onChangeText={(v) => setForm((s) => ({ ...s, precio_base: v }))} />
-          <Field label="Precio actual (Bs) — opcional (≤ base)" keyboardType="numeric" value={form.precio_actual} onChangeText={(v) => setForm((s) => ({ ...s, precio_actual: v }))} />
+
           <Field label="Stock disponible" keyboardType="numeric" value={form.cantidad_disponible} onChangeText={(v) => setForm((s) => ({ ...s, cantidad_disponible: v }))} />
+
           <Field label="Fecha de vencimiento (yyyy-mm-dd)" placeholder="2025-12-31" value={form.fecha_vencimiento} onChangeText={(v) => setForm((s) => ({ ...s, fecha_vencimiento: v }))} />
 
+          {/* Aviso: descuento automático por días */}
+          <View style={{ flexDirection: "row", gap: 8, alignItems: "flex-start", backgroundColor: "#f5faff", borderWidth: 1, borderColor: "#e6f0ff", padding: 10, borderRadius: 10, marginTop: 4 }}>
+            <Ionicons name="information-circle-outline" size={18} color="#2563eb" style={{ marginTop: 1 }} />
+            <T style={{ fontSize: 12, lineHeight: 16, color: "#1e3a8a" }}>
+              El precio con descuento se recalculará automáticamente según la nueva fecha de vencimiento. 💡
+            </T>
+          </View>
+
           {/* Estado */}
-          <View style={{ marginBottom: 12, flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+          <View style={{ marginTop: 12, marginBottom: 12, flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
             <T style={{ opacity: 0.8 }}>Estado</T>
             <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
               <T style={{ opacity: 0.7 }}>{form.estado ? "Activo" : "Inactivo"}</T>
               <Switch value={form.estado} onValueChange={(v) => setForm((s) => ({ ...s, estado: v }))} />
             </View>
           </View>
+        </ScrollView>
 
-          <TouchableOpacity
-            disabled={saving}
-            onPress={submit}
-            style={{ backgroundColor: RED, paddingVertical: 10, borderRadius: 10, alignItems: "center", marginTop: 8, opacity: saving ? 0.7 : 1 }}
-          >
-            <TBold style={{ color: "#fff" }}>{saving ? "Guardando…" : "Guardar cambios"}</TBold>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
+        <TouchableOpacity disabled={saving} onPress={submit} style={{ backgroundColor: RED, paddingVertical: 10, borderRadius: 10, alignItems: "center", marginTop: 8, opacity: saving ? 0.7 : 1 }}>
+          <TBold style={{ color: "#fff" }}>{saving ? "Guardando…" : "Guardar cambios"}</TBold>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
 
-function Field(props: {
-  label: string;
-  value: string;
-  onChangeText: (t: string) => void;
-  placeholder?: string;
-  keyboardType?: "default" | "numeric";
-  multiline?: boolean;
-}) {
+function Field(props: { label: string; value: string; onChangeText: (t: string) => void; placeholder?: string; keyboardType?: "default" | "numeric"; multiline?: boolean; }) {
   return (
     <View style={{ marginBottom: 12 }}>
       <T style={{ marginBottom: 6, opacity: 0.8 }}>{props.label}</T>

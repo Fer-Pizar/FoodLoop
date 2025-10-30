@@ -4,6 +4,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { Prisma } from '@prisma/client';
 import * as fs from 'fs/promises';
 import * as path from 'path';
+import { effectivePricing } from './discount.util'; // ⬅️ NUEVO
 
 @Injectable()
 export class NegocioProductsService {
@@ -12,7 +13,7 @@ export class NegocioProductsService {
   private async comercioIdFromUser(userId: bigint) {
     const com = await this.prisma.comercio.findUnique({
       where: { idUsuario: userId },
-      select: { idComercio: true }, // ⬅️ solo necesitamos el id del comercio
+      select: { idComercio: true },
     });
     if (!com) throw new ForbiddenException('Usuario sin comercio.');
     return com.idComercio;
@@ -31,10 +32,6 @@ export class NegocioProductsService {
     if (q.estado && q.estado !== 'todos') where.estado = q.estado === 'activo';
     if (q.search) where.nombre = { contains: q.search, mode: 'insensitive' };
 
-    // ✅ orderBy correcto según tipos de Prisma
-    // - precio_actual: permite SortOrderInput (para manejar nulls)
-    // - cantidad_disponible: 'asc' | 'desc'
-    // - fecha_publicacion: 'asc' | 'desc'
     const orderBy: Prisma.productosOrderByWithRelationInput =
       q.orden === 'precio'
         ? { precio_actual: { sort: 'desc', nulls: 'last' } }
@@ -48,28 +45,33 @@ export class NegocioProductsService {
         orderBy,
         skip,
         take: limit,
-        // si no necesitas categoría, no la incluyas
-        // include: { categorias: true },
       }),
       this.prisma.productos.count({ where }),
     ]);
 
-    const data = items.map((p) => ({
-      ...p,
-      // números seguros
-      precio_base: Number(p.precio_base),
-      precio_actual: p.precio_actual == null ? null : Number(p.precio_actual),
-      descuentoAbs:
-        p.precio_actual == null ? 0 : Number(p.precio_base) - Number(p.precio_actual),
-      descuentoPct:
-        p.precio_actual == null
-          ? 0
-          : Math.round(
-              ((Number(p.precio_base) - Number(p.precio_actual)) / Number(p.precio_base)) * 100
-            ),
-      // normaliza url local si existe
-      imagen_url: p.imagen_url ? `/uploads/productos/${path.basename(p.imagen_url)}` : null,
-    }));
+    const data = items.map((p) => {
+      const base = Number(p.precio_base);
+      const actual = p.precio_actual == null ? null : Number(p.precio_actual);
+
+      // 🧠 aplica regla mixta (manual tiene prioridad; si no, automático por vencimiento)
+      const ep = effectivePricing({
+        precio_base: base,
+        precio_actual: actual,
+        fecha_vencimiento: p.fecha_vencimiento ?? null,
+      });
+
+      return {
+        ...p,
+        precio_base: base,
+        precio_actual: actual,
+        precioFinal: ep.precioFinal,                                // ⬅️ NUEVO
+        descuentoPct: ep.descuentoPct,                              // ⬅️ NUEVO
+        descuentoAbs: Number((base - ep.precioFinal).toFixed(2)),   // ⬅️ NUEVO
+        origenDescuento: ep.origen,                                 // "manual" | "auto"
+        diasParaVencer: ep.diasParaVencer ?? null,
+        imagen_url: p.imagen_url ? `/uploads/productos/${path.basename(p.imagen_url)}` : null,
+      };
+    });
 
     return { page, limit, total, data };
   }
@@ -81,11 +83,7 @@ export class NegocioProductsService {
       this.prisma.productos.count({ where: { id_comercio: idComercio, estado: true } }),
       this.prisma.productos.count({ where: { id_comercio: idComercio, estado: false } }),
       this.prisma.productos.count({
-        where: {
-          id_comercio: idComercio,
-          estado: true,
-          fecha_vencimiento: { lte: soon },
-        },
+        where: { id_comercio: idComercio, estado: true, fecha_vencimiento: { lte: soon } },
       }),
     ]);
     return { activos, inactivos, porVencer };
@@ -99,7 +97,6 @@ export class NegocioProductsService {
     return this.prisma.productos.create({
       data: {
         id_comercio: idComercio,
-        // si NO usas categorías aquí, fija un valor o elimina si tu esquema lo permite
         id_categoria: BigInt(dto.id_categoria ?? 1),
         nombre: dto.nombre,
         descripcion: dto.descripcion ?? null,
@@ -122,19 +119,12 @@ export class NegocioProductsService {
 
   async update(userId: bigint, id: bigint, dto: any) {
     await this.ensureOwner(userId, id);
-    return this.prisma.productos.update({
-      where: { id_producto: id },
-      data: dto,
-    });
+    return this.prisma.productos.update({ where: { id_producto: id }, data: dto });
   }
 
   async remove(userId: bigint, id: bigint) {
     await this.ensureOwner(userId, id);
-    // Baja lógica
-    return this.prisma.productos.update({
-      where: { id_producto: id },
-      data: { estado: false },
-    });
+    return this.prisma.productos.update({ where: { id_producto: id }, data: { estado: false } });
   }
 
   async uploadImage(userId: bigint, id: bigint, file: Express.Multer.File) {
@@ -159,14 +149,10 @@ export class NegocioProductsService {
     const prod = await this.ensureOwner(userId, id);
     if (prod.imagen_url) {
       const file = path.join(process.cwd(), prod.imagen_url.replace(/^\//, ''));
-      try {
-        await fs.unlink(file);
-      } catch {}
+      try { await fs.unlink(file); } catch {}
     }
-    await this.prisma.productos.update({
-      where: { id_producto: id },
-      data: { imagen_url: null },
-    });
+    await this.prisma.productos.update({ where: { id_producto: id }, data: { imagen_url: null } });
     return { ok: true };
   }
 }
+

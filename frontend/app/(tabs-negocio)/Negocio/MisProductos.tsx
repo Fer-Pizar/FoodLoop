@@ -1,4 +1,4 @@
-// app/(tabs-negocio)/negocio/MisProductos.tsx
+// app/(tabs-negocio)/Negocio/MisProductos.tsx
 import React, { useMemo, useState } from "react";
 import { View, ActivityIndicator, FlatList, Alert, Modal, TouchableOpacity } from "react-native";
 import { useMisProductos } from "../../../hooks/useMisProductos";
@@ -19,6 +19,7 @@ export default function MisProductos() {
   const [openEdit, setOpenEdit] = useState(false);
   const [editing, setEditing] = useState<Producto | null>(null);
 
+  // cantidad de activos
   const activos = useMemo(() => (items ?? []).filter((p) => p.estado !== false).length, [items]);
 
   // Crear
@@ -28,14 +29,22 @@ export default function MisProductos() {
       precio_base: number;
       cantidad_disponible?: number;
       fecha_vencimiento?: string | null;
-      id_categoria?: string;
+      id_categoria?: string;        // dejamos default "1" para cumplir el schema
       descripcion?: string | null;
+      estado?: boolean;
     },
     imageUri?: string
   ) => {
     try {
-      const created = await productosApi.create({ id_categoria: payload.id_categoria ?? "1", ...payload } as any);
-      if (imageUri) await productosApi.uploadImage(created.id_producto, imageUri);
+      const created = await productosApi.create({
+        id_categoria: payload.id_categoria ?? "1",
+        ...payload,
+      } as any);
+
+      if (imageUri) {
+        await productosApi.uploadImage(created.id_producto, imageUri);
+      }
+
       setOpenNew(false);
       await refetch();
       Alert.alert("¡Listo!", "Producto creado correctamente.");
@@ -45,13 +54,12 @@ export default function MisProductos() {
     }
   };
 
-  // Editar
+  // Editar — mismo contrato que EditProductModal: (payload, options?: { replaceImageUri?: string; removeImage?: boolean })
   const handleEditSave = async (
     payload: {
-      nombre: string;
+      nombre?: string;
       descripcion?: string | null;
-      precio_base: number;
-      precio_actual?: number | null;
+      precio_base?: number;
       cantidad_disponible?: number;
       fecha_vencimiento?: string | null;
       estado?: boolean;
@@ -61,11 +69,13 @@ export default function MisProductos() {
     if (!editing) return;
     try {
       await productosApi.update(editing.id_producto, payload);
+
       if (options?.removeImage) {
         await productosApi.deleteImage(editing.id_producto);
       } else if (options?.replaceImageUri) {
         await productosApi.uploadImage(editing.id_producto, options.replaceImageUri);
       }
+
       setOpenEdit(false);
       setEditing(null);
       await refetch();
@@ -106,7 +116,10 @@ export default function MisProductos() {
       <View style={{ flex: 1, alignItems: "center", justifyContent: "center", padding: 16 }}>
         <TBold style={{ marginBottom: 6 }}>No se pudo cargar 😵</TBold>
         <T style={{ opacity: 0.7, marginBottom: 12 }}>{String(error)}</T>
-        <TouchableOpacity onPress={refetch as any} style={{ backgroundColor: RED, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8 }}>
+        <TouchableOpacity
+          onPress={refetch as any}
+          style={{ backgroundColor: RED, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8 }}
+        >
           <TBold style={{ color: "#fff" }}>Reintentar</TBold>
         </TouchableOpacity>
       </View>
@@ -116,9 +129,16 @@ export default function MisProductos() {
   return (
     <View style={{ flex: 1, backgroundColor: "#f9fafb" }}>
       <FlatList
-        data={items}
+        data={items ?? []}
         keyExtractor={(p) => String(p.id_producto)}
-        ListHeaderComponent={<ProductsHeader title="Mis productos" subtitle="Productos activos" count={activos} onNew={() => setOpenNew(true)} />}
+        ListHeaderComponent={
+          <ProductsHeader
+            title="Mis productos"
+            subtitle="Productos activos"
+            count={activos}
+            onNew={() => setOpenNew(true)}
+          />
+        }
         renderItem={({ item }) => (
           <ProductCard
             producto={item}
@@ -140,11 +160,22 @@ export default function MisProductos() {
       </Modal>
 
       {/* Editar */}
-      <Modal visible={openEdit} transparent animationType="fade" onRequestClose={() => { setOpenEdit(false); setEditing(null); }}>
+      <Modal
+        visible={openEdit}
+        transparent
+        animationType="fade"
+        onRequestClose={() => {
+          setOpenEdit(false);
+          setEditing(null);
+        }}
+      >
         {editing ? (
           <EditProductModal
             producto={editing}
-            onCancel={() => { setOpenEdit(false); setEditing(null); }}
+            onCancel={() => {
+              setOpenEdit(false);
+              setEditing(null);
+            }}
             onSave={handleEditSave}
           />
         ) : null}

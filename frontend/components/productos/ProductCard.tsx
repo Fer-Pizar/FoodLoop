@@ -20,6 +20,7 @@ export default function ProductCard({
   const precio = producto.precio_actual ?? producto.precio_base;
   const tieneDesc =
     producto.precio_actual && producto.precio_actual < producto.precio_base;
+
   const pct = tieneDesc
     ? Math.round(
         ((producto.precio_base - (producto.precio_actual ?? 0)) /
@@ -27,6 +28,17 @@ export default function ProductCard({
           100
       )
     : 0;
+
+  // 🎨 Color dinámico según reglas de descuento
+  const getBadgeColor = (pct: number) => {
+    if (pct >= 50) return "#d11212"; // rojo
+    if (pct >= 40) return "#f59e0b"; // naranja fuerte
+    if (pct >= 30) return "#facc15"; // amarillo
+    if (pct >= 20) return "#16a34a"; // verde
+    return "#9ca3af"; // gris neutro (sin descuento)
+  };
+
+  const badgeColor = getBadgeColor(pct);
 
   return (
     <View
@@ -46,6 +58,7 @@ export default function ProductCard({
         borderColor: "#f1f1f1",
       }}
     >
+      {/* Imagen */}
       <Image
         source={{ uri: toAbsoluteUrl(producto.imagen_url) ?? undefined }}
         style={{
@@ -56,6 +69,7 @@ export default function ProductCard({
         }}
       />
 
+      {/* Info principal */}
       <View style={{ flex: 1, marginLeft: 10 }}>
         <TBold numberOfLines={1} style={{ fontSize: 15 }}>
           {producto.nombre}
@@ -66,7 +80,8 @@ export default function ProductCard({
 
         <View style={{ flexDirection: "row", alignItems: "center" }}>
           <TBold>Bs{precio}</TBold>
-          {tieneDesc ? (
+
+          {tieneDesc && (
             <>
               <T
                 style={{
@@ -77,10 +92,11 @@ export default function ProductCard({
               >
                 Bs{producto.precio_base}
               </T>
+
               <View
                 style={{
                   marginLeft: 8,
-                  backgroundColor: RED,
+                  backgroundColor: badgeColor,
                   paddingHorizontal: 6,
                   paddingVertical: 2,
                   borderRadius: 6,
@@ -89,7 +105,7 @@ export default function ProductCard({
                 <T style={{ color: "#fff", fontSize: 12 }}>-{pct}%</T>
               </View>
             </>
-          ) : null}
+          )}
         </View>
 
         {!!producto.fecha_vencimiento && (
@@ -99,11 +115,13 @@ export default function ProductCard({
         )}
       </View>
 
+      {/* Acciones */}
       <View style={{ alignItems: "flex-end", justifyContent: "space-between" }}>
         <T style={{ opacity: 0.6, textAlign: "right" }}>
           Stock{"\n"}
           {producto.cantidad_disponible ?? 0} unid.
         </T>
+
         <View style={{ flexDirection: "row", gap: 14 }}>
           <TouchableOpacity
             onPress={onEdit}
@@ -111,6 +129,7 @@ export default function ProductCard({
           >
             <Ionicons name="pencil" size={18} color="#6b7280" />
           </TouchableOpacity>
+
           <TouchableOpacity
             onPress={onDelete}
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { ActivityIndicator, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { getStoredRole } from "@/src/auth/session";
+import T from "@/components/common/T";
 
 const RED = "#d11212ff";
 
@@ -107,6 +108,7 @@ export default function NegocioTabsLayout() {
       {/* 🔒 Rutas internas que no deben verse en el tab bar */}
       <Tabs.Screen name="Negocio/InformacionPersonal" options={{ href: null }} />
       <Tabs.Screen name="Negocio/MisDatosPersonales" options={{ href: null }} />
+      <Tabs.Screen name="Negocio/ReglasDescuento" options={{ href: null }} />
     </Tabs>
   );
 }

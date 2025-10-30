@@ -127,7 +127,7 @@ export default function PerfilNegocioHome() {
 
         <RowItem icon="notifications-outline" title="Notificaciones" onPress={() => Alert.alert("Notificaciones", "Pronto 🤗")} />
         <RowItem icon="time-outline" title="Horario" onPress={() => Alert.alert("Horario", "Pronto ⏰")} />
-        <RowItem icon="pricetags-outline" title="Reglas de Descuento" onPress={() => Alert.alert("Descuentos", "Pronto 🏷️")} />
+        <RowItem icon="pricetags-outline"title="Reglas de Descuento"onPress={() => router.push("/Negocio/ReglasDescuento")}/>
         <RowItem
           icon="exit-outline"
           title="Cerrar Sesión"
