@@ -1,4 +1,3 @@
-// src/main.ts
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
@@ -33,20 +32,17 @@ async function bootstrap() {
   app.useGlobalInterceptors(new BigIntInterceptor());
   app.setGlobalPrefix('api');
 
-  // ✅ Servir /uploads en ambos adaptadores
   const uploadsPath = join(process.cwd(), 'uploads');
-  const adapterType = app.getHttpAdapter().getType(); // 'fastify' | 'express'
+  const adapterType = app.getHttpAdapter().getType(); 
 
   if (adapterType === 'fastify') {
-    // Fastify
     const fastify = app.getHttpAdapter().getInstance();
     await fastify.register(fastifyStatic, {
       root: uploadsPath,
-      prefix: '/uploads/', // URL pública: /uploads/...
+      prefix: '/uploads/', 
       decorateReply: false,
     });
   } else {
-    // Express
     app.use('/uploads', express.static(uploadsPath));
   }
 

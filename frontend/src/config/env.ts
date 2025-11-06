@@ -1,18 +1,29 @@
 import { Platform } from "react-native";
 
-// 👇 This automatically picks the right URL
-// 💻 On Web or Emulator → localhost
-// 📱 On a real phone (mobile data or Wi-Fi) → use your ngrok URL
 export const BASE_URL =
   Platform.OS === "web"
     ? "http://localhost:3000/api"
-    : "https://fergie.ngrok-free.app/api"; 
+    : "https://fergie.ngrok-free.app/api";
 
-// ✅ Example final URLs that will be used:
-// - Web or simulator → http://localhost:3000/api
-// - Real phone → https://fergie.ngrok-free.app/api
-
-  export const API_BASE =
+const rawApi =
+  process.env.EXPO_PUBLIC_API_BASE_URL ||
   process.env.EXPO_PUBLIC_API_BASE ||
   process.env.VITE_API_URL ||
-  BASE_URL; 
+  BASE_URL ||
+  "http://localhost:3000/api"; 
+
+function normalizeApi(url: string) {
+  const u = url.trim().replace(/\/+$/, "");
+  return /\/api$/.test(u) ? u : `${u}/api`;
+}
+
+export function getApiBaseUrl(): string {
+  return normalizeApi(rawApi);
+}
+
+export function getImageBaseUrl(): string {
+  const api = getApiBaseUrl();
+  return api.replace(/\/api\/?$/, "");
+}
+
+export const API_BASE = getApiBaseUrl();
