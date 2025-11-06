@@ -1,9 +1,8 @@
-// frontend/app/(tabs-consumidor)/Consumidor/EditProfile.tsx
 import React, { useEffect, useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, Alert } from "react-native";
 import { useRouter } from "expo-router";
 import { useConsumidor } from "@/hooks/useConsumidor";
-import ConsumidorFooter from "@/components/ConsumidorFooter"; // 👈 added
+import ConsumidorFooter from "@/components/ConsumidorFooter"; 
 
 export default function EditProfile() {
   const router = useRouter();
@@ -35,14 +34,14 @@ export default function EditProfile() {
         <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
           <ActivityIndicator />
         </View>
-        <ConsumidorFooter /> {/* keep footer visible even during loading */}
+        <ConsumidorFooter /> 
       </>
     );
   }
 
   return (
     <>
-      <View style={{ flex: 1, padding: 16, gap: 12, paddingBottom: 90 /* space for footer */ }}>
+      <View style={{ flex: 1, padding: 16, gap: 12, paddingBottom: 90 }}>
         <Text style={{ fontSize: 22, fontWeight: "700" }}>Editar Perfil</Text>
 
         {error ? (
@@ -95,7 +94,7 @@ export default function EditProfile() {
         </TouchableOpacity>
       </View>
 
-      <ConsumidorFooter /> {/* 👈 added, same as Perfil */}
+      <ConsumidorFooter /> 
     </>
   );
 }
