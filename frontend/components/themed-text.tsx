@@ -1,10 +1,13 @@
 import React from "react";
-import { StyleSheet, Text, type TextProps } from "react-native";
+import { Text, StyleSheet, type TextProps } from "react-native";
 import { useTheme } from "@/src/theme/ThemeProvider";
 
 export type ThemedTextProps = TextProps & {
+  /** Optional override for text color in light mode */
   lightColor?: string;
+  /** Optional override for text color in dark mode */
   darkColor?: string;
+  /** Predefined text style variants */
   type?: "default" | "title" | "defaultSemiBold" | "subtitle" | "link";
 };
 
@@ -17,6 +20,7 @@ export default function ThemedText({
 }: ThemedTextProps) {
   const { colors, isDark } = useTheme();
 
+  // Dynamically choose color based on theme or props override
   const color = isDark ? darkColor ?? colors.text : lightColor ?? colors.text;
 
   return (

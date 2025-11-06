@@ -1,36 +1,45 @@
 import React, { useMemo, useState } from "react";
-import { SafeAreaView, View, Text, TextInput, StyleSheet, ScrollView, FlatList, Image, TouchableOpacity, Dimensions,} from "react-native";
+import {
+  SafeAreaView,
+  View,
+  Text,
+  TextInput,
+  StyleSheet,
+  ScrollView,
+  FlatList,
+  Image,
+  TouchableOpacity,
+  Dimensions,
+} from "react-native";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { useFonts, Comfortaa_400Regular, Comfortaa_700Bold,} from "@expo-google-fonts/comfortaa";
-import SandwichImg     from "../../assets/Starbucks/Sandwich.jpg";
-import CarrotCakeImg   from "../../assets/Starbucks/Carrot cake.jpg";
-import CroissantImg    from "../../assets/Starbucks/Croissant.jpg";
+import {
+  useFonts,
+  Comfortaa_400Regular,
+  Comfortaa_700Bold,
+} from "@expo-google-fonts/comfortaa";
+import { useTheme } from "@/src/theme/ThemeProvider";
+
+import SandwichImg from "../../assets/Starbucks/Sandwich.jpg";
+import CarrotCakeImg from "../../assets/Starbucks/Carrot cake.jpg";
+import CroissantImg from "../../assets/Starbucks/Croissant.jpg";
 import CinnamonRollImg from "../../assets/Starbucks/Cinnamon roll.jpg";
 
-
 const DAILY_DESSERTS: Product[] = [
-  { id:"p1", name:"Sandwich", subtitle:"Jamón y pan crujiente", price:15, oldPrice:23, discountPct:0.35, image: SandwichImg },
-  { id:"p2", name:"Torta de zanahoria", subtitle:"Salud en cada capa",  price:23, oldPrice:33, discountPct:0.30, image: CarrotCakeImg },
-  { id:"p3", name:"Croissant", subtitle:"Crocante en cada bocado",     price:10, oldPrice:20, discountPct:0.50, image: CroissantImg },
-  { id:"p4", name:"Rollo de Canela", subtitle:"Frosting como ningún otro", price:27, oldPrice:37, discountPct:0.27, image: CinnamonRollImg },
+  { id: "p1", name: "Sandwich", subtitle: "Jamón y pan crujiente", price: 15, oldPrice: 23, discountPct: 0.35, image: SandwichImg },
+  { id: "p2", name: "Torta de zanahoria", subtitle: "Salud en cada capa", price: 23, oldPrice: 33, discountPct: 0.30, image: CarrotCakeImg },
+  { id: "p3", name: "Croissant", subtitle: "Crocante en cada bocado", price: 10, oldPrice: 20, discountPct: 0.50, image: CroissantImg },
+  { id: "p4", name: "Rollo de Canela", subtitle: "Frosting como ningún otro", price: 27, oldPrice: 37, discountPct: 0.27, image: CinnamonRollImg },
 ];
 
-
-// 🧱 FoodLoop brand palette (from memory)
+// Constants
 const RED = "#D82A2A";
-const LIGHT = "#F7F7F7";
-const WHITE = "#FFFFFF";
-const GRAY_TEXT = "#b5b5b5";
-const INPUT_BG = "#F5F5F5";
-
-// 🎨 Extra colors to match the mockup vibe
-const DEEP_GREEN = "#163C33";
-const CHIP_BG = "#E9EFEA";
 const PRICE_GREEN = "#2F8F46";
+const DEEP_GREEN = "#163C33";
+const WHITE = "#FFFFFF";
 
 const { width } = Dimensions.get("window");
-const CARD_W = (width - 48 - 12) / 2; // 24 page padding + 12 gap
+const CARD_W = (width - 48 - 12) / 2;
 
 type Product = {
   id: string;
@@ -38,12 +47,11 @@ type Product = {
   subtitle: string;
   price: number;
   oldPrice?: number;
-  discountPct?: number; 
+  discountPct?: number;
   image: any;
   tag?: string;
 };
 
-// 🔸 Mock data (replace via API later)
 const CATEGORIES = [
   { id: "cat1", label: "Horneados", icon: "bread-slice", active: true },
   { id: "cat2", label: "Postres", icon: "ice-cream" },
@@ -52,41 +60,44 @@ const CATEGORIES = [
 
 export default function Home() {
   const router = useRouter();
+  const { colors } = useTheme(); // 👈 read from ThemeProvider
+
   const [query, setQuery] = useState("");
   const [fontsLoaded] = useFonts({
     Comfortaa_400Regular,
     Comfortaa_700Bold,
   });
 
-  // 🧮 (Demo) filtered list by search – replace with server query later
+  // Filtered list by search
   const filtered = useMemo(() => {
     if (!query.trim()) return DAILY_DESSERTS;
     const q = query.toLowerCase();
     return DAILY_DESSERTS.filter(
-      (p) =>
-        p.name.toLowerCase().includes(q) || p.subtitle.toLowerCase().includes(q)
+      (p) => p.name.toLowerCase().includes(q) || p.subtitle.toLowerCase().includes(q)
     );
   }, [query]);
 
   if (!fontsLoaded) return null;
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <SafeAreaView style={[styles.safe, { backgroundColor: colors.bg }]}>
       <ScrollView contentContainerStyle={{ paddingBottom: 28 }}>
         {/* 🟩 Hero Header */}
-        <View style={styles.hero}>
-          {/* Top row: location + cart */}
+        <View style={[styles.hero, { backgroundColor: DEEP_GREEN }]}>
+          {/* Top row */}
           <View style={styles.rowBetween}>
             <View>
-              <Text style={styles.pickupSmall}>Recoger en local</Text>
+              <Text style={[styles.pickupSmall, { color: colors.onPrimary }]}>
+                Recoger en local
+              </Text>
               <View style={styles.row}>
-                <Text style={styles.addressText}>
-                  Av.  America, Cochabamba
+                <Text style={[styles.addressText, { color: colors.onPrimary }]}>
+                  Av. America, Cochabamba
                 </Text>
                 <Ionicons
                   name="chevron-down"
                   size={16}
-                  color={WHITE}
+                  color={colors.onPrimary}
                   style={{ marginLeft: 6, opacity: 0.9 }}
                 />
               </View>
@@ -96,27 +107,37 @@ export default function Home() {
               onPress={() => router.push("../cart")}
               accessibilityLabel="Carrito"
             >
-              <Ionicons name="cart-outline" size={26} color={WHITE} />
+              <Ionicons name="cart-outline" size={26} color={colors.onPrimary} />
             </TouchableOpacity>
           </View>
 
           {/* Title */}
-          <Text style={styles.heroTitle}>Coffee Time!</Text>
+          <Text style={[styles.heroTitle, { color: colors.onPrimary }]}>
+            Coffee Time!
+          </Text>
 
           {/* Search */}
-          <View style={styles.searchBox}>
-            <Ionicons name="search" size={20} color="#6B7280" />
+          <View
+            style={[
+              styles.searchBox,
+              {
+                backgroundColor: colors.card,
+                borderColor: colors.border,
+              },
+            ]}
+          >
+            <Ionicons name="search" size={20} color={colors.subtext} />
             <TextInput
               placeholder="Buscar un producto"
-              placeholderTextColor="#95a2ad"
-              style={styles.searchInput}
+              placeholderTextColor={colors.subtext}
+              style={[styles.searchInput, { color: colors.text }]}
               value={query}
               onChangeText={setQuery}
               returnKeyType="search"
             />
           </View>
 
-          {/* Categories (chips) */}
+          {/* Categories */}
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -125,18 +146,28 @@ export default function Home() {
             {CATEGORIES.map((c) => (
               <TouchableOpacity
                 key={c.id}
-                style={[styles.chip, c.active && styles.chipActive]}
-                onPress={() => {
-                  // TODO: filter by category; request backend
-                }}
+                style={[
+                  styles.chip,
+                  {
+                    backgroundColor: c.active ? colors.primary : colors.muted,
+                    borderColor: colors.border,
+                  },
+                ]}
               >
                 <MaterialCommunityIcons
                   name={c.icon as any}
                   size={18}
-                  color={c.active ? WHITE : DEEP_GREEN}
+                  color={c.active ? colors.onPrimary : colors.icon}
                   style={{ marginRight: 6 }}
                 />
-                <Text style={[styles.chipText, c.active && styles.chipTextActive]}>
+                <Text
+                  style={[
+                    styles.chipText,
+                    {
+                      color: c.active ? colors.onPrimary : colors.text,
+                    },
+                  ]}
+                >
                   {c.label}
                 </Text>
               </TouchableOpacity>
@@ -145,14 +176,22 @@ export default function Home() {
         </View>
 
         {/* 🔻 Body */}
-        <View style={styles.body}>
+        <View style={[styles.body, { backgroundColor: colors.bg }]}>
           {/* Section header */}
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Postres del día</Text>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>
+              Postres del día
+            </Text>
             <TouchableOpacity onPress={() => router.push("../products")}>
               <View style={styles.row}>
-                <Text style={styles.seeAll}>ver todo</Text>
-                <Ionicons name="chevron-forward" size={16} color="#6B7280" />
+                <Text style={[styles.seeAll, { color: colors.subtext }]}>
+                  ver todo
+                </Text>
+                <Ionicons
+                  name="chevron-forward"
+                  size={16}
+                  color={colors.subtext}
+                />
               </View>
             </TouchableOpacity>
           </View>
@@ -165,7 +204,9 @@ export default function Home() {
             columnWrapperStyle={{ justifyContent: "space-between" }}
             contentContainerStyle={{ paddingBottom: 24 }}
             scrollEnabled={false}
-            renderItem={({ item }) => <ProductCard product={item} />}
+            renderItem={({ item }) => (
+              <ProductCard product={item} colors={colors} />
+            )}
           />
         </View>
       </ScrollView>
@@ -176,17 +217,26 @@ export default function Home() {
 /* =========================
    Card Component
 ========================= */
-function ProductCard({ product }: { product: Product }) {
+function ProductCard({ product, colors }: { product: Product; colors: any }) {
   const hasDiscount = product.discountPct && product.oldPrice;
 
   return (
-    <View style={styles.card}>
+    <View
+      style={[
+        styles.card,
+        {
+          backgroundColor: colors.card,
+          borderColor: colors.border,
+          shadowColor: colors.isDark ? "#000" : "#000",
+        },
+      ]}
+    >
       <View style={styles.imageWrap}>
         <Image source={product.image as any} style={styles.image} />
 
         {hasDiscount && (
-          <View style={styles.badge}>
-            <Text style={styles.badgeText}>
+          <View style={[styles.badge, { backgroundColor: colors.primary }]}>
+            <Text style={[styles.badgeText, { color: colors.onPrimary }]}>
               - {Math.round((product.discountPct ?? 0) * 100)}%
             </Text>
           </View>
@@ -194,30 +244,39 @@ function ProductCard({ product }: { product: Product }) {
       </View>
 
       <View style={{ paddingHorizontal: 12, paddingTop: 8, paddingBottom: 12 }}>
-        <Text style={styles.cardTitle} numberOfLines={1}>
+        <Text
+          style={[styles.cardTitle, { color: colors.text }]}
+          numberOfLines={1}
+        >
           {product.name}
         </Text>
-        <Text style={styles.cardSubtitle} numberOfLines={2}>
+        <Text
+          style={[styles.cardSubtitle, { color: colors.subtext }]}
+          numberOfLines={2}
+        >
           {product.subtitle}
         </Text>
 
         <View style={[styles.rowBetween, { marginTop: 10 }]}>
           <View style={styles.row}>
-            <Text style={styles.price}>Bs. {product.price}</Text>
+            <Text style={[styles.price, { color: PRICE_GREEN }]}>
+              Bs. {product.price}
+            </Text>
             {product.oldPrice ? (
-              <Text style={styles.oldPrice}> Bs. {product.oldPrice}</Text>
+              <Text style={[styles.oldPrice, { color: colors.subtext }]}>
+                Bs. {product.oldPrice}
+              </Text>
             ) : null}
           </View>
 
           <TouchableOpacity
-            style={styles.addBtn}
+            style={[styles.addBtn, { backgroundColor: colors.primary }]}
             onPress={() => {
-              // TODO: connect to cart endpoint:
-              // POST /carrito/items { productId, qty: 1 }
+              // TODO: POST /carrito/items { productId, qty: 1 }
             }}
             accessibilityLabel={`Agregar ${product.name}`}
           >
-            <Ionicons name="add" size={18} color={WHITE} />
+            <Ionicons name="add" size={18} color={colors.onPrimary} />
           </TouchableOpacity>
         </View>
       </View>
@@ -229,9 +288,8 @@ function ProductCard({ product }: { product: Product }) {
    Styles
 ========================= */
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: LIGHT },
+  safe: { flex: 1 },
   hero: {
-    backgroundColor: DEEP_GREEN,
     paddingHorizontal: 24,
     paddingTop: 4,
     paddingBottom: 18,
@@ -243,19 +301,16 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   pickupSmall: {
-    color: WHITE,
     opacity: 0.8,
     fontFamily: "Comfortaa_400Regular",
     fontSize: 12,
   },
   addressText: {
-    color: WHITE,
     fontFamily: "Comfortaa_700Bold",
     fontSize: 14,
     marginTop: 2,
   },
   heroTitle: {
-    color: WHITE,
     fontFamily: "Comfortaa_700Bold",
     fontSize: 36,
     marginTop: 18,
@@ -264,7 +319,7 @@ const styles = StyleSheet.create({
     marginTop: 14,
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: WHITE,
+    borderWidth: 1,
     borderRadius: 14,
     paddingHorizontal: 14,
     height: 48,
@@ -274,49 +329,45 @@ const styles = StyleSheet.create({
     marginLeft: 10,
     fontFamily: "Comfortaa_400Regular",
     fontSize: 14,
-    color: "#1f2937",
   },
   categories: { marginTop: 12, paddingVertical: 4 },
   chip: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: CHIP_BG,
     paddingHorizontal: 14,
     paddingVertical: 10,
     borderRadius: 20,
     marginRight: 12,
-  },
-  chipActive: {
-    backgroundColor: "#2A6A5A",
+    borderWidth: 1,
   },
   chipText: {
     fontFamily: "Comfortaa_700Bold",
-    color: DEEP_GREEN,
     fontSize: 14,
   },
-  chipTextActive: { color: WHITE },
   body: { paddingHorizontal: 24, paddingTop: 18 },
-  sectionHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 12 },
+  sectionHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 12,
+  },
   sectionTitle: {
     fontFamily: "Comfortaa_700Bold",
     fontSize: 22,
-    color: "#0f172a",
   },
   seeAll: {
     fontFamily: "Comfortaa_400Regular",
-    color: "#6B7280",
     marginRight: 4,
   },
   card: {
     width: CARD_W,
-    backgroundColor: WHITE,
     borderRadius: 16,
-    shadowColor: "#000",
     shadowOpacity: 0.08,
     shadowRadius: 10,
     shadowOffset: { width: 0, height: 4 },
     elevation: 2,
     marginBottom: 16,
+    borderWidth: 1,
   },
   imageWrap: {
     width: "100%",
@@ -330,36 +381,30 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 8,
     left: 8,
-    backgroundColor: RED,
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
   },
   badgeText: {
-    color: WHITE,
     fontSize: 12,
     fontFamily: "Comfortaa_700Bold",
   },
   cardTitle: {
     fontFamily: "Comfortaa_700Bold",
-    color: "#0b1220",
     fontSize: 16,
   },
   cardSubtitle: {
     fontFamily: "Comfortaa_400Regular",
-    color: "#6B7280",
     fontSize: 13,
     marginTop: 4,
   },
   price: {
     fontFamily: "Comfortaa_700Bold",
     fontSize: 14,
-    color: PRICE_GREEN,
   },
   oldPrice: {
     fontFamily: "Comfortaa_400Regular",
     fontSize: 13,
-    color: GRAY_TEXT,
     textDecorationLine: "line-through",
     marginLeft: 8,
   },
@@ -367,7 +412,6 @@ const styles = StyleSheet.create({
     width: 30,
     height: 30,
     borderRadius: 8,
-    backgroundColor: "#2A6A5A",
     alignItems: "center",
     justifyContent: "center",
   },

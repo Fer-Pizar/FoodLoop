@@ -1,11 +1,21 @@
 import React, { useMemo } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, Image, ActivityIndicator, Alert, Switch,} from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  Image,
+  ActivityIndicator,
+  Alert,
+  Switch,
+} from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { useActionSheet } from "@expo/react-native-action-sheet";
 import ConsumidorFooter from "@/components/ConsumidorFooter";
 import { useConsumidor } from "@/hooks/useConsumidor";
 import { useTheme } from "@/src/theme/ThemeProvider";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function PerfilConsumidorScreen() {
   const router = useRouter();
@@ -49,6 +59,29 @@ export default function PerfilConsumidorScreen() {
     );
   };
 
+  // ===== Logout handler (borra claves y navega a /login)
+  const handleLogout = async () => {
+    try {
+      await AsyncStorage.multiRemove(["user", "token"]);
+    } catch {}
+    finally {
+      router.replace("/login");
+    }
+  };
+
+  // Confirmación antes de cerrar sesión
+  const confirmLogout = () => {
+    Alert.alert(
+      "Cerrar sesión",
+      "¿Seguro que deseas cerrar sesión?",
+      [
+        { text: "Cancelar", style: "cancel" },
+        { text: "Sí, salir", style: "destructive", onPress: handleLogout },
+      ],
+      { cancelable: true }
+    );
+  };
+
   if (loading && !me) {
     return (
       <View style={[styles.container, styles.center, { backgroundColor: colors.bg }]}>
@@ -78,8 +111,11 @@ export default function PerfilConsumidorScreen() {
             <Ionicons name="arrow-back" size={22} color="#fff" />
           </TouchableOpacity>
           <Text style={[styles.topbarTitle, { color: "#fff" }]}>Profile</Text>
-          <TouchableOpacity onPress={() => router.push("../share")} style={styles.iconBtn}>
-            <Ionicons name="share-social-outline" size={22} color="#fff" />
+
+          {/* 🔁 Reemplazado: icono de compartir -> icono de salir */}
+          <TouchableOpacity onPress={confirmLogout} style={styles.iconBtn} accessibilityLabel="Cerrar sesión">
+            {/* Puedes usar "exit-outline" o "log-out-outline" según tu set de Ionicons */}
+            <Ionicons name="exit-outline" size={22} color="#fff" />
           </TouchableOpacity>
         </View>
 
@@ -242,6 +278,8 @@ export default function PerfilConsumidorScreen() {
           </View>
           <Ionicons name="chevron-forward" size={18} color={colors.chevron} />
         </TouchableOpacity>
+
+        {/* 🔻 Se eliminó la sección "Cuenta" con el botón inferior de Cerrar sesión */}
       </View>
 
       <ConsumidorFooter />

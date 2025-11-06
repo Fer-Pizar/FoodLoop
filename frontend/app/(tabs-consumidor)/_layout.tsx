@@ -1,9 +1,28 @@
 import React, { useEffect, useState } from "react";
+import { ActivityIndicator } from "react-native";
 import { Stack, router } from "expo-router";
-import { ActivityIndicator, View } from "react-native";
 import { StatusBar } from "expo-status-bar";
+
 import { getStoredRole } from "@/src/auth/session";
-import { ThemeProvider } from "@/src/theme/ThemeProvider";
+import { ThemeProvider, useTheme } from "@/src/theme/ThemeProvider";
+import ThemedView from "@/components/themed-view"; // default import
+
+function ThemedConsumidorStack() {
+  const { colors, isDark } = useTheme();
+
+  return (
+    // ✅ Wrapper gives every screen a themed bg without touching each file
+    <ThemedView style={{ flex: 1, backgroundColor: colors.bg }}>
+      <StatusBar style={isDark ? "light" : "dark"} />
+      <Stack
+        screenOptions={{
+          headerShown: false,
+          contentStyle: { backgroundColor: "transparent" }, // don't fight the wrapper
+        }}
+      />
+    </ThemedView>
+  );
+}
 
 export default function ConsumidorTabsLayout() {
   const [ready, setReady] = useState(false);
@@ -19,22 +38,28 @@ export default function ConsumidorTabsLayout() {
     })();
   }, []);
 
+  // ⏳ Themed loader while we resolve role + theme
   if (!ready) {
     return (
       <ThemeProvider>
-        <StatusBar style="auto" />
-        <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+        <ThemedView
+          style={{
+            flex: 1,
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <StatusBar style="auto" />
           <ActivityIndicator />
-        </View>
+        </ThemedView>
       </ThemeProvider>
     );
   }
 
+  // ✅ Normal flow
   return (
     <ThemeProvider>
-      {/* StatusBar follows theme */}
-      <StatusBar style="auto" />
-      <Stack screenOptions={{ headerShown: false }} />
+      <ThemedConsumidorStack />
     </ThemeProvider>
   );
 }

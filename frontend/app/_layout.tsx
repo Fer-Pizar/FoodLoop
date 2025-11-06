@@ -6,8 +6,28 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { ActionSheetProvider } from "@expo/react-native-action-sheet";
 
-import { ThemeProvider } from "@/src/theme/ThemeProvider";
+import { ThemeProvider, useTheme } from "@/src/theme/ThemeProvider";
 
+function AppShell() {
+  // ✅ read theme here (inside provider)
+  const { isDark, colors } = useTheme();
+
+  return (
+    <>
+      {/* Follow theme automatically */}
+      <StatusBar style={isDark ? "light" : "dark"} />
+      <Stack
+        screenOptions={{
+          headerShown: false,
+          // ❌ Do NOT force "#fff" here
+          // contentStyle: { backgroundColor: "#fff" },
+          // ✅ Let screens show through; if you want a baseline, use transparent
+          contentStyle: { backgroundColor: "transparent" },
+        }}
+      />
+    </>
+  );
+}
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({ Comfortaa_400Regular, Comfortaa_700Bold });
@@ -21,6 +41,7 @@ export default function RootLayout() {
     );
   }
 
+  // Global font injection (your code kept)
   const T: any = Text;
   if (!T.__comfortaaApplied) {
     T.defaultProps = T.defaultProps || {};
@@ -36,24 +57,8 @@ export default function RootLayout() {
     <ThemeProvider>
       <ActionSheetProvider>
         <SafeAreaProvider>
-          {/* You can toggle based on theme later: <StatusBar style={isDark ? 'light' : 'dark'} /> */}
-          <StatusBar style="dark" />
-          <Stack
-            screenOptions={{
-              headerShown: false,
-              contentStyle: { backgroundColor: "#fff" }, 
-            }}
-          >
-            {/* Welcome */}
-            <Stack.Screen name="index" options={{ headerShown: false }} />
-            {/* Auth */}
-            <Stack.Screen name="login" options={{ headerShown: false }} />
-            <Stack.Screen name="Registro" options={{ headerShown: false }} />
-            {/* Tabs (Consumidor) */}
-            <Stack.Screen name="(tabs-consumidor)" options={{ headerShown: false }} />
-            {/* Tabs (Negocio) */}
-            <Stack.Screen name="(tabs-negocio)" options={{ headerShown: false }} />
-          </Stack>
+          {/* ✅ AppShell reads theme and configures StatusBar/Stack */}
+          <AppShell />
         </SafeAreaProvider>
       </ActionSheetProvider>
     </ThemeProvider>
