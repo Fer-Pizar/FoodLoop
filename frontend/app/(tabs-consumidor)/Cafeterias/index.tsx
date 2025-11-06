@@ -1,12 +1,12 @@
 import React, { useMemo } from "react";
-import { SafeAreaView, View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context"; 
 import { useRouter, Href } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import ConsumidorFooter from "../../../components/ConsumidorFooter"; 
+import ConsumidorFooter from "../../../components/ConsumidorFooter";
+import { useTheme } from "@/src/theme/ThemeProvider"; 
 
 const RED = "#D82A2A";
-const LIGHT = "#F7F7F7";
-const WHITE = "#FFFFFF";
 
 const useCafeterias = () =>
   useMemo(
@@ -21,12 +21,13 @@ export default function CafeteriasList() {
   const router = useRouter();
   const items = useCafeterias();
 
+  const { colors } = useTheme();
+
   const handlePress = (slug: string) => {
     if (slug.toLowerCase() === "starbucks") {
       router.push("/(tabs-consumidor)/Cafeterias/Starbucks" as Href);
       return;
     }
-
     router.push({
       pathname: "/(tabs-consumidor)/Cafeterias/[slug]",
       params: { slug },
@@ -35,25 +36,34 @@ export default function CafeteriasList() {
 
   return (
     <>
-      <SafeAreaView style={{ flex: 1, backgroundColor: LIGHT }}>
-        <View style={styles.header}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }}>
+        {/* Header */}
+        <View style={[styles.header, { backgroundColor: "transparent" }]}>
           <TouchableOpacity onPress={() => router.back()}>
             <Ionicons name="arrow-back" size={24} color={RED} />
           </TouchableOpacity>
-          <Text style={styles.title}>Cafeterías</Text>
+          <Text style={[styles.title, { color: colors.text }]}>Cafeterías</Text>
           <View style={{ width: 24 }} />
         </View>
 
+        {/* List */}
         <View style={{ padding: 16, gap: 12 }}>
           {items.map((c) => (
             <TouchableOpacity
               key={c.id}
-              style={styles.item}
+              style={[
+                styles.item,
+                {
+                  backgroundColor: colors.card,
+                  borderColor: colors.border,
+                  borderWidth: StyleSheet.hairlineWidth,
+                },
+              ]}
               onPress={() => handlePress(c.slug)}
               activeOpacity={0.9}
             >
-              <Text style={styles.itemText}>{c.nombre}</Text>
-              <Ionicons name="chevron-forward" size={22} color={RED} />
+              <Text style={[styles.itemText, { color: colors.text }]}>{c.nombre}</Text>
+              <Ionicons name="chevron-forward" size={22} color={colors.chevron} />
             </TouchableOpacity>
           ))}
         </View>
@@ -77,11 +87,9 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 22,
     fontWeight: "700",
-    color: "#222",
   },
   item: {
     padding: 16,
-    backgroundColor: WHITE,
     borderRadius: 14,
     flexDirection: "row",
     alignItems: "center",
@@ -93,7 +101,6 @@ const styles = StyleSheet.create({
   },
   itemText: {
     fontSize: 18,
-    color: "#222",
     flex: 1,
   },
 });

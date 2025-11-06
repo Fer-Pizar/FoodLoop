@@ -3,15 +3,12 @@ import { SafeAreaView, View, Text, TouchableOpacity, StyleSheet } from "react-na
 import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
-
-const RED = "#D82A2A";
-const LIGHT = "#F7F7F7";
-const WHITE = "#FFFFFF";
-const GRAY_TEXT = "#b5b5b5";
+import { useTheme } from "@/src/theme/ThemeProvider";
 
 export default function Categories() {
   const router = useRouter();
   const [userName, setUserName] = useState<string>("");
+  const { colors, isDark } = useTheme();
 
   useEffect(() => {
     const loadUser = async () => {
@@ -37,21 +34,34 @@ export default function Categories() {
     label: string;
     onPress?: () => void;
   }) => (
-    <TouchableOpacity activeOpacity={0.9} onPress={onPress} style={styles.row}>
-      <View style={styles.iconWrap}>{icon}</View>
-      <Text style={styles.rowText}>{label}</Text>
-      <Ionicons name="arrow-forward" size={22} color={RED} style={{ marginLeft: "auto" }} />
+    <TouchableOpacity
+      activeOpacity={0.9}
+      onPress={onPress}
+      style={[
+        styles.row,
+        {
+          backgroundColor: colors.card,
+          borderColor: colors.border,
+          shadowColor: isDark ? "transparent" : "#000",
+        },
+      ]}
+    >
+      <View style={[styles.iconWrap, { backgroundColor: colors.primary }]}>
+        {icon}
+      </View>
+      <Text style={[styles.rowText, { color: colors.text }]}>{label}</Text>
+      <Ionicons name="arrow-forward" size={22} color={colors.primary} style={{ marginLeft: "auto" }} />
     </TouchableOpacity>
   );
 
   return (
     <>
       {/* Main Content */}
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.bg }]}>
         {/* Header */}
         <View style={{ paddingHorizontal: 24, paddingTop: 8 }}>
-          <Text style={styles.h1}>¡Bienvenido, {userName}!</Text>
-          <Text style={styles.p}>
+          <Text style={[styles.h1, { color: colors.primary }]}>¡Bienvenido, {userName}!</Text>
+          <Text style={[styles.p, { color: colors.subtext }]}>
             Estamos listos para servirte con un genuino deseo de hacer tu día mejor..{"\n"}
             ¿Qué vas a pedir hoy?
           </Text>
@@ -60,51 +70,54 @@ export default function Categories() {
         {/* Options */}
         <View style={{ gap: 18, paddingHorizontal: 16, marginTop: 14 }}>
           <Item
-            icon={<MaterialCommunityIcons name="cupcake" size={28} color={WHITE} />}
+            icon={<MaterialCommunityIcons name="cupcake" size={28} color={colors.onPrimary} />}
             label="Pastelería"
             onPress={() => {}}
           />
           <Item
-            icon={<MaterialCommunityIcons name="coffee" size={28} color={WHITE} />}
+            icon={<MaterialCommunityIcons name="coffee" size={28} color={colors.onPrimary} />}
             label="Cafetería"
             onPress={() => router.push("/(tabs-consumidor)/Cafeterias" as any)}
           />
           <Item
-            icon={<MaterialCommunityIcons name="shopping-outline" size={28} color={WHITE} />}
+            icon={<MaterialCommunityIcons name="shopping-outline" size={28} color={colors.onPrimary} />}
             label="Supermercado"
             onPress={() => {}}
           />
           <Item
-            icon={<MaterialCommunityIcons name="silverware-fork-knife" size={28} color={WHITE} />}
+            icon={<MaterialCommunityIcons name="silverware-fork-knife" size={28} color={colors.onPrimary} />}
             label="Restaurante"
             onPress={() => {}}
           />
         </View>
 
-        {/* Bottom spacing to avoid overlap */}
+        {/* Bottom spacing */}
         <View style={{ height: 90 }} />
       </SafeAreaView>
 
-      <View style={styles.footer}>
-        <Ionicons name="chatbubble-ellipses-outline" size={22} color={WHITE} />
+      {/* Footer */}
+      <View style={[styles.footer, { backgroundColor: colors.primary }]}>
+        <Ionicons name="chatbubble-ellipses-outline" size={22} color={colors.onPrimary} />
         <View style={styles.sep} />
-        <Ionicons name="heart-outline" size={22} color={WHITE} />
+        <Ionicons name="heart-outline" size={22} color={colors.onPrimary} />
 
         {/* Home pill */}
         <TouchableOpacity
           activeOpacity={0.8}
-          style={styles.homePill}
+          style={[styles.homePill, { backgroundColor: colors.card }]}
           onPress={() => router.replace("/(tabs-consumidor)/Categories")}
         >
-          <Ionicons name="home" size={26} color={RED} />
+          <Ionicons name="home" size={26} color={colors.primary} />
         </TouchableOpacity>
 
-        <Ionicons name="bag-handle-outline" size={22} color={WHITE} />
+        <Ionicons name="bag-handle-outline" size={22} color={colors.onPrimary} />
         <View style={styles.sep} />
+
         <TouchableOpacity
+          activeOpacity={0.9}
           onPress={() => router.push("/(tabs-consumidor)/Consumidor/Perfil")}
         >
-          <Ionicons name="person-circle-outline" size={24} color={WHITE} />
+          <Ionicons name="person-circle-outline" size={24} color={colors.onPrimary} />
         </TouchableOpacity>
       </View>
     </>
@@ -112,36 +125,36 @@ export default function Categories() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: LIGHT },
+  container: { flex: 1 },
+
   h1: {
     fontSize: 28,
     fontWeight: "700",
-    color: RED,
     letterSpacing: 0.2,
     marginBottom: 10,
   },
-  p: { fontSize: 15, color: "#3a3a3a", lineHeight: 22 },
+  p: { fontSize: 15, lineHeight: 22 },
+
   row: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#eeeef0",
     borderRadius: 18,
     padding: 14,
-    shadowColor: "#000",
+    borderWidth: StyleSheet.hairlineWidth,
     shadowOpacity: 0.06,
     shadowRadius: 6,
+    shadowOffset: { width: 0, height: 3 },
     elevation: 2,
   },
   iconWrap: {
     width: 64,
     height: 64,
-    backgroundColor: RED,
     borderRadius: 16,
     alignItems: "center",
     justifyContent: "center",
     marginRight: 16,
   },
-  rowText: { fontSize: 20, color: "#222" },
+  rowText: { fontSize: 20 },
 
   footer: {
     position: "absolute",
@@ -149,7 +162,6 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 70,
-    backgroundColor: RED,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-around",
@@ -161,7 +173,6 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(255,255,255,0.6)",
   },
   homePill: {
-    backgroundColor: WHITE,
     width: 68,
     height: 44,
     borderRadius: 22,
