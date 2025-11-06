@@ -1,40 +1,76 @@
-import { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  Image,
-  Dimensions,
-  Modal,
-} from "react-native";
+import React, { useMemo } from "react";
+import { View, Text, TouchableOpacity, StyleSheet, Image, ActivityIndicator, Alert,} from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import ConsumidorFooter from "@/components/ConsumidorFooter"; 
-
-const { width } = Dimensions.get("window");
+import { useActionSheet } from "@expo/react-native-action-sheet";
+import ConsumidorFooter from "@/components/ConsumidorFooter";
+import { useConsumidor } from "@/hooks/useConsumidor";
 
 export default function ProfileScreen() {
   const router = useRouter();
-  const [modalVisible, setModalVisible] = useState(false);
-  const [user, setUser] = useState<{ nombre: string; foto_perfil?: string } | null>(null);
+  const { showActionSheetWithOptions } = useActionSheet();
 
-  useEffect(() => {
-    const loadUser = async () => {
-      try {
-        const json = await AsyncStorage.getItem("user");
-        if (json) setUser(JSON.parse(json));
-      } catch (error) {
-        console.error("Error al cargar usuario:", error);
+  const {
+    me,
+    loading,
+    error,
+    refresh,
+    takePhoto,
+    pickFromGallery,
+    removeAvatar,
+    avatarUrl,
+  } = useConsumidor();
+
+  const photo = useMemo(
+    () => (me?.foto_perfil ? avatarUrl(me.foto_perfil) : undefined),
+    [me?.foto_perfil, avatarUrl]
+  );
+
+  const openPhotoMenu = () => {
+    const options = ["Tomar una foto", "Elegir de la galería", "Eliminar foto", "Cancelar"];
+    const destructiveButtonIndex = 2;
+    const cancelButtonIndex = 3;
+
+    showActionSheetWithOptions(
+      { options, cancelButtonIndex, destructiveButtonIndex },
+      async (i?: number) => {
+        try {
+          if (i === 0) {
+            await takePhoto();
+          } else if (i === 1) {
+            await pickFromGallery();
+          } else if (i === 2) {
+            await removeAvatar();
+          }
+        } catch (e: any) {
+          Alert.alert("Error", e?.message ?? "No se pudo actualizar la foto");
+        }
       }
-    };
-    loadUser();
-  }, []);
+    );
+  };
+
+  if (loading && !me) {
+    return (
+      <View style={[styles.container, { justifyContent: "center", alignItems: "center" }]}>
+        <ActivityIndicator size="large" />
+        <Text style={{ marginTop: 8 }}>Cargando perfil…</Text>
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={[styles.container, { justifyContent: "center", alignItems: "center", gap: 10 }]}>
+        <Text style={{ color: "red" }}>{error}</Text>
+        <TouchableOpacity onPress={refresh} style={{ padding: 10, backgroundColor: "#eee", borderRadius: 10 }}>
+          <Text>Reintentar</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
   return (
     <>
-      {/* 👇 Contenido principal del perfil */}
       <View style={styles.container}>
         {/* HEADER */}
         <View style={styles.header}>
@@ -44,14 +80,12 @@ export default function ProfileScreen() {
           </TouchableOpacity>
 
           {/* Saludo */}
-          <Text style={styles.greeting}>¡Hola, {user?.nombre || "Usuario"}!</Text>
+          <Text style={styles.greeting}>¡Hola, {me?.nombre || "Usuario"}!</Text>
 
-          {/* Foto de perfil */}
-          <TouchableOpacity onPress={() => setModalVisible(true)}>
+          {/* Foto de perfil (abre ActionSheet) */}
+          <TouchableOpacity onPress={openPhotoMenu}>
             <Image
-              source={{
-                uri: user?.foto_perfil || "https://i.pravatar.cc/150?img=47",
-              }}
+              source={photo ? { uri: photo } : require("@/assets/images/icon.png")}
               style={styles.avatar}
             />
           </TouchableOpacity>
@@ -64,7 +98,7 @@ export default function ProfileScreen() {
         <View style={styles.section}>
           <TouchableOpacity
             style={styles.option}
-            onPress={() => router.push("../infoPersonal")}
+            onPress={() => router.push("../(tabs-consumidor)/Consumidor/EditProfile")}
           >
             <Ionicons name="person-outline" size={20} color="#777" />
             <Text style={styles.optionText}>Información Personal</Text>
@@ -81,54 +115,12 @@ export default function ProfileScreen() {
 
           <TouchableOpacity
             style={styles.option}
-            onPress={async () => {
-              await AsyncStorage.removeItem("user");
-              router.push("/login"); 
-            }}
+            onPress={() => router.push("/login")}
           >
             <Ionicons name="exit-outline" size={20} color="#777" />
             <Text style={styles.optionText}>Cerrar Sesión</Text>
           </TouchableOpacity>
         </View>
-
-        {/* Modal estilo Bottom Sheet */}
-        <Modal
-          visible={modalVisible}
-          transparent
-          animationType="slide"
-          onRequestClose={() => setModalVisible(false)}
-        >
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalContent}>
-              <Text style={styles.sheetTitle}>Editar Foto</Text>
-
-              <TouchableOpacity style={styles.sheetOption}>
-                <Ionicons name="camera-outline" size={20} color="#333" />
-                <Text style={styles.sheetOptionText}>Tomar una Foto</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity style={styles.sheetOption}>
-                <Ionicons name="image-outline" size={20} color="#333" />
-                <Text style={styles.sheetOptionText}>Elegir de la galería</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity style={styles.sheetOption}>
-                <Ionicons name="trash-outline" size={20} color="red" />
-                <Text style={[styles.sheetOptionText, { color: "red" }]}>
-                  Eliminar Foto
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.closeBtn}
-                onPress={() => setModalVisible(false)}
-              >
-                <Ionicons name="close" size={20} color="#777" />
-                <Text style={styles.closeText}>Cerrar</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </Modal>
       </View>
 
       <ConsumidorFooter />
@@ -141,7 +133,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#fff",
     paddingHorizontal: 20,
-    paddingBottom: 90, 
+    paddingBottom: 90,
   },
   header: {
     flexDirection: "row",
@@ -184,29 +176,4 @@ const styles = StyleSheet.create({
     borderColor: "#eee",
   },
   optionText: { marginLeft: 10, fontSize: 15, color: "#333" },
-  modalOverlay: {
-    flex: 1,
-    justifyContent: "flex-end",
-    backgroundColor: "rgba(0,0,0,0.3)",
-  },
-  modalContent: {
-    backgroundColor: "#fff",
-    padding: 20,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-  },
-  sheetTitle: { fontSize: 18, fontWeight: "bold", marginBottom: 20 },
-  sheetOption: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 12,
-  },
-  sheetOptionText: { marginLeft: 10, fontSize: 16, color: "#333" },
-  closeBtn: {
-    marginTop: 15,
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  closeText: { marginLeft: 5, fontSize: 14, color: "#777" },
 });
