@@ -60,9 +60,17 @@ export default function ProfileScreen() {
 
   if (error) {
     return (
-      <View style={[styles.container, { justifyContent: "center", alignItems: "center", gap: 10 }]}>
+      <View
+        style={[
+          styles.container,
+          { justifyContent: "center", alignItems: "center", gap: 10 },
+        ]}
+      >
         <Text style={{ color: "red" }}>{error}</Text>
-        <TouchableOpacity onPress={refresh} style={{ padding: 10, backgroundColor: "#eee", borderRadius: 10 }}>
+        <TouchableOpacity
+          onPress={refresh}
+          style={{ padding: 10, backgroundColor: "#eee", borderRadius: 10 }}
+        >
           <Text>Reintentar</Text>
         </TouchableOpacity>
       </View>
@@ -98,7 +106,7 @@ export default function ProfileScreen() {
         <View style={styles.section}>
           <TouchableOpacity
             style={styles.option}
-            onPress={() => router.push("../(tabs-consumidor)/Consumidor/EditProfile")}
+            onPress={() => router.push("./EditProfile")}
           >
             <Ionicons name="person-outline" size={20} color="#777" />
             <Text style={styles.optionText}>Información Personal</Text>
@@ -113,10 +121,7 @@ export default function ProfileScreen() {
             <Text style={styles.optionText}>Registrar mi Negocio</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity
-            style={styles.option}
-            onPress={() => router.push("/login")}
-          >
+          <TouchableOpacity style={styles.option} onPress={() => router.push("/login")}>
             <Ionicons name="exit-outline" size={20} color="#777" />
             <Text style={styles.optionText}>Cerrar Sesión</Text>
           </TouchableOpacity>
