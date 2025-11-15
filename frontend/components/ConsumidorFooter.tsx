@@ -8,24 +8,52 @@ const WHITE = "#FFFFFF";
 
 export default function ConsumidorFooter() {
   const router = useRouter();
+
+  const goHome = () => {
+    router.replace("/(tabs-consumidor)/Categories");
+  };
+
+  const goProfile = () => {
+    router.replace("/(tabs-consumidor)/Consumidor/Perfil");
+  };
+
+  const goCart = () => {
+    router.replace("/cart");
+  };
+
+  const goChat = () => {};
+  const goFavorites = () => {};
+
   return (
     <View style={styles.wrap}>
-      <Ionicons name="chatbubble-ellipses-outline" size={22} color={WHITE} />
-      <View style={styles.sep} />
-      <Ionicons name="heart-outline" size={22} color={WHITE} />
-
-      {/* Home pill */}
-      <TouchableOpacity
-        onPress={() => router.replace("/(tabs-consumidor)/Categories")}
-        activeOpacity={0.85}
-        style={styles.homePill}
-      >
-        <Ionicons name="home" size={26} color={RED} />
+      {/* Chat */}
+      <TouchableOpacity onPress={goChat} activeOpacity={0.7}>
+        <Ionicons name="chatbubble-ellipses-outline" size={22} color={WHITE} />
       </TouchableOpacity>
 
-      <Ionicons name="bag-handle-outline" size={22} color={WHITE} />
       <View style={styles.sep} />
-      <Ionicons name="person-circle-outline" size={22} color={WHITE} />
+
+      {/* Favorites */}
+      <TouchableOpacity onPress={goFavorites} activeOpacity={0.7}>
+        <Ionicons name="heart-outline" size={22} color={WHITE} />
+      </TouchableOpacity>
+
+      {/* Home pill */}
+      <TouchableOpacity onPress={goHome} activeOpacity={0.85} style={styles.homePill}>
+        <Ionicons name="home" size={26} color={WHITE} />
+      </TouchableOpacity>
+
+      {/* Cart */}
+      <TouchableOpacity onPress={goCart} activeOpacity={0.7}>
+        <Ionicons name="bag-handle-outline" size={22} color={WHITE} />
+      </TouchableOpacity>
+
+      <View style={styles.sep} />
+
+      {/* Profile */}
+      <TouchableOpacity onPress={goProfile} activeOpacity={0.7}>
+        <Ionicons name="person-circle-outline" size={22} color={WHITE} />
+      </TouchableOpacity>
     </View>
   );
 }
@@ -49,7 +77,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(255,255,255,0.6)",
   },
   homePill: {
-    backgroundColor: WHITE,
+    backgroundColor: RED,
     width: 68,
     height: 44,
     borderRadius: 22,
@@ -57,5 +85,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginHorizontal: 6,
     marginBottom: 10,
+    borderWidth: 2,
+    borderColor: WHITE,
   },
 });
