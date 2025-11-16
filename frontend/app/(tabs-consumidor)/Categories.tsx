@@ -5,6 +5,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useTheme } from "@/src/theme/ThemeProvider";
 
+import ConsumidorFooter from "@/components/ConsumidorFooter";
+
 export default function Categories() {
   const router = useRouter();
   const [userName, setUserName] = useState<string>("");
@@ -91,35 +93,12 @@ export default function Categories() {
           />
         </View>
 
-        {/* Bottom spacing */}
+        {/* Bottom spacing so footer floats */}
         <View style={{ height: 90 }} />
       </SafeAreaView>
 
-      {/* Footer */}
-      <View style={[styles.footer, { backgroundColor: colors.primary }]}>
-        <Ionicons name="chatbubble-ellipses-outline" size={22} color={colors.onPrimary} />
-        <View style={styles.sep} />
-        <Ionicons name="heart-outline" size={22} color={colors.onPrimary} />
-
-        {/* Home pill */}
-        <TouchableOpacity
-          activeOpacity={0.8}
-          style={[styles.homePill, { backgroundColor: colors.card }]}
-          onPress={() => router.replace("/(tabs-consumidor)/Categories")}
-        >
-          <Ionicons name="home" size={26} color={colors.primary} />
-        </TouchableOpacity>
-
-        <Ionicons name="bag-handle-outline" size={22} color={colors.onPrimary} />
-        <View style={styles.sep} />
-
-        <TouchableOpacity
-          activeOpacity={0.9}
-          onPress={() => router.push("/(tabs-consumidor)/Consumidor/Perfil")}
-        >
-          <Ionicons name="person-circle-outline" size={24} color={colors.onPrimary} />
-        </TouchableOpacity>
-      </View>
+      {/* Shared Footer */}
+      <ConsumidorFooter />
     </>
   );
 }
@@ -155,30 +134,4 @@ const styles = StyleSheet.create({
     marginRight: 16,
   },
   rowText: { fontSize: 20 },
-
-  footer: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 70,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-around",
-    paddingHorizontal: 18,
-  },
-  sep: {
-    width: 1,
-    height: 20,
-    backgroundColor: "rgba(255,255,255,0.6)",
-  },
-  homePill: {
-    width: 68,
-    height: 44,
-    borderRadius: 22,
-    alignItems: "center",
-    justifyContent: "center",
-    marginHorizontal: 6,
-    marginBottom: 10,
-  },
 });
