@@ -1,42 +1,30 @@
-// frontend/src/hooks/useComercio.ts
 import { useCallback, useEffect, useState } from "react";
-import { negocioApi } from "../src/api/negocio";
-import type { Comercio } from "../src/api/types";
+import { getComerciosByCategoria } from "@/src/api/negocio";
+import type { Comercio } from "@/src/api/negocio";
 
-export function useComercioMe() {
-  const [data, setData] = useState<Comercio | null>(null);
+export function useComerciosByCategoria(categoria: string) {
+  const [comercios, setComercios] = useState<Comercio[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
     setError(null);
+
     try {
-      const d = await negocioApi.getMe();
-      setData(d);
-    } catch (e: any) {
-      setError(e?.message ?? "Error al cargar");
+      const list = await getComerciosByCategoria(categoria);
+      setComercios(list);
+    } catch (err: any) {
+      console.log("❌ Error cargando comercios:", err);
+      setError(err?.message ?? "Error al cargar la categoría");
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [categoria]);
 
   useEffect(() => {
     fetchData();
   }, [fetchData]);
 
-  const update = async (dto: Partial<Comercio>) => {
-    const updated = await negocioApi.updateMe({
-      nombreNegocio: dto.nombreNegocio,
-      telefono: dto.telefono,
-      direccion: dto.direccion,
-    });
-    setData(updated);
-  };
-
-  const refetch = fetchData;
-  const setLocal = (patch: Partial<Comercio>) =>
-    setData((prev) => (prev ? { ...prev, ...patch } : prev));
-
-  return { data, loading, error, update, refetch, setLocal };
+  return { comercios, loading, error };
 }

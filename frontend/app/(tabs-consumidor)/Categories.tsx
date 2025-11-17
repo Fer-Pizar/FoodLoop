@@ -4,13 +4,19 @@ import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useTheme } from "@/src/theme/ThemeProvider";
-
 import ConsumidorFooter from "@/components/ConsumidorFooter";
 
 export default function Categories() {
   const router = useRouter();
   const [userName, setUserName] = useState<string>("");
   const { colors, isDark } = useTheme();
+
+  const handleOpenCategory = (categoria: string) => {
+    router.push({
+      pathname: "/(tabs-consumidor)/Cafeterias",
+      params: { categoria },
+    } as any);
+  };
 
   useEffect(() => {
     const loadUser = async () => {
@@ -79,12 +85,12 @@ export default function Categories() {
           <Item
             icon={<MaterialCommunityIcons name="coffee" size={28} color={colors.onPrimary} />}
             label="Cafetería"
-            onPress={() => router.push("/(tabs-consumidor)/Cafeterias" as any)}
+            onPress={() => handleOpenCategory("Cafetería")}
           />
           <Item
             icon={<MaterialCommunityIcons name="shopping-outline" size={28} color={colors.onPrimary} />}
             label="Supermercado"
-            onPress={() => {}}
+            onPress={() => handleOpenCategory("Supermercado")}
           />
           <Item
             icon={<MaterialCommunityIcons name="silverware-fork-knife" size={28} color={colors.onPrimary} />}

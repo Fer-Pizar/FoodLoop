@@ -1,38 +1,23 @@
-import React, { useMemo } from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context"; 
-import { useRouter, Href } from "expo-router";
+import React from "react";
+import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, FlatList,} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import ConsumidorFooter from "../../../components/ConsumidorFooter";
-import { useTheme } from "@/src/theme/ThemeProvider"; 
+import ConsumidorFooter from "@/components/ConsumidorFooter";
+import { useTheme } from "@/src/theme/ThemeProvider";
+import { useComerciosByCategoria } from "@/hooks/useComercio";
 
 const RED = "#D82A2A";
 
-const useCafeterias = () =>
-  useMemo(
-    () => [
-      { id: 5, slug: "capresso", nombre: "Capresso" },
-      { id: 6, slug: "starbucks", nombre: "Starbucks" },
-    ],
-    []
-  );
-
 export default function CafeteriasList() {
   const router = useRouter();
-  const items = useCafeterias();
-
   const { colors } = useTheme();
 
-  const handlePress = (slug: string) => {
-    if (slug.toLowerCase() === "starbucks") {
-      router.push("/(tabs-consumidor)/Cafeterias/Starbucks" as Href);
-      return;
-    }
-    router.push({
-      pathname: "/(tabs-consumidor)/Cafeterias/[slug]",
-      params: { slug },
-    } as Href);
-  };
+  const { categoria } = useLocalSearchParams<{ categoria?: string }>();
+  const categoriaFinal = (categoria as string) || "Cafetería";
+
+  const { comercios, loading, error } =
+    useComerciosByCategoria(categoriaFinal);
 
   return (
     <>
@@ -42,30 +27,76 @@ export default function CafeteriasList() {
           <TouchableOpacity onPress={() => router.back()}>
             <Ionicons name="arrow-back" size={24} color={RED} />
           </TouchableOpacity>
-          <Text style={[styles.title, { color: colors.text }]}>Cafeterías</Text>
+          {/* Show current category in header */}
+          <Text style={[styles.title, { color: colors.text }]}>
+            {categoriaFinal}
+          </Text>
           <View style={{ width: 24 }} />
         </View>
 
-        {/* List */}
-        <View style={{ padding: 16, gap: 12 }}>
-          {items.map((c) => (
-            <TouchableOpacity
-              key={c.id}
-              style={[
-                styles.item,
-                {
-                  backgroundColor: colors.card,
-                  borderColor: colors.border,
-                  borderWidth: StyleSheet.hairlineWidth,
-                },
-              ]}
-              onPress={() => handlePress(c.slug)}
-              activeOpacity={0.9}
+        {/* Content */}
+        <View style={{ padding: 16, gap: 12, flex: 1 }}>
+          {loading && (
+            <ActivityIndicator style={{ marginTop: 8 }} />
+          )}
+
+          {error && (
+            <Text
+              style={{
+                marginTop: 8,
+                color: "red",
+              }}
             >
-              <Text style={[styles.itemText, { color: colors.text }]}>{c.nombre}</Text>
-              <Ionicons name="chevron-forward" size={22} color={colors.chevron} />
-            </TouchableOpacity>
-          ))}
+              Oops, could not load {categoriaFinal} 😢
+            </Text>
+          )}
+
+          {!loading && !error && (
+            <FlatList
+              data={comercios}
+              keyExtractor={(item) =>
+                String(item.idComercio)
+              }
+              ItemSeparatorComponent={() => (
+                <View style={{ height: 8 }} />
+              )}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={[
+                    styles.item,
+                    {
+                      backgroundColor: colors.card,
+                      borderColor: colors.border,
+                      borderWidth: StyleSheet.hairlineWidth,
+                    },
+                  ]}
+                  onPress={() => {}}
+                  activeOpacity={0.9}
+                >
+                  {/* Only the name */}
+                  <Text
+                    style={[
+                      styles.itemText,
+                      { color: colors.text },
+                    ]}
+                  >
+                    {item.nombreNegocio}
+                  </Text>
+                </TouchableOpacity>
+              )}
+            />
+          )}
+
+          {!loading && !error && comercios.length === 0 && (
+            <Text
+              style={{
+                marginTop: 8,
+                color: colors.subtext,
+              }}
+            >
+              No hay comercios en esta categoría todavía. 😌
+            </Text>
+          )}
         </View>
 
         <View style={{ height: 90 }} />
