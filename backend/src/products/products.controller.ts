@@ -1,8 +1,8 @@
-import { Controller, Get, Query, BadRequestException, UseGuards,} from '@nestjs/common';
+import { Controller, Get, Query, BadRequestException, UseGuards, Param,} from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
-@Controller('products') 
+@Controller('products')
 export class ProductsController {
   constructor(private readonly service: ProductsService) {}
 
@@ -40,6 +40,23 @@ export class ProductsController {
       ok: true,
       categoria,
       comercios,
+    };
+  }
+
+  @Get('comercios/:idComercio/productos')
+  async getProductosByComercio(@Param('idComercio') idComercio: string) {
+    const id = Number(idComercio);
+
+    if (Number.isNaN(id)) {
+      throw new BadRequestException('idComercio debe ser numérico');
+    }
+
+    const productos = await this.service.getProductosByComercio(id);
+
+    return {
+      ok: true,
+      idComercio: id,
+      productos,
     };
   }
 }

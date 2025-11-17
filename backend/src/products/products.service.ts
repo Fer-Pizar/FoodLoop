@@ -5,7 +5,7 @@ type FindParams = {
   comercioId: number;
   idCategoria?: number;
   categoria?: string;
-  q?: string;           
+  q?: string;
   expiresSoon?: boolean;
 };
 
@@ -16,8 +16,8 @@ export class ProductsService {
   async getComerciosByCategoria(categoria: string) {
     return this.prisma.comercio.findMany({
       where: {
-        categoria,    
-        estado: true, 
+        categoria,
+        estado: true,
       },
       select: {
         idComercio: true,
@@ -33,6 +33,27 @@ export class ProductsService {
 
   async getComerciosByCategoryName(categoryName: string) {
     return this.getComerciosByCategoria(categoryName);
+  }
+
+  async getProductosByComercio(idComercio: number) {
+    const id = BigInt(idComercio);
+
+    const productos = await this.prisma.productos.findMany({
+      where: { id_comercio: id },
+      select: {
+        id_producto: true,
+        nombre: true,
+        descripcion: true,
+        precio_base: true,
+        precio_actual: true,
+        imagen_url: true,
+        cantidad_disponible: true,
+        estado: true,
+      },
+      orderBy: { id_producto: 'asc' },
+    });
+
+    return productos;
   }
 
   async findByFilters(params: FindParams) {
