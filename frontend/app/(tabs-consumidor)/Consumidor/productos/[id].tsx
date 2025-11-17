@@ -1,12 +1,4 @@
-import {
-  View,
-  Text,
-  Image,
-  FlatList,
-  ActivityIndicator,
-  TouchableOpacity,
-  Alert,
-} from "react-native";
+import { View, Text, Image, FlatList, ActivityIndicator, TouchableOpacity, Alert,} from "react-native";
 import { useLocalSearchParams, router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -31,11 +23,7 @@ export default function ProductosNegocioView() {
     };
 
   const { productos, loading, error } = useProductos(idComercio);
-
-  // 🛒 Cart hook
   const { items, add, update } = useCart();
-
-  // Local productos (to update stock instantly)
   const [localProductos, setLocalProductos] = useState<any[]>([]);
 
   useEffect(() => {
@@ -224,7 +212,6 @@ export default function ProductosNegocioView() {
 
                           const res = await add(productId, 1);
 
-                          // Reduce stock
                           setLocalProductos((prev) =>
                             prev.map((p) =>
                               p.id_producto === item.id_producto
@@ -262,7 +249,6 @@ export default function ProductosNegocioView() {
                       </Text>
                     </TouchableOpacity>
                   ) : (
-                    // ⭐ Show – qty + when already in cart
                     <View
                       style={{
                         marginTop: 12,
@@ -294,7 +280,6 @@ export default function ProductosNegocioView() {
                               )
                             );
                           } else {
-                            // increase stock by 1
                             setLocalProductos((prev) =>
                               prev.map((p) =>
                                 p.id_producto === item.id_producto
@@ -323,7 +308,6 @@ export default function ProductosNegocioView() {
                           const newQty = qtyInCart + 1;
                           update(item.id_producto, newQty);
 
-                          // remove 1 stock
                           setLocalProductos((prev) =>
                             prev.map((p) =>
                               p.id_producto === item.id_producto
