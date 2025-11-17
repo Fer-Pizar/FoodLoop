@@ -1,4 +1,4 @@
-import { View, Text, Image, FlatList, ActivityIndicator, TouchableOpacity,} from "react-native";
+import { View, Text, Image, FlatList, ActivityIndicator, TouchableOpacity, Alert,} from "react-native";
 import { useLocalSearchParams, router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -6,6 +6,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { NEGOCIO_THEMES } from "@/constants/negocioThemes";
 import { useProductos } from "@/hooks/useProductos";
 import ConsumidorFooter from "@/components/ConsumidorFooter";
+import { useCart } from "@/hooks/useCart";
 
 export default function ProductosNegocioView() {
   const { id, nombre } = useLocalSearchParams();
@@ -21,6 +22,7 @@ export default function ProductosNegocioView() {
     };
 
   const { productos, loading, error } = useProductos(idComercio);
+  const { add } = useCart();
 
   if (loading)
     return (
@@ -91,7 +93,7 @@ export default function ProductosNegocioView() {
             data={productos}
             keyExtractor={(item) => item.id_producto.toString()}
             showsVerticalScrollIndicator={false}
-            contentContainerStyle={{ paddingBottom: 90 }} 
+            contentContainerStyle={{ paddingBottom: 90 }}
             renderItem={({ item }) => {
               // precios
               const currentPrice = item.precio_actual ?? item.precio;
@@ -178,6 +180,61 @@ export default function ProductosNegocioView() {
                       Stock: {item.cantidad_disponible} unidades
                     </Text>
                   )}
+
+                  {/* BOTÓN AGREGAR AL CARRITO*/}
+                  <TouchableOpacity
+                    activeOpacity={0.9}
+                    style={{
+                      marginTop: 12,
+                      backgroundColor:
+                        item.cantidad_disponible && item.cantidad_disponible > 0
+                          ? theme.accent ?? theme.primary
+                          : "#CCCCCC",
+                      paddingVertical: 10,
+                      borderRadius: 24,
+                      alignItems: "center",
+                    }}
+                    disabled={
+                      !item.cantidad_disponible || item.cantidad_disponible <= 0
+                    }
+                    onPress={async () => {
+                      try {
+                        if (
+                          !item.cantidad_disponible ||
+                          item.cantidad_disponible <= 0
+                        ) {
+                          Alert.alert(
+                            "Sin stock",
+                            "Stock insuficiente para este producto 🥹"
+                          );
+                          return;
+                        }
+
+                        const res = await add(item.id_producto, 1);
+
+                        Alert.alert(
+                          "Listo ✅",
+                          res.message ?? "Producto agregado al carrito"
+                        );
+                      } catch (err: any) {
+                        const msg =
+                          err?.response?.data?.message ||
+                          err?.message ||
+                          "No se pudo agregar al carrito";
+                        Alert.alert("Ups 😥", String(msg));
+                      }
+                    }}
+                  >
+                    <Text
+                      style={{
+                        color: "#FFFFFF",
+                        fontWeight: "bold",
+                        fontSize: 16,
+                      }}
+                    >
+                      Agregar al carrito
+                    </Text>
+                  </TouchableOpacity>
                 </View>
               );
             }}

@@ -1,4 +1,3 @@
-
 export type ID = string | number;
 
 export type Usuario = {
@@ -42,4 +41,19 @@ export type UpdateComercioDTO = {
   nombreNegocio?: string;
   telefono?: string | null;
   direccion?: string | null;
+};
+
+export type CartItem = {
+  id_producto: number;
+  nombre: string;
+  precio_actual: number | string;
+  cantidad: number;
+  subtotal: number;
+};
+
+export type CartResponse = {
+  success: boolean;
+  message?: string;
+  items: CartItem[];
+  total: number | string;
 };
