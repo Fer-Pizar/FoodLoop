@@ -1,7 +1,8 @@
-import { Controller, Get, Query, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Query, BadRequestException, UseGuards, Param,} from '@nestjs/common';
 import { ProductsService } from './products.service';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
-@Controller('productos')
+@Controller('products')
 export class ProductsController {
   constructor(private readonly service: ProductsService) {}
 
@@ -9,9 +10,9 @@ export class ProductsController {
   async findAll(
     @Query('comercioId') comercioId?: string,
     @Query('id_categoria') idCategoria?: string,
-    @Query('categoria') categoria?: string, 
+    @Query('categoria') categoria?: string,
     @Query('q') q?: string,
-    @Query('expiresSoon') expiresSoon?: string, 
+    @Query('expiresSoon') expiresSoon?: string,
   ) {
     if (!comercioId) {
       throw new BadRequestException('comercioId es requerido');
@@ -24,5 +25,38 @@ export class ProductsController {
       q: q || undefined,
       expiresSoon: expiresSoon === 'true',
     });
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('comercios/by-category')
+  async getComerciosByCategory(@Query('categoria') categoria: string) {
+    if (!categoria) {
+      throw new BadRequestException('Query param "categoria" is required');
+    }
+
+    const comercios = await this.service.getComerciosByCategoria(categoria);
+
+    return {
+      ok: true,
+      categoria,
+      comercios,
+    };
+  }
+
+  @Get('comercios/:idComercio/productos')
+  async getProductosByComercio(@Param('idComercio') idComercio: string) {
+    const id = Number(idComercio);
+
+    if (Number.isNaN(id)) {
+      throw new BadRequestException('idComercio debe ser numérico');
+    }
+
+    const productos = await this.service.getProductosByComercio(id);
+
+    return {
+      ok: true,
+      idComercio: id,
+      productos,
+    };
   }
 }
