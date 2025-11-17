@@ -41,7 +41,7 @@ export class CartController {
     const cart = await this.cartService.addItem(userId, body.productId, body.quantity);
     return {
       success: true,
-      message: 'Producto agregado al carrito', 
+      message: 'Producto agregado al carrito',
       ...cart,
     };
   }
