@@ -1,5 +1,12 @@
 import React from "react";
-import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, FlatList,} from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  ActivityIndicator,
+  FlatList,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -7,6 +14,11 @@ import { useCart } from "@/hooks/useCart";
 import ConsumidorFooter from "@/components/ConsumidorFooter";
 
 const RED = "#D82A2A";
+
+const toNumber = (value: any): number => {
+  const num = Number(value);
+  return Number.isNaN(num) ? 0 : num;
+};
 
 export default function CartScreen() {
   const router = useRouter();
@@ -61,70 +73,77 @@ export default function CartScreen() {
                 data={items}
                 keyExtractor={(item) => String(item.id_producto)}
                 ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
-                renderItem={({ item }) => (
-                  <View style={styles.card}>
-                    <View style={{ flexDirection: "row", marginBottom: 6 }}>
-                      <View style={{ flex: 1 }}>
-                        <Text style={styles.productName}>{item.nombre}</Text>
-                        <Text style={styles.productPrice}>
-                          Bs. {item.precio_actual}
-                        </Text>
+                renderItem={({ item }) => {
+                  const unitPrice = toNumber(item.precio_actual);
+                  const subtotal = toNumber(item.subtotal);
+
+                  return (
+                    <View style={styles.card}>
+                      <View style={{ flexDirection: "row", marginBottom: 6 }}>
+                        <View style={{ flex: 1 }}>
+                          <Text style={styles.productName}>{item.nombre}</Text>
+                          <Text style={styles.productPrice}>
+                            Bs. {unitPrice.toFixed(2)}
+                          </Text>
+                        </View>
+
+                        {/* Eliminar */}
+                        <TouchableOpacity
+                          onPress={() => remove(item.id_producto)}
+                        >
+                          <Text style={styles.removeText}>Eliminar</Text>
+                        </TouchableOpacity>
                       </View>
 
-                      {/* Eliminar */}
-                      <TouchableOpacity
-                        onPress={() => remove(item.id_producto)}
+                      {/* Controles cantidad – CA5 */}
+                      <View
+                        style={{
+                          flexDirection: "row",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                        }}
                       >
-                        <Text style={styles.removeText}>Eliminar</Text>
-                      </TouchableOpacity>
-                    </View>
+                        <View style={styles.qtyContainer}>
+                          <TouchableOpacity
+                            style={styles.qtyButton}
+                            onPress={() =>
+                              update(item.id_producto, item.cantidad - 1)
+                            }
+                          >
+                            <Text style={styles.qtyButtonText}>-</Text>
+                          </TouchableOpacity>
 
-                    {/* Controles cantidad – CA5 */}
-                    <View
-                      style={{
-                        flexDirection: "row",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                      }}
-                    >
-                      <View style={styles.qtyContainer}>
-                        <TouchableOpacity
-                          style={styles.qtyButton}
-                          onPress={() =>
-                            update(item.id_producto, item.cantidad - 1)
-                          }
-                        >
-                          <Text style={styles.qtyButtonText}>-</Text>
-                        </TouchableOpacity>
+                          <Text style={styles.qtyValue}>{item.cantidad}</Text>
 
-                        <Text style={styles.qtyValue}>{item.cantidad}</Text>
+                          <TouchableOpacity
+                            style={styles.qtyButton}
+                            onPress={() =>
+                              update(item.id_producto, item.cantidad + 1)
+                            }
+                          >
+                            <Text style={styles.qtyButtonText}>+</Text>
+                          </TouchableOpacity>
+                        </View>
 
-                        <TouchableOpacity
-                          style={styles.qtyButton}
-                          onPress={() =>
-                            update(item.id_producto, item.cantidad + 1)
-                          }
-                        >
-                          <Text style={styles.qtyButtonText}>+</Text>
-                        </TouchableOpacity>
-                      </View>
-
-                      <View>
-                        <Text style={styles.subtotalLabel}>Subtotal</Text>
-                        <Text style={styles.subtotalValue}>
-                          Bs. {item.subtotal}
-                        </Text>
+                        <View>
+                          <Text style={styles.subtotalLabel}>Subtotal</Text>
+                          <Text style={styles.subtotalValue}>
+                            Bs. {subtotal.toFixed(2)}
+                          </Text>
+                        </View>
                       </View>
                     </View>
-                  </View>
-                )}
+                  );
+                }}
               />
 
               {/* Total – CA6 */}
               <View style={styles.totalBox}>
                 <View>
                   <Text style={styles.totalLabel}>Total general</Text>
-                  <Text style={styles.totalValue}>Bs. {total}</Text>
+                  <Text style={styles.totalValue}>
+                    Bs. {toNumber(total).toFixed(2)}
+                  </Text>
                 </View>
 
                 <View style={{ flexDirection: "row", gap: 8 }}>

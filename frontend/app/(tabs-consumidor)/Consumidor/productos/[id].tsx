@@ -1,7 +1,16 @@
-import { View, Text, Image, FlatList, ActivityIndicator, TouchableOpacity, Alert,} from "react-native";
+import {
+  View,
+  Text,
+  Image,
+  FlatList,
+  ActivityIndicator,
+  TouchableOpacity,
+  Alert,
+} from "react-native";
 import { useLocalSearchParams, router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
+import { useState, useEffect } from "react";
 
 import { NEGOCIO_THEMES } from "@/constants/negocioThemes";
 import { useProductos } from "@/hooks/useProductos";
@@ -22,7 +31,16 @@ export default function ProductosNegocioView() {
     };
 
   const { productos, loading, error } = useProductos(idComercio);
-  const { add } = useCart();
+
+  // 🛒 Cart hook
+  const { items, add, update } = useCart();
+
+  // Local productos (to update stock instantly)
+  const [localProductos, setLocalProductos] = useState<any[]>([]);
+
+  useEffect(() => {
+    setLocalProductos(productos);
+  }, [productos]);
 
   if (loading)
     return (
@@ -34,17 +52,13 @@ export default function ProductosNegocioView() {
     );
 
   if (error)
-    return (
-      <Text style={{ marginTop: 60, color: "red" }}>
-        {error}
-      </Text>
-    );
+    return <Text style={{ marginTop: 60, color: "red" }}>{error}</Text>;
 
   return (
     <>
-      {/* MAIN CONTENT */}
       <SafeAreaView style={{ flex: 1, backgroundColor: theme.bg }}>
         <View style={{ flex: 1, paddingHorizontal: 20 }}>
+          
           {/* BACK BUTTON */}
           <TouchableOpacity
             onPress={() => router.push("/(tabs-consumidor)/Cafeterias")}
@@ -59,7 +73,7 @@ export default function ProductosNegocioView() {
             <Ionicons name="arrow-back" size={26} color={theme.primary} />
           </TouchableOpacity>
 
-          {/* LOGO DEL NEGOCIO */}
+          {/* LOGO */}
           {theme.logo && (
             <Image
               source={theme.logo}
@@ -74,7 +88,7 @@ export default function ProductosNegocioView() {
             />
           )}
 
-          {/* TÍTULO DEL NEGOCIO */}
+          {/* NEGOCIO TITLE */}
           <Text
             style={{
               fontSize: 32,
@@ -88,19 +102,23 @@ export default function ProductosNegocioView() {
             {nombre}
           </Text>
 
-          {/* LISTA DE PRODUCTOS */}
+          {/* LISTA */}
           <FlatList
-            data={productos}
+            data={localProductos}
             keyExtractor={(item) => item.id_producto.toString()}
-            showsVerticalScrollIndicator={false}
             contentContainerStyle={{ paddingBottom: 90 }}
             renderItem={({ item }) => {
-              // precios
               const currentPrice = item.precio_actual ?? item.precio;
               const basePrice =
                 item.precio_base && item.precio_base !== currentPrice
                   ? item.precio_base
                   : null;
+
+              // 🛒 Find product in cart
+              const cartItem = items.find(
+                (c: any) => c.id_producto === item.id_producto
+              );
+              const qtyInCart = cartItem?.cantidad ?? 0;
 
               return (
                 <View
@@ -114,6 +132,7 @@ export default function ProductosNegocioView() {
                     shadowRadius: 8,
                   }}
                 >
+                  {/* IMAGE */}
                   {item.imagen_url && (
                     <Image
                       source={{ uri: item.imagen_url }}
@@ -126,6 +145,7 @@ export default function ProductosNegocioView() {
                     />
                   )}
 
+                  {/* NAME */}
                   <Text
                     style={{
                       fontSize: 20,
@@ -136,11 +156,12 @@ export default function ProductosNegocioView() {
                     {item.nombre}
                   </Text>
 
+                  {/* DESCRIPTION */}
                   <Text style={{ marginTop: 6, color: "#444" }}>
                     {item.descripcion}
                   </Text>
 
-                  {/* PRECIOS */}
+                  {/* PRICES */}
                   <View
                     style={{
                       marginTop: 12,
@@ -161,17 +182,15 @@ export default function ProductosNegocioView() {
                       </Text>
                     )}
 
-                    {currentPrice && (
-                      <Text
-                        style={{
-                          fontWeight: "bold",
-                          fontSize: 18,
-                          color: theme.accent ?? theme.primary,
-                        }}
-                      >
-                        Bs. {currentPrice}
-                      </Text>
-                    )}
+                    <Text
+                      style={{
+                        fontWeight: "bold",
+                        fontSize: 18,
+                        color: theme.accent ?? theme.primary,
+                      }}
+                    >
+                      Bs. {currentPrice}
+                    </Text>
                   </View>
 
                   {/* STOCK */}
@@ -181,60 +200,160 @@ export default function ProductosNegocioView() {
                     </Text>
                   )}
 
-                  {/* BOTÓN AGREGAR AL CARRITO*/}
-                  <TouchableOpacity
-                    activeOpacity={0.9}
-                    style={{
-                      marginTop: 12,
-                      backgroundColor:
-                        item.cantidad_disponible && item.cantidad_disponible > 0
-                          ? theme.accent ?? theme.primary
-                          : "#CCCCCC",
-                      paddingVertical: 10,
-                      borderRadius: 24,
-                      alignItems: "center",
-                    }}
-                    disabled={
-                      !item.cantidad_disponible || item.cantidad_disponible <= 0
-                    }
-                    onPress={async () => {
-                      try {
-                        if (
-                          !item.cantidad_disponible ||
-                          item.cantidad_disponible <= 0
-                        ) {
-                          Alert.alert(
-                            "Sin stock",
-                            "Stock insuficiente para este producto 🥹"
-                          );
-                          return;
-                        }
-
-                        const res = await add(item.id_producto, 1);
-
-                        Alert.alert(
-                          "Listo ✅",
-                          res.message ?? "Producto agregado al carrito"
-                        );
-                      } catch (err: any) {
-                        const msg =
-                          err?.response?.data?.message ||
-                          err?.message ||
-                          "No se pudo agregar al carrito";
-                        Alert.alert("Ups 😥", String(msg));
-                      }
-                    }}
-                  >
-                    <Text
+                  {/* ============ 🛒 CART CONTROLS ============ */}
+                  {qtyInCart === 0 ? (
+                    // ⭐ Show BIG button when not in cart
+                    <TouchableOpacity
+                      activeOpacity={0.9}
                       style={{
-                        color: "#FFFFFF",
-                        fontWeight: "bold",
-                        fontSize: 16,
+                        marginTop: 12,
+                        backgroundColor:
+                          item.cantidad_disponible > 0
+                            ? theme.accent ?? theme.primary
+                            : "#CCCCCC",
+                        paddingVertical: 10,
+                        borderRadius: 24,
+                        alignItems: "center",
+                      }}
+                      disabled={item.cantidad_disponible <= 0}
+                      onPress={async () => {
+                        try {
+                          const productId = Number(item.id_producto);
+                          if (!Number.isInteger(productId) || productId < 1)
+                            return Alert.alert("Ups 😢", "Id inválido");
+
+                          const res = await add(productId, 1);
+
+                          // Reduce stock
+                          setLocalProductos((prev) =>
+                            prev.map((p) =>
+                              p.id_producto === item.id_producto
+                                ? {
+                                    ...p,
+                                    cantidad_disponible:
+                                      p.cantidad_disponible - 1,
+                                  }
+                                : p
+                            )
+                          );
+
+                          Alert.alert(
+                            "Listo ✅",
+                            res?.message ?? "Producto agregado al carrito"
+                          );
+                        } catch (err: any) {
+                          Alert.alert(
+                            "Ups 😥",
+                            err?.response?.data?.message ||
+                              err?.message ||
+                              "No se pudo agregar al carrito"
+                          );
+                        }
                       }}
                     >
-                      Agregar al carrito
+                      <Text
+                        style={{
+                          color: "#FFFFFF",
+                          fontWeight: "bold",
+                          fontSize: 16,
+                        }}
+                      >
+                        Agregar al carrito
+                      </Text>
+                    </TouchableOpacity>
+                  ) : (
+                    // ⭐ Show – qty + when already in cart
+                    <View
+                      style={{
+                        marginTop: 12,
+                        flexDirection: "row",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        backgroundColor: "#F4F4F4",
+                        padding: 10,
+                        borderRadius: 12,
+                      }}
+                    >
+                      {/* MINUS */}
+                      <TouchableOpacity
+                        onPress={() => {
+                          const newQty = qtyInCart - 1;
+                          update(item.id_producto, newQty);
+
+                          if (newQty === 0) {
+                            // restore stock
+                            setLocalProductos((prev) =>
+                              prev.map((p) =>
+                                p.id_producto === item.id_producto
+                                  ? {
+                                      ...p,
+                                      cantidad_disponible:
+                                        p.cantidad_disponible + qtyInCart,
+                                    }
+                                  : p
+                              )
+                            );
+                          } else {
+                            // increase stock by 1
+                            setLocalProductos((prev) =>
+                              prev.map((p) =>
+                                p.id_producto === item.id_producto
+                                  ? {
+                                      ...p,
+                                      cantidad_disponible:
+                                        p.cantidad_disponible + 1,
+                                    }
+                                  : p
+                              )
+                            );
+                          }
+                        }}
+                      >
+                        <Text style={{ fontSize: 22 }}>−</Text>
+                      </TouchableOpacity>
+
+                      {/* QTY */}
+                      <Text style={{ fontSize: 18, fontWeight: "600" }}>
+                        {qtyInCart}
+                      </Text>
+
+                      {/* PLUS */}
+                      <TouchableOpacity
+                        onPress={() => {
+                          const newQty = qtyInCart + 1;
+                          update(item.id_producto, newQty);
+
+                          // remove 1 stock
+                          setLocalProductos((prev) =>
+                            prev.map((p) =>
+                              p.id_producto === item.id_producto
+                                ? {
+                                    ...p,
+                                    cantidad_disponible:
+                                      p.cantidad_disponible - 1,
+                                  }
+                                : p
+                            )
+                          );
+                        }}
+                      >
+                        <Text style={{ fontSize: 22 }}>+</Text>
+                      </TouchableOpacity>
+                    </View>
+                  )}
+
+                  {/* small tag */}
+                  {qtyInCart > 0 && (
+                    <Text
+                      style={{
+                        marginTop: 4,
+                        color: "#0c3b2e",
+                        fontWeight: "600",
+                      }}
+                    >
+                      En carrito: {qtyInCart}
                     </Text>
-                  </TouchableOpacity>
+                  )}
                 </View>
               );
             }}
@@ -242,7 +361,6 @@ export default function ProductosNegocioView() {
         </View>
       </SafeAreaView>
 
-      {/* SHARED FOOTER */}
       <ConsumidorFooter />
     </>
   );
