@@ -1,4 +1,13 @@
+
 export type ID = string | number;
+
+export type Usuario = {
+  idUsuario: ID;
+  nombre: string;
+  email: string;
+  fotoPerfil?: string | null;
+  rol: "consumidor" | "comercio" | "admin";
+};
 
 export type Comercio = {
   idComercio: ID;
@@ -15,21 +24,18 @@ export type Comercio = {
   usuario?: Usuario;
 };
 
-export type Usuario = {
-  idUsuario: ID;
-  nombre: string;
-  email: string;
-  fotoPerfil?: string | null;
-  rol: "consumidor" | "comercio" | "admin";
-};
-
 export interface Producto {
   id_producto: number;
   id_comercio: number;
   nombre: string;
   descripcion: string;
-  precio: number | null;
+  precio_base?: number | string | null;
+  precio_actual?: number | string | null;
+  precio?: number | string | null;
   imagen_url?: string | null;
+  cantidad_disponible?: number | null;
+  estado?: boolean;
+  fecha_vencimiento?: string | null;
 }
 
 export type UpdateComercioDTO = {
