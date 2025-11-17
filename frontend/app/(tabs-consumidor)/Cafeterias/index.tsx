@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, FlatList,}
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+
 import ConsumidorFooter from "@/components/ConsumidorFooter";
 import { useTheme } from "@/src/theme/ThemeProvider";
 import { useComerciosByCategoria } from "@/hooks/useComercio";
@@ -27,39 +28,29 @@ export default function CafeteriasList() {
           <TouchableOpacity onPress={() => router.back()}>
             <Ionicons name="arrow-back" size={24} color={RED} />
           </TouchableOpacity>
-          {/* Show current category in header */}
+
           <Text style={[styles.title, { color: colors.text }]}>
             {categoriaFinal}
           </Text>
+
           <View style={{ width: 24 }} />
         </View>
 
         {/* Content */}
         <View style={{ padding: 16, gap: 12, flex: 1 }}>
-          {loading && (
-            <ActivityIndicator style={{ marginTop: 8 }} />
-          )}
+          {loading && <ActivityIndicator style={{ marginTop: 8 }} />}
 
           {error && (
-            <Text
-              style={{
-                marginTop: 8,
-                color: "red",
-              }}
-            >
-              Oops, could not load {categoriaFinal} 😢
+            <Text style={{ marginTop: 8, color: "red" }}>
+              Oops, could not load {categoriaFinal}
             </Text>
           )}
 
           {!loading && !error && (
             <FlatList
               data={comercios}
-              keyExtractor={(item) =>
-                String(item.idComercio)
-              }
-              ItemSeparatorComponent={() => (
-                <View style={{ height: 8 }} />
-              )}
+              keyExtractor={(item) => String(item.idComercio)}
+              ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
               renderItem={({ item }) => (
                 <TouchableOpacity
                   style={[
@@ -70,16 +61,18 @@ export default function CafeteriasList() {
                       borderWidth: StyleSheet.hairlineWidth,
                     },
                   ]}
-                  onPress={() => {}}
                   activeOpacity={0.9}
+                  onPress={() =>
+                    router.push({
+                      pathname: "/(tabs-consumidor)/Consumidor/productos/[id]",
+                      params: {
+                        id: String(item.idComercio),
+                        nombre: item.nombreNegocio,
+                      },
+                    })
+                  }
                 >
-                  {/* Only the name */}
-                  <Text
-                    style={[
-                      styles.itemText,
-                      { color: colors.text },
-                    ]}
-                  >
+                  <Text style={[styles.itemText, { color: colors.text }]}>
                     {item.nombreNegocio}
                   </Text>
                 </TouchableOpacity>
@@ -88,12 +81,7 @@ export default function CafeteriasList() {
           )}
 
           {!loading && !error && comercios.length === 0 && (
-            <Text
-              style={{
-                marginTop: 8,
-                color: colors.subtext,
-              }}
-            >
+            <Text style={{ marginTop: 8, color: colors.subtext }}>
               No hay comercios en esta categoría todavía. 😌
             </Text>
           )}

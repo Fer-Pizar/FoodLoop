@@ -1,4 +1,4 @@
-export type ID = string | number; // por si Prisma BigInt viene como string
+export type ID = string | number;
 
 export type Comercio = {
   idComercio: ID;
@@ -23,21 +23,14 @@ export type Usuario = {
   rol: "consumidor" | "comercio" | "admin";
 };
 
-export type Producto = {
-  id_producto: ID;
-  id_comercio: ID;
-  id_categoria: ID;
+export interface Producto {
+  id_producto: number;
+  id_comercio: number;
   nombre: string;
-  descripcion?: string | null;
-  precio_base: number;     // backend serializa Decimal → number
-  precio_actual?: number | null;
-  fecha_vencimiento?: string | null;
-  cantidad_disponible?: number | null;
+  descripcion: string;
+  precio: number | null;
   imagen_url?: string | null;
-  fecha_publicacion: string;
-  estado: boolean;
-  updated_at: string;
-};
+}
 
 export type UpdateComercioDTO = {
   nombreNegocio?: string;
