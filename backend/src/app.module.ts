@@ -7,6 +7,7 @@ import { NegocioModule } from './users/negocio.module';
 import { UsersModule } from './users/users.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ProductsModule } from './products/products.module';
+import { CartModule } from './cart/cart.module';
 
 @Module({
   imports: [
@@ -16,6 +17,8 @@ import { ProductsModule } from './products/products.module';
     NegocioModule,
     UsersModule,
     ProductsModule,
+
+    CartModule,
   ],
   controllers: [AppController],
   providers: [AppService],
