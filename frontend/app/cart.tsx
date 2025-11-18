@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, TouchableOpacity,  StyleSheet, ActivityIndicator, FlatList,} from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, FlatList, Alert,} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -15,12 +15,43 @@ const toNumber = (value: any): number => {
 
 export default function CartScreen() {
   const router = useRouter();
-  const { items, total, loading, update, remove, clear } = useCart();
+
+  const {
+    items,
+    total,
+    loading,
+    update,
+    remove,
+    clear,
+    reserve,
+    loadingReserve,
+  } = useCart();
 
   const hasItems = items.length > 0;
 
   const goToProducts = () => {
     router.replace("/(tabs-consumidor)/Categories");
+  };
+
+  const handleReserve = async () => {
+    const r = await reserve();
+
+    if (r?.success) {
+      Alert.alert(
+        "🎉 Reserva realizada",
+        `Código: ${r.reservas[0].codigo_validacion}`,
+        [
+          {
+            text: "Continuar",
+            onPress: () =>
+              router.push(
+                `../Consumidor/reserva/${r.reservas[0].id_reserva}`
+              ),
+          },
+        ],
+        { cancelable: false }
+      );
+    }
   };
 
   return (
@@ -88,7 +119,7 @@ export default function CartScreen() {
                         </TouchableOpacity>
                       </View>
 
-                      {/* Controles cantidad – CA5 */}
+                      {/* Controles cantidad */}
                       <View
                         style={{
                           flexDirection: "row",
@@ -130,7 +161,7 @@ export default function CartScreen() {
                 }}
               />
 
-              {/* Total – CA6 */}
+              {/* Total */}
               <View style={styles.totalBox}>
                 <View>
                   <Text style={styles.totalLabel}>Total general</Text>
@@ -139,6 +170,7 @@ export default function CartScreen() {
                   </Text>
                 </View>
 
+                {/* RESERVAR ACTUALIZADO */}
                 <View style={{ flexDirection: "row", gap: 8 }}>
                   <TouchableOpacity
                     style={[styles.secondaryButton, { flex: 1 }]}
@@ -150,11 +182,17 @@ export default function CartScreen() {
                   </TouchableOpacity>
 
                   <TouchableOpacity
-                    style={[styles.primaryButton, { flex: 1 }]}
-                    onPress={() => {
-                    }}
+                    disabled={loadingReserve}
+                    onPress={handleReserve}
+                    style={[
+                      styles.primaryButton,
+                      { flex: 1 },
+                      loadingReserve && { opacity: 0.6 },
+                    ]}
                   >
-                    <Text style={styles.primaryButtonText}>Reservar</Text>
+                    <Text style={styles.primaryButtonText}>
+                      {loadingReserve ? "Procesando..." : "Reservar"}
+                    </Text>
                   </TouchableOpacity>
                 </View>
 
@@ -213,6 +251,7 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontWeight: "bold",
     fontSize: 16,
+    textAlign: "center",
   },
   card: {
     backgroundColor: "#FFFFFF",

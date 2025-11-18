@@ -20,6 +20,8 @@ export function useCart() {
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [loadingReserve, setLoadingReserve] = useState(false);
+  const [lastReservation, setLastReservation] = useState<any | null>(null);
 
   const applyResponse = (res: CartResponse) => {
     const normalized = normalizeCart(res);
@@ -48,7 +50,7 @@ export function useCart() {
       setError(null);
       const res = await cartApi.add(productId, quantity);
       applyResponse(res);
-      return res; 
+      return res;
     },
     []
   );
@@ -77,6 +79,26 @@ export function useCart() {
     return res;
   }, []);
 
+  const reserve = useCallback(async () => {
+    setLoadingReserve(true);
+    try {
+      const now = new Date();
+      const start = new Date(now.getTime() + 60 * 60 * 1000).toISOString(); 
+      const end = new Date(now.getTime() + 2 * 60 * 60 * 1000).toISOString(); 
+
+      const res: any = await cartApi.reserve(start, end);
+
+      if (res?.success) {
+        setLastReservation(res);
+        await fetchCart(); 
+      }
+
+      return res;
+    } finally {
+      setLoadingReserve(false);
+    }
+  }, [fetchCart]);
+
   useEffect(() => {
     fetchCart();
   }, [fetchCart]);
@@ -92,5 +114,8 @@ export function useCart() {
     update,
     remove,
     clear,
+    reserve,
+    loadingReserve,
+    lastReservation,
   };
 }

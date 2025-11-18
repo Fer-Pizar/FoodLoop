@@ -3,7 +3,6 @@ import { useLocalSearchParams, router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useState, useEffect } from "react";
-
 import { NEGOCIO_THEMES } from "@/constants/negocioThemes";
 import { useProductos } from "@/hooks/useProductos";
 import ConsumidorFooter from "@/components/ConsumidorFooter";
@@ -102,7 +101,6 @@ export default function ProductosNegocioView() {
                   ? item.precio_base
                   : null;
 
-              // 🛒 Find product in cart
               const cartItem = items.find(
                 (c: any) => c.id_producto === item.id_producto
               );
@@ -190,7 +188,6 @@ export default function ProductosNegocioView() {
 
                   {/* ============ 🛒 CART CONTROLS ============ */}
                   {qtyInCart === 0 ? (
-                    // ⭐ Show BIG button when not in cart
                     <TouchableOpacity
                       activeOpacity={0.9}
                       style={{
@@ -230,7 +227,7 @@ export default function ProductosNegocioView() {
                           );
                         } catch (err: any) {
                           Alert.alert(
-                            "Ups 😥",
+                            "Oops 😥",
                             err?.response?.data?.message ||
                               err?.message ||
                               "No se pudo agregar al carrito"
@@ -267,7 +264,6 @@ export default function ProductosNegocioView() {
                           update(item.id_producto, newQty);
 
                           if (newQty === 0) {
-                            // restore stock
                             setLocalProductos((prev) =>
                               prev.map((p) =>
                                 p.id_producto === item.id_producto

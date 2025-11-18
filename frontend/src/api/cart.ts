@@ -14,4 +14,10 @@ export const cartApi = {
     api.del<CartResponse>(`/cart/item/${productId}`),
 
   clear: () => api.del<CartResponse>("/cart/clear"),
+
+  reserve: (ventanaRetiroInicio: string, ventanaRetiroFin: string) =>
+    api.post<CartResponse>("/cart/reserve", {
+      ventanaRetiroInicio,
+      ventanaRetiroFin,
+    }),
 };

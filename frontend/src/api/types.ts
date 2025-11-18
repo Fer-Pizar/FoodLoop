@@ -57,3 +57,12 @@ export type CartResponse = {
   items: CartItem[];
   total: number | string;
 };
+
+export interface Reserva {
+  id_reserva: number;
+  id_producto: number;
+  cantidad: number;
+  total: number;
+  estado: string;
+  codigo_validacion: string;
+}
