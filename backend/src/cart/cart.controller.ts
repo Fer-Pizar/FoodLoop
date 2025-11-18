@@ -1,19 +1,9 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  ParseIntPipe,
-  Patch,
-  Post,
-  Request,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Request, UseGuards,} from '@nestjs/common';
 import { CartService } from './cart.service';
 import { AddToCartDto } from './dto/add-to-cart.dto';
 import { UpdateCartItemDto } from './dto/update-cart-item.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { ReserveCartDto } from './dto/reserve-cart.dto';
 
 @Controller('cart')
 @UseGuards(JwtAuthGuard)
@@ -21,7 +11,7 @@ export class CartController {
   constructor(private readonly cartService: CartService) {}
 
   private getUserId(req: any): number {
-    return req.user.userId ?? req.user.sub;
+    return req.user?.userId ?? req.user?.sub;
   }
 
   @Get()
@@ -38,7 +28,11 @@ export class CartController {
   @Post('add')
   async addToCart(@Request() req: any, @Body() body: AddToCartDto) {
     const userId = this.getUserId(req);
-    const cart = await this.cartService.addItem(userId, body.productId, body.quantity);
+    const cart = await this.cartService.addItem(
+      userId,
+      body.productId,
+      body.quantity,
+    );
     return {
       success: true,
       message: 'Producto agregado al carrito',
@@ -53,7 +47,11 @@ export class CartController {
     @Body() body: UpdateCartItemDto,
   ) {
     const userId = this.getUserId(req);
-    const cart = await this.cartService.updateItem(userId, productId, body.quantity);
+    const cart = await this.cartService.updateItem(
+      userId,
+      productId,
+      body.quantity,
+    );
     return {
       success: true,
       message: 'Producto actualizado en el carrito',
@@ -83,6 +81,31 @@ export class CartController {
       success: true,
       message: 'Carrito vaciado',
       ...cart,
+    };
+  }
+
+  @Post('reserve')
+  async reserve(@Request() req: any, @Body() body: ReserveCartDto) {
+    const userId = this.getUserId(req);
+
+    const ventanaInicio = body.ventanaRetiroInicio
+      ? new Date(body.ventanaRetiroInicio)
+      : undefined;
+
+    const ventanaFin = body.ventanaRetiroFin
+      ? new Date(body.ventanaRetiroFin)
+      : undefined;
+
+    const reserva = await this.cartService.reserveCart(
+      userId,
+      ventanaInicio,
+      ventanaFin,
+    );
+
+    return {
+      success: true,
+      message: 'Reserva creada correctamente',
+      ...reserva,
     };
   }
 }

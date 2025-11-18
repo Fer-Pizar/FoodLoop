@@ -1,4 +1,3 @@
-
 export type ID = string | number;
 
 export type Usuario = {
@@ -43,3 +42,27 @@ export type UpdateComercioDTO = {
   telefono?: string | null;
   direccion?: string | null;
 };
+
+export type CartItem = {
+  id_producto: number;
+  nombre: string;
+  precio_actual: number | string;
+  cantidad: number;
+  subtotal: number;
+};
+
+export type CartResponse = {
+  success: boolean;
+  message?: string;
+  items: CartItem[];
+  total: number | string;
+};
+
+export interface Reserva {
+  id_reserva: number;
+  id_producto: number;
+  cantidad: number;
+  total: number;
+  estado: string;
+  codigo_validacion: string;
+}
