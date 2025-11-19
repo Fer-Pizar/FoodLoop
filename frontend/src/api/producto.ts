@@ -1,5 +1,6 @@
 import { api } from "./client";
-import type { Producto } from "./types";  
+import type { Producto } from "./types";
+export type { Producto };  
 
 export const productosApi = {
   list: (

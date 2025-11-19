@@ -1,20 +1,29 @@
 import { View, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import T from "../common/T";
-import TBold from "../common/TBold";
 
-const GRAY_ICON = "#444"; // 👈 nuevo color neutro
+const GRAY_ICON = "#444";
 
 export function Atajos({
   onInfo,
   onProductos,
   onHistorial,
+  onValidarRetiro,
 }: {
   onInfo: () => void;
   onProductos: () => void;
   onHistorial: () => void;
+  onValidarRetiro: () => void;
 }) {
-  const Btn = ({ icon, label, onPress }: any) => (
+  const Btn = ({
+    icon,
+    label,
+    onPress,
+  }: {
+    icon: any;
+    label: string;
+    onPress: () => void;
+  }) => (
     <TouchableOpacity
       onPress={onPress}
       activeOpacity={0.8}
@@ -58,6 +67,7 @@ export function Atajos({
     >
       <Btn icon="person-outline" label={"Información\nPersonal"} onPress={onInfo} />
       <Btn icon="cart-outline" label={"Mis\nProductos"} onPress={onProductos} />
+      <Btn icon="reader-outline" label={"Validar\nRetiro"} onPress={onValidarRetiro} />
       <Btn icon="lock-closed-outline" label={"Historial\nVentas"} onPress={onHistorial} />
     </View>
   );

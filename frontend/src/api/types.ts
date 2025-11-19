@@ -27,7 +27,7 @@ export interface Producto {
   id_producto: number;
   id_comercio: number;
   nombre: string;
-  descripcion: string;
+  descripcion: string | null;
   precio_base?: number | string | null;
   precio_actual?: number | string | null;
   precio?: number | string | null;

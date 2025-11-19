@@ -116,18 +116,38 @@ export default function PerfilNegocioHome() {
 
       <ScrollView>
         <Atajos
-          onInfo={() => router.push("/Negocio/InformacionPersonal")}
-          onProductos={() => router.push("/Negocio/MisProductos")}
-          onHistorial={() => router.push("/Negocio/HistorialVentas")}
-        />
+  onInfo={() => router.push("/Negocio/InformacionPersonal")}
+  onProductos={() => router.push("/Negocio/MisProductos")}
+  onHistorial={() => router.push("/Negocio/HistorialVentas")}
+  onValidarRetiro={() => router.push("/Negocio/ValidarRetiro" as any)}
+/>
+
 
         <View style={{ paddingHorizontal: 16, paddingTop: 8 }}>
           <Text style={{ fontSize: 16, fontFamily: "Comfortaa_700Bold", marginVertical: 8 }}>Configuración</Text>
         </View>
 
-        <RowItem icon="notifications-outline" title="Notificaciones" onPress={() => Alert.alert("Notificaciones", "Pronto 🤗")} />
-        <RowItem icon="time-outline" title="Horario" onPress={() => Alert.alert("Horario", "Pronto ⏰")} />
-        <RowItem icon="pricetags-outline"title="Reglas de Descuento"onPress={() => router.push("/Negocio/ReglasDescuento")}/>
+                <RowItem
+          icon="notifications-outline"
+          title="Notificaciones"
+          onPress={() => Alert.alert("Notificaciones", "Pronto 🤗")}
+        />
+        <RowItem
+          icon="time-outline"
+          title="Horario"
+          onPress={() => Alert.alert("Horario", "Pronto ⏰")}
+        />
+        <RowItem
+          icon="pricetags-outline"
+          title="Reglas de Descuento"
+          onPress={() => router.push("/Negocio/ReglasDescuento")}
+        />
+        {/* 🔐 HU12 – Validar retiro con código */}
+        <RowItem
+  icon="key-outline"
+  title="Validar retiro"
+  onPress={() => router.push("/Negocio/ValidarRetiro" as any)}
+/>
         <RowItem
           icon="exit-outline"
           title="Cerrar Sesión"
@@ -136,6 +156,7 @@ export default function PerfilNegocioHome() {
             router.replace("/login");
           }}
         />
+
       </ScrollView>
 
       <Modal visible={sheetOpen} transparent animationType="slide" onRequestClose={() => setSheetOpen(false)}>
