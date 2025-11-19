@@ -1,10 +1,33 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
+// 👇 TIPOS EXPORTADOS (así no hay drama si luego los usas en otro archivo)
+export type ValidacionReason = 'not_found' | 'used' | 'expired' | 'no_comercio';
+
+export interface ReservaValidada {
+  id_reserva: number;
+  codigo: string;
+  estado: string;
+  fecha_reserva: Date;
+  ventana_retiro_inicio: Date | null;
+  ventana_retiro_fin: Date | null;
+  total: number;
+  cliente: {
+    id: number;
+    nombre: string;
+  };
+  producto: {
+    id_producto: number;
+    nombre: string;
+    imagen_url?: string | null;
+  };
+}
+
 @Injectable()
 export class ReservasService {
   constructor(private readonly prisma: PrismaService) {}
 
+  // 🔹 Esto es lo que ya tenías para el rol consumidor
   async getUserReservations(userId: number) {
     const reservas = await this.prisma.reservas.findMany({
       where: { id_usuario: BigInt(userId) },
@@ -25,5 +48,106 @@ export class ReservasService {
         ),
       },
     }));
+  }
+
+  // 👇 NUEVO: validar código para un usuario con rol comercio
+  async validateCodigoForUserComercio(
+    userId: number,
+    codigo: string,
+  ): Promise<
+    | { status: 'valid'; reserva: ReservaValidada }
+    | { status: 'invalid'; reason: ValidacionReason }
+  > {
+    const comercio = await this.prisma.comercio.findUnique({
+      where: { idUsuario: BigInt(userId) },
+    });
+
+    if (!comercio) {
+      return { status: 'invalid', reason: 'no_comercio' };
+    }
+
+    const reserva = await this.prisma.reservas.findFirst({
+      where: {
+        codigo_validacion: codigo,
+        producto: {
+          id_comercio: comercio.idComercio,
+        },
+      },
+      include: {
+        producto: true,
+        usuario: true,
+      },
+    });
+
+    if (!reserva) {
+      return { status: 'invalid', reason: 'not_found' };
+    }
+
+    if (reserva.estado === 'entregada') {
+      return { status: 'invalid', reason: 'used' };
+    }
+
+    const now = new Date();
+    if (reserva.ventana_retiro_fin && now > reserva.ventana_retiro_fin) {
+      return { status: 'invalid', reason: 'expired' };
+    }
+
+    const dto: ReservaValidada = {
+      id_reserva: Number(reserva.id_reserva),
+      codigo: reserva.codigo_validacion,
+      estado: reserva.estado,
+      fecha_reserva: reserva.fecha_reserva,
+      ventana_retiro_inicio: reserva.ventana_retiro_inicio,
+      ventana_retiro_fin: reserva.ventana_retiro_fin,
+      total: Number(reserva.total),
+      cliente: {
+        id: Number(reserva.usuario.idUsuario),
+        nombre: reserva.usuario.nombre,
+      },
+      producto: {
+        id_producto: Number(reserva.id_producto),
+        nombre: reserva.producto.nombre,
+        imagen_url: reserva.producto.imagen_url,
+      },
+    };
+
+    return { status: 'valid', reserva: dto };
+  }
+
+  // 👇 NUEVO: confirmar retiro
+  async confirmarRetiro(
+    userId: number,
+    codigo: string,
+  ): Promise<
+    | { status: 'confirmed'; reserva: ReservaValidada }
+    | { status: 'invalid'; reason: ValidacionReason }
+  > {
+    const validation = await this.validateCodigoForUserComercio(userId, codigo);
+
+    // aquí TS sabe que en este branch status === 'invalid'
+    if (validation.status !== 'valid') {
+      return {
+        status: 'invalid',
+        reason: validation.reason,
+      };
+    }
+
+    await this.prisma.reservas.update({
+      where: { codigo_validacion: codigo },
+      data: {
+        estado: 'entregada',
+        updated_at: new Date(),
+      },
+    });
+
+    // TODO: aquí podrías crear registro de auditoría (CA7)
+
+    return {
+      status: 'confirmed',
+      reserva: {
+        ...validation.reserva,
+        estado: 'entregada',
+      },
+    };
   }
 }

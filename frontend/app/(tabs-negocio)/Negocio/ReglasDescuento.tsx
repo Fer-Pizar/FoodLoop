@@ -14,14 +14,22 @@ const RED = "#d11212ff";
 export default function ReglasDescuento() {
   const { items = [], loading } = useMisProductos();
 
-  const enriched = useMemo(() => {
+    const enriched = useMemo(() => {
     return items.map((p) => {
       const dLeft = daysLeft(p.fecha_vencimiento);
+
+      //Normalizamos a number porque en el tipo pueden ser string | null | undefined
+      const base = p.precio_base != null ? Number(p.precio_base) : 0;
+      const actual =
+        p.precio_actual != null ? Number(p.precio_actual) : base;
+
       const pct =
-        p.precio_actual != null && p.precio_actual < p.precio_base
-          ? Math.round(((p.precio_base - (p.precio_actual ?? 0)) / p.precio_base) * 100)
+        base > 0 && actual < base
+          ? Math.round(((base - actual) / base) * 100)
           : 0;
-      const ahorro = p.precio_actual != null ? p.precio_base - (p.precio_actual ?? 0) : 0;
+
+      const ahorro = base > 0 && actual < base ? base - actual : 0;
+
       return { ...p, dLeft, pct, ahorro, tier: tierByDays(dLeft) };
     });
   }, [items]);

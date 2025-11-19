@@ -125,9 +125,27 @@ export default function PerfilNegocioHome() {
           <Text style={{ fontSize: 16, fontFamily: "Comfortaa_700Bold", marginVertical: 8 }}>Configuración</Text>
         </View>
 
-        <RowItem icon="notifications-outline" title="Notificaciones" onPress={() => Alert.alert("Notificaciones", "Pronto 🤗")} />
-        <RowItem icon="time-outline" title="Horario" onPress={() => Alert.alert("Horario", "Pronto ⏰")} />
-        <RowItem icon="pricetags-outline"title="Reglas de Descuento"onPress={() => router.push("/Negocio/ReglasDescuento")}/>
+                <RowItem
+          icon="notifications-outline"
+          title="Notificaciones"
+          onPress={() => Alert.alert("Notificaciones", "Pronto 🤗")}
+        />
+        <RowItem
+          icon="time-outline"
+          title="Horario"
+          onPress={() => Alert.alert("Horario", "Pronto ⏰")}
+        />
+        <RowItem
+          icon="pricetags-outline"
+          title="Reglas de Descuento"
+          onPress={() => router.push("/Negocio/ReglasDescuento")}
+        />
+        {/* 🔐 HU12 – Validar retiro con código */}
+        <RowItem
+          icon="checkmark-done-outline"
+          title="Validar retiro"
+          onPress={() => router.push("/Negocio/ValidarRetiro")}
+        />
         <RowItem
           icon="exit-outline"
           title="Cerrar Sesión"
@@ -136,6 +154,7 @@ export default function PerfilNegocioHome() {
             router.replace("/login");
           }}
         />
+
       </ScrollView>
 
       <Modal visible={sheetOpen} transparent animationType="slide" onRequestClose={() => setSheetOpen(false)}>
