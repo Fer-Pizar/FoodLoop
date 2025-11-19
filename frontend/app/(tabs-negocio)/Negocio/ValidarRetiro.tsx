@@ -39,7 +39,7 @@ export default function ValidarRetiro() {
 
   return (
     <View style={{ flex: 1, backgroundColor: "#fff" }}>
-      {/* 🔺 Header creado en componentes */}
+      {/*Header creado en componentes */}
       <ValidarHeader />
 
       <ScrollView
