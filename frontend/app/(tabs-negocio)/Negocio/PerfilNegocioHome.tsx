@@ -116,10 +116,12 @@ export default function PerfilNegocioHome() {
 
       <ScrollView>
         <Atajos
-          onInfo={() => router.push("/Negocio/InformacionPersonal")}
-          onProductos={() => router.push("/Negocio/MisProductos")}
-          onHistorial={() => router.push("/Negocio/HistorialVentas")}
-        />
+  onInfo={() => router.push("/Negocio/InformacionPersonal")}
+  onProductos={() => router.push("/Negocio/MisProductos")}
+  onHistorial={() => router.push("/Negocio/HistorialVentas")}
+  onValidarRetiro={() => router.push("/Negocio/ValidarRetiro" as any)}
+/>
+
 
         <View style={{ paddingHorizontal: 16, paddingTop: 8 }}>
           <Text style={{ fontSize: 16, fontFamily: "Comfortaa_700Bold", marginVertical: 8 }}>Configuración</Text>
@@ -142,10 +144,10 @@ export default function PerfilNegocioHome() {
         />
         {/* 🔐 HU12 – Validar retiro con código */}
         <RowItem
-          icon="checkmark-done-outline"
-          title="Validar retiro"
-          onPress={() => router.push("/Negocio/ValidarRetiro")}
-        />
+  icon="key-outline"
+  title="Validar retiro"
+  onPress={() => router.push("/Negocio/ValidarRetiro" as any)}
+/>
         <RowItem
           icon="exit-outline"
           title="Cerrar Sesión"
