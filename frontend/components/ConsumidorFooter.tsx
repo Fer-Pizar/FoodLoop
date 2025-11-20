@@ -21,14 +21,17 @@ export default function ConsumidorFooter() {
     router.replace("/cart");
   };
 
-  const goChat = () => {};
+  const goNotifications = () => {
+    router.replace("/(tabs-consumidor)/Consumidor/Notificaciones");
+  };
+
   const goFavorites = () => {};
 
   return (
     <View style={styles.wrap}>
-      {/* Chat */}
-      <TouchableOpacity onPress={goChat} activeOpacity={0.7}>
-        <Ionicons name="chatbubble-ellipses-outline" size={22} color={WHITE} />
+      {/* Notifications */}
+      <TouchableOpacity onPress={goNotifications} activeOpacity={0.7}>
+        <Ionicons name="notifications-outline" size={22} color={WHITE} />
       </TouchableOpacity>
 
       <View style={styles.sep} />
@@ -39,7 +42,11 @@ export default function ConsumidorFooter() {
       </TouchableOpacity>
 
       {/* Home pill */}
-      <TouchableOpacity onPress={goHome} activeOpacity={0.85} style={styles.homePill}>
+      <TouchableOpacity
+        onPress={goHome}
+        activeOpacity={0.85}
+        style={styles.homePill}
+      >
         <Ionicons name="home" size={26} color={WHITE} />
       </TouchableOpacity>
 

@@ -66,3 +66,13 @@ export interface Reserva {
   estado: string;
   codigo_validacion: string;
 }
+
+export interface Notificacion {
+  id_notificacion: number;
+  id_usuario: number;
+  titulo: string;
+  mensaje: string;
+  tipo: string;           // 'sistema' | 'oferta' | 'recordatorio' | 'precio'
+  fecha_envio: string;    
+  leido: boolean;
+}
