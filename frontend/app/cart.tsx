@@ -201,7 +201,9 @@ export default function CartScreen() {
                   style={{ marginTop: 8, alignSelf: "flex-end" }}
                   onPress={() => clear()}
                 >
-                  <Text style={{ color: "#999" }}>Vaciar carrito</Text>
+                  <Text style={{ color: "#999", fontFamily: "Comfortaa" }}>
+                    Vaciar carrito
+                  </Text>
                 </TouchableOpacity>
               </View>
             </>
@@ -229,6 +231,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "700",
     color: "#333",
+    fontFamily: "Comfortaa",
   },
   emptyState: {
     flex: 1,
@@ -240,6 +243,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: "#777",
     marginBottom: 12,
+    fontFamily: "Comfortaa",
   },
   primaryButton: {
     backgroundColor: RED,
@@ -252,6 +256,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     fontSize: 16,
     textAlign: "center",
+    fontFamily: "Comfortaa",
   },
   card: {
     backgroundColor: "#FFFFFF",
@@ -266,16 +271,19 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
     color: "#222",
+    fontFamily: "Comfortaa",
   },
   productPrice: {
     marginTop: 4,
     fontSize: 15,
     fontWeight: "bold",
     color: "#2E7D32",
+    fontFamily: "Comfortaa",
   },
   removeText: {
     color: "#D32F2F",
     fontSize: 14,
+    fontFamily: "Comfortaa",
   },
   qtyContainer: {
     flexDirection: "row",
@@ -294,23 +302,27 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
     color: "#333",
+    fontFamily: "Comfortaa",
   },
   qtyValue: {
     minWidth: 24,
     textAlign: "center",
     fontSize: 16,
     fontWeight: "600",
+    fontFamily: "Comfortaa",
   },
   subtotalLabel: {
     fontSize: 12,
     color: "#777",
     textAlign: "right",
+    fontFamily: "Comfortaa",
   },
   subtotalValue: {
     fontSize: 16,
     fontWeight: "700",
     color: "#333",
     textAlign: "right",
+    fontFamily: "Comfortaa",
   },
   totalBox: {
     marginTop: 16,
@@ -322,11 +334,13 @@ const styles = StyleSheet.create({
   totalLabel: {
     fontSize: 14,
     color: "#444",
+    fontFamily: "Comfortaa",
   },
   totalValue: {
     fontSize: 20,
     fontWeight: "700",
     color: RED,
+    fontFamily: "Comfortaa",
   },
   secondaryButton: {
     borderRadius: 24,
@@ -341,5 +355,6 @@ const styles = StyleSheet.create({
     color: RED,
     fontWeight: "600",
     fontSize: 14,
+    fontFamily: "Comfortaa",
   },
 });

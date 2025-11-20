@@ -48,7 +48,7 @@ export default function ReservaDetalle() {
       <View
         style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
       >
-        <Text style={{ fontSize: 18, color: "#888" }}>
+        <Text style={{ fontSize: 18, color: "#888", fontFamily: "Comfortaa" }}>
           Reservation not found 😢
         </Text>
       </View>
@@ -72,51 +72,31 @@ export default function ReservaDetalle() {
               fontWeight: "bold",
               marginBottom: 20,
               color: colors.text,
+              fontFamily: "Comfortaa",
             }}
           >
             Reserva #{reserva.id_reserva}
           </Text>
 
           <Text
-            style={{ fontSize: 18, marginBottom: 10, color: colors.text }}
+            style={{ fontSize: 18, marginBottom: 10, color: colors.text, fontFamily: "Comfortaa" }}
           >
-            Estado: <Text style={{ fontWeight: "bold" }}>{reserva.estado}</Text>
+            Estado: <Text style={{ fontWeight: "bold", fontFamily: "Comfortaa" }}>{reserva.estado}</Text>
           </Text>
 
           <Text
-            style={{ fontSize: 18, marginBottom: 10, color: colors.text }}
+            style={{ fontSize: 18, marginBottom: 10, color: colors.text, fontFamily: "Comfortaa" }}
           >
             Total: Bs. {reserva.total}
           </Text>
 
           <Text
-            style={{ fontSize: 18, marginBottom: 10, color: colors.text }}
+            style={{ fontSize: 18, marginBottom: 10, color: colors.text, fontFamily: "Comfortaa" }}
           >
-            Código de validación:
+            Gracias por tu preferencia! Te notificaremos cuando tu pedido esté listo.
           </Text>
 
-          {/* "code box" */}
-          <View
-            style={{
-              marginTop: 10,
-              borderRadius: 10,
-              padding: 15,
-              backgroundColor: '#d9d9d9ff',
-              minHeight: 60, 
-              justifyContent: "center",
-            }}
-          >
-            <Text
-              style={{
-                fontSize: 26,
-                fontWeight: "bold",
-                textAlign: "center",
-                color: colors.text,
-              }}
-            >
-              {reserva.codigo_validacion || ""} 
-            </Text>
-          </View>
+          
         </ScrollView>
       </SafeAreaView>
 

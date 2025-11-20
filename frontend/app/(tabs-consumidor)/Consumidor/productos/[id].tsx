@@ -39,7 +39,7 @@ export default function ProductosNegocioView() {
     );
 
   if (error)
-    return <Text style={{ marginTop: 60, color: "red" }}>{error}</Text>;
+    return <Text style={{ marginTop: 60, color: "red", fontFamily: "Comfortaa" }}>{error}</Text>;
 
   return (
     <>
@@ -84,6 +84,7 @@ export default function ProductosNegocioView() {
               textAlign: "center",
               marginBottom: 20,
               marginTop: 10,
+              fontFamily: "Comfortaa",
             }}
           >
             {nombre}
@@ -137,13 +138,14 @@ export default function ProductosNegocioView() {
                       fontSize: 20,
                       fontWeight: "600",
                       color: theme.primary,
+                      fontFamily: "Comfortaa",
                     }}
                   >
                     {item.nombre}
                   </Text>
 
                   {/* DESCRIPTION */}
-                  <Text style={{ marginTop: 6, color: "#444" }}>
+                  <Text style={{ marginTop: 6, color: "#444", fontFamily: "Comfortaa" }}>
                     {item.descripcion}
                   </Text>
 
@@ -162,6 +164,7 @@ export default function ProductosNegocioView() {
                           fontSize: 16,
                           textDecorationLine: "line-through",
                           color: "#777",
+                          fontFamily: "Comfortaa",
                         }}
                       >
                         Bs. {basePrice}
@@ -173,6 +176,7 @@ export default function ProductosNegocioView() {
                         fontWeight: "bold",
                         fontSize: 18,
                         color: theme.accent ?? theme.primary,
+                        fontFamily: "Comfortaa",
                       }}
                     >
                       Bs. {currentPrice}
@@ -181,7 +185,7 @@ export default function ProductosNegocioView() {
 
                   {/* STOCK */}
                   {item.cantidad_disponible != null && (
-                    <Text style={{ marginTop: 6, color: "#666" }}>
+                    <Text style={{ marginTop: 6, color: "#666", fontFamily: "Comfortaa" }}>
                       Stock: {item.cantidad_disponible} unidades
                     </Text>
                   )}
@@ -240,6 +244,7 @@ export default function ProductosNegocioView() {
                           color: "#FFFFFF",
                           fontWeight: "bold",
                           fontSize: 16,
+                          fontFamily: "Comfortaa",
                         }}
                       >
                         Agregar al carrito
@@ -290,11 +295,11 @@ export default function ProductosNegocioView() {
                           }
                         }}
                       >
-                        <Text style={{ fontSize: 22 }}>−</Text>
+                        <Text style={{ fontSize: 22, fontFamily: "Comfortaa" }}>−</Text>
                       </TouchableOpacity>
 
                       {/* QTY */}
-                      <Text style={{ fontSize: 18, fontWeight: "600" }}>
+                      <Text style={{ fontSize: 18, fontWeight: "600", fontFamily: "Comfortaa" }}>
                         {qtyInCart}
                       </Text>
 
@@ -317,7 +322,7 @@ export default function ProductosNegocioView() {
                           );
                         }}
                       >
-                        <Text style={{ fontSize: 22 }}>+</Text>
+                        <Text style={{ fontSize: 22, fontFamily: "Comfortaa" }}>+</Text>
                       </TouchableOpacity>
                     </View>
                   )}
@@ -329,6 +334,7 @@ export default function ProductosNegocioView() {
                         marginTop: 4,
                         color: "#0c3b2e",
                         fontWeight: "600",
+                        fontFamily: "Comfortaa",
                       }}
                     >
                       En carrito: {qtyInCart}

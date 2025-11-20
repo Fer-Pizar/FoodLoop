@@ -1,4 +1,4 @@
-import { Controller, Get, Request, UseGuards, Post, Body } from '@nestjs/common';
+import { Controller, Get, Request, UseGuards, Post, Body, BadRequestException, Param,} from '@nestjs/common';
 import { ReservasService } from './reservas.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
@@ -22,7 +22,24 @@ export class ReservasController {
     };
   }
 
-  // 👇 NUEVO: validar código
+  // ⭐ NUEVO: confirmar reserva → pasa de "pendiente" a "confirmada"
+  @Post('confirmar/:id')
+  async confirmarReserva(@Param('id') id: string) {
+    const idNumber = Number(id);
+
+    if (Number.isNaN(idNumber)) {
+      throw new BadRequestException('id debe ser numérico');
+    }
+
+    const updated = await this.reservasService.confirmarReserva(idNumber);
+
+    return {
+      success: true,
+      reserva: updated,
+    };
+  }
+
+  // 👇 NUEVO: validar código (tu implementación actual, se mantiene igual)
   @Post('validar-codigo')
   async validarCodigo(@Request() req: any, @Body() body: { codigo: string }) {
     const userId = this.getUserId(req);
@@ -46,7 +63,7 @@ export class ReservasController {
     };
   }
 
-  // 👇 NUEVO: confirmar retiro
+  // 👇 NUEVO: confirmar retiro (tu implementación actual, se mantiene igual)
   @Post('confirmar-retiro')
   async confirmarRetiro(
     @Request() req: any,

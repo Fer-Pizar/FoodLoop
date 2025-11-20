@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
 // 👇 TIPOS EXPORTADOS (así no hay drama si luego los usas en otro archivo)
@@ -27,7 +27,7 @@ export interface ReservaValidada {
 export class ReservasService {
   constructor(private readonly prisma: PrismaService) {}
 
-  // 🔹 Esto es lo que ya tenías para el rol consumidor
+  // 🔹 Rol consumidor: obtener reservas del usuario
   async getUserReservations(userId: number) {
     const reservas = await this.prisma.reservas.findMany({
       where: { id_usuario: BigInt(userId) },
@@ -48,6 +48,42 @@ export class ReservasService {
         ),
       },
     }));
+  }
+
+  // 👇 NUEVO: confirmar una reserva (cuando pasa a "confirmada")
+  async confirmarReserva(id_reserva: number) {
+    return this.prisma.$transaction(async (tx) => {
+      const reserva = await tx.reservas.findUnique({
+        where: { id_reserva: BigInt(id_reserva) },
+      });
+
+      if (!reserva) {
+        throw new NotFoundException('Reserva no encontrada');
+      }
+
+      if (reserva.estado === 'confirmada') {
+        return reserva;
+      }
+
+      const updated = await tx.reservas.update({
+        where: { id_reserva: BigInt(id_reserva) },
+        data: {
+          estado: 'confirmada',
+        },
+      });
+
+      // 3) Crear notificación para el consumidor
+      await tx.notificaciones.create({
+        data: {
+          id_usuario: updated.id_usuario,
+          titulo: 'Reserva confirmada',
+          mensaje: `Tu reserva con código ${updated.codigo_validacion} fue confirmada por el comercio.`,
+          tipo: 'sistema',
+        },
+      });
+
+      return updated;
+    });
   }
 
   // 👇 NUEVO: validar código para un usuario con rol comercio
@@ -114,7 +150,7 @@ export class ReservasService {
     return { status: 'valid', reserva: dto };
   }
 
-  // 👇 NUEVO: confirmar retiro
+  // 👇 NUEVO: confirmar retiro (marcar como entregada)
   async confirmarRetiro(
     userId: number,
     codigo: string,
@@ -124,7 +160,6 @@ export class ReservasService {
   > {
     const validation = await this.validateCodigoForUserComercio(userId, codigo);
 
-    // aquí TS sabe que en este branch status === 'invalid'
     if (validation.status !== 'valid') {
       return {
         status: 'invalid',
@@ -132,11 +167,22 @@ export class ReservasService {
       };
     }
 
+    // 1) Actualizar estado -> entregada
     await this.prisma.reservas.update({
       where: { codigo_validacion: codigo },
       data: {
         estado: 'entregada',
         updated_at: new Date(),
+      },
+    });
+
+    // 2) ⭐ Notificación para el consumidor
+    await this.prisma.notificaciones.create({
+      data: {
+        id_usuario: BigInt(validation.reserva.cliente.id),
+        titulo: 'Reserva entregada',
+        mensaje: `Tu reserva #${validation.reserva.id_reserva} ha sido marcada como entregada.`,
+        tipo: 'sistema', 
       },
     });
 
