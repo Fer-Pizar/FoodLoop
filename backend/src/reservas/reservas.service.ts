@@ -1,4 +1,5 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+// backend/src/reservas/reservas.service.ts
+import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
 // 👇 TIPOS EXPORTADOS (así no hay drama si luego los usas en otro archivo)
@@ -182,7 +183,7 @@ export class ReservasService {
         id_usuario: BigInt(validation.reserva.cliente.id),
         titulo: 'Reserva entregada',
         mensaje: `Tu reserva #${validation.reserva.id_reserva} ha sido marcada como entregada.`,
-        tipo: 'sistema', 
+        tipo: 'sistema',
       },
     });
 
@@ -195,5 +196,71 @@ export class ReservasService {
         estado: 'entregada',
       },
     };
+  }
+
+  // 🔥 NUEVO HU14 – Historial por comercio (rol comercio)
+  async getHistorialComercio(
+    userId: number,
+    options?: {
+      estado?: 'pendiente' | 'confirmada' | 'entregada' | 'cancelada';
+      desde?: string;
+      hasta?: string;
+    },
+  ) {
+    const comercio = await this.prisma.comercio.findUnique({
+      where: { idUsuario: BigInt(userId) },
+    });
+
+    if (!comercio) {
+      // CA3 – acceso restringido por rol / pertenencia
+      throw new ForbiddenException('Usuario no asociado a un comercio');
+    }
+
+    const where: any = {
+      producto: {
+        id_comercio: comercio.idComercio,
+      },
+    };
+
+    if (options?.estado) {
+      where.estado = options.estado;
+    }
+
+    if (options?.desde || options?.hasta) {
+      where.fecha_reserva = {};
+      if (options.desde) where.fecha_reserva.gte = new Date(options.desde);
+      if (options.hasta) where.fecha_reserva.lte = new Date(options.hasta);
+    }
+
+    const reservas = await this.prisma.reservas.findMany({
+      where,
+      orderBy: { fecha_reserva: 'desc' },
+      include: {
+        producto: true,
+        usuario: true,
+      },
+    });
+
+    // CA2 + CA4 + CA5 – dto con productos[]
+    return reservas.map((r) => ({
+      id_reserva: Number(r.id_reserva),
+      codigo: r.codigo_validacion,
+      fecha_reserva: r.fecha_reserva,
+      estado: r.estado,
+      total: Number(r.total),
+      cliente: {
+        id: Number(r.id_usuario),
+        nombre: r.usuario?.nombre ?? '',
+      },
+      productos: [
+        {
+          id_producto: Number(r.id_producto),
+          nombre: r.producto.nombre,
+          // si en tu schema tienes cantidad, cámbialo a Number(r.cantidad)
+          cantidad: 1,
+          precio: Number(r.producto.precio_actual ?? r.producto.precio_base),
+        },
+      ],
+    }));
   }
 }

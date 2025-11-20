@@ -1,4 +1,15 @@
-import { Controller, Get, Request, UseGuards, Post, Body, BadRequestException, Param,} from '@nestjs/common';
+// backend/src/reservas/reservas.controller.ts
+import {
+  Controller,
+  Get,
+  Request,
+  UseGuards,
+  Post,
+  Body,
+  BadRequestException,
+  Param,
+  Query,
+} from '@nestjs/common';
 import { ReservasService } from './reservas.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
@@ -15,6 +26,33 @@ export class ReservasController {
   async getMyReservations(@Request() req: any) {
     const userId = this.getUserId(req);
     const reservas = await this.reservasService.getUserReservations(userId);
+
+    return {
+      success: true,
+      reservas,
+    };
+  }
+
+  // ⭐ HU14 – historial por comercio
+  @Get('historial/comercio')
+  async getHistorialComercio(
+    @Request() req: any,
+    @Query('estado') estado?: string,
+    @Query('desde') desde?: string,
+    @Query('hasta') hasta?: string,
+  ) {
+    const userId = this.getUserId(req);
+
+    // normalizamos estado: pendiente/confirmada/entregada/cancelada
+    const allowed = ['pendiente', 'confirmada', 'entregada', 'cancelada'];
+    const estadoFiltrado =
+      estado && allowed.includes(estado) ? (estado as any) : undefined;
+
+    const reservas = await this.reservasService.getHistorialComercio(userId, {
+      estado: estadoFiltrado,
+      desde,
+      hasta,
+    });
 
     return {
       success: true,
@@ -95,3 +133,4 @@ export class ReservasController {
     };
   }
 }
+

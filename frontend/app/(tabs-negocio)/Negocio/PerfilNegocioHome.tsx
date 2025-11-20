@@ -142,12 +142,7 @@ export default function PerfilNegocioHome() {
           title="Reglas de Descuento"
           onPress={() => router.push("/Negocio/ReglasDescuento")}
         />
-        {/* 🔐 HU12 – Validar retiro con código */}
-        <RowItem
-  icon="key-outline"
-  title="Validar retiro"
-  onPress={() => router.push("/Negocio/ValidarRetiro" as any)}
-/>
+        
         <RowItem
           icon="exit-outline"
           title="Cerrar Sesión"
