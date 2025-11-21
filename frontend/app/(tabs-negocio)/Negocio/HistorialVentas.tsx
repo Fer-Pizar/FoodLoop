@@ -5,19 +5,21 @@ import { Ionicons } from "@expo/vector-icons";
 import HistorialHeader from "../../../components/historial/HistorialHeader";
 import HistorialCard from "../../../components/historial/HistorialCard";
 import HistorialModal from "../../../components/historial/HistorialModal";
+
 import T from "../../../components/common/T";
 import TBold from "../../../components/common/TBold";
 
 import { useHistorialNegocio } from "../../../hooks/useHistorialNegocio";
 
 export default function HistorialVentas() {
-  const { items, loading, error } = useHistorialNegocio();
+  const { items, loading, error, refetch } = useHistorialNegocio();
 
   const [search, setSearch] = useState("");
   const [openFilter, setOpenFilter] = useState(false);
   const [filter, setFilter] = useState("Todos");
   const [selected, setSelected] = useState<any>(null);
 
+  // 🔎 FILTRO + BÚSQUEDA
   const filtered = useMemo(() => {
     return items.filter((r: any) => {
       const byCode = r.codigo.toLowerCase().includes(search.toLowerCase());
@@ -29,6 +31,7 @@ export default function HistorialVentas() {
 
   return (
     <View style={{ flex: 1, backgroundColor: "#fff" }}>
+      {/* HEADER */}
       <HistorialHeader title="Historial Pedidos" />
 
       <ScrollView contentContainerStyle={{ padding: 16 }}>
@@ -46,7 +49,11 @@ export default function HistorialVentas() {
           <Ionicons name="search" size={18} color="#666" />
           <TextInput
             placeholder="Buscar por código..."
-            style={{ flex: 1, marginLeft: 6 }}
+            style={{
+              flex: 1,
+              marginLeft: 6,
+              fontFamily: "Comfortaa_400Regular",
+            }}
             value={search}
             onChangeText={setSearch}
           />
@@ -57,14 +64,15 @@ export default function HistorialVentas() {
           <TouchableOpacity
             onPress={() => setOpenFilter(!openFilter)}
             style={{
-              backgroundColor: "#E0E0E0",
+              backgroundColor: "#BDBDBD",
               padding: 12,
               borderRadius: 8,
               flexDirection: "row",
               justifyContent: "space-between",
+              alignItems: "center",
             }}
           >
-            <T>Filtro: {filter}</T>
+            <TBold style={{ color: "#333" }}>Filtro: {filter}</TBold>
             <Ionicons
               name={openFilter ? "chevron-up" : "chevron-down"}
               size={18}
@@ -75,7 +83,7 @@ export default function HistorialVentas() {
           {openFilter && (
             <View
               style={{
-                backgroundColor: "#D9D9D9",
+                backgroundColor: "#D6D6D6",
                 marginTop: 4,
                 borderRadius: 8,
                 paddingVertical: 6,
@@ -91,11 +99,7 @@ export default function HistorialVentas() {
                     }}
                     style={{ paddingVertical: 8, paddingHorizontal: 12 }}
                   >
-                    <T
-                      style={{
-                        color: opt === filter ? "#d11212" : "#333",
-                      }}
-                    >
+                    <T style={{ color: opt === filter ? "#d11212" : "#333" }}>
                       {opt}
                     </T>
                   </TouchableOpacity>
@@ -107,12 +111,21 @@ export default function HistorialVentas() {
 
         {/* LISTA */}
         {filtered.map((item: any) => (
-          <HistorialCard key={item.id_reserva} item={item} onOpen={() => setSelected(item)} />
+          <HistorialCard
+            key={item.id_reserva}
+            item={item}
+            onOpen={() => setSelected(item)}
+          />
         ))}
       </ScrollView>
 
-      <HistorialModal visible={!!selected} item={selected} onClose={() => setSelected(null)} />
+      {/* MODAL */}
+      <HistorialModal
+        visible={!!selected}
+        item={selected}
+        onClose={() => setSelected(null)}
+        onConfirmado={refetch} // 🔥 refresh automático
+      />
     </View>
   );
 }
-
