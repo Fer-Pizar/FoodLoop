@@ -68,7 +68,7 @@ export function Atajos({
       <Btn icon="person-outline" label={"Información\nPersonal"} onPress={onInfo} />
       <Btn icon="cart-outline" label={"Mis\nProductos"} onPress={onProductos} />
       <Btn icon="reader-outline" label={"Validar\nRetiro"} onPress={onValidarRetiro} />
-      <Btn icon="lock-closed-outline" label={"Historial\nVentas"} onPress={onHistorial} />
+      <Btn icon="lock-closed-outline" label={"Historial\nPedidos"} onPress={onHistorial} />
     </View>
   );
 }

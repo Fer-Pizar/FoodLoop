@@ -12,4 +12,8 @@ export const reservasApi = {
   // 👇 NUEVO: confirmar retiro
   confirmarRetiro: (codigo: string) =>
     api.post("/reservas/confirmar-retiro", { codigo }),
+
+  // ⭐ NUEVO: CONFIRMAR RESERVA → pasa de pendiente → confirmada
+  confirmarReserva: (id_reserva: number) =>
+    api.post(`/reservas/confirmar/${id_reserva}`, {}),
 };
