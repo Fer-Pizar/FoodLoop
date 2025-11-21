@@ -18,16 +18,14 @@ export default function NotificacionesScreen() {
   const { colors } = useTheme();
   const { items, loading, error, reload } = useNotificaciones();
 
-  // ⭐ LOCAL STATE to allow clearing UI notifs
   const [localItems, setLocalItems] = useState(items);
 
-  // keep sync with backend reload
   useEffect(() => {
     setLocalItems(items);
   }, [items]);
 
   const clearLocalNotifs = () => {
-    setLocalItems([]); // just clears UI
+    setLocalItems([]);
   };
 
   return (
@@ -36,10 +34,10 @@ export default function NotificacionesScreen() {
         style={{
           flex: 1,
           backgroundColor: colors.bg,
-          paddingBottom: 90, // space for footer
+          paddingBottom: 90,
         }}
       >
-        {/* ===== HEADER ===== */}
+        {/* HEADER */}
         <View
           style={{
             paddingTop: 50,
@@ -69,7 +67,6 @@ export default function NotificacionesScreen() {
             Aquí verás los cambios importantes de tus reservas 🛎️
           </Text>
 
-          {/* 🧹 CLEAR BUTTON (UI ONLY) */}
           <TouchableOpacity
             onPress={clearLocalNotifs}
             style={{
@@ -94,7 +91,7 @@ export default function NotificacionesScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* ===== LOADING ===== */}
+        {/* LOADING */}
         {loading && localItems.length === 0 ? (
           <View
             style={{
@@ -136,86 +133,88 @@ export default function NotificacionesScreen() {
                 </Text>
               </View>
             }
-            renderItem={({ item }) => (
-              <View
-                style={{
-                  backgroundColor: "#fff",
-                  borderRadius: 14,
-                  padding: 14,
-                  marginBottom: 10,
-                  shadowColor: "#000",
-                  shadowOpacity: 0.06,
-                  shadowRadius: 4,
-                  shadowOffset: { width: 0, height: 2 },
-                  elevation: 2,
-                  flexDirection: "row",
-                  gap: 10,
-                }}
-              >
-                {/* unread dot */}
+            renderItem={({ item }) => {
+              const isCancel =
+                item.titulo?.toLowerCase().includes("cancelada") ||
+                item.mensaje?.toLowerCase().includes("cancelada");
+
+              return (
                 <View
                   style={{
-                    width: 10,
-                    height: 10,
-                    borderRadius: 5,
-                    marginTop: 6,
-                    backgroundColor: item.leido ? "#ccc" : "#00b518ff",
+                    backgroundColor: "#fff",
+                    borderRadius: 14,
+                    padding: 14,
+                    marginBottom: 10,
+                    shadowColor: "#000",
+                    shadowOpacity: 0.06,
+                    shadowRadius: 4,
+                    shadowOffset: { width: 0, height: 2 },
+                    elevation: 2,
+                    flexDirection: "row",
+                    gap: 10,
                   }}
-                />
-                <View style={{ flex: 1 }}>
-                  <Text
-                    style={{
-                      fontWeight: "bold",
-                      marginBottom: 4,
-                      fontFamily: "Comfortaa",
-                    }}
-                  >
-                    {item.titulo}
-                  </Text>
-                  <Text
-                    style={{
-                      fontSize: 13,
-                      color: "#444",
-                      fontFamily: "Comfortaa",
-                    }}
-                  >
-                    {item.mensaje}
-                  </Text>
+                >
+                  {/* DOT INDICATOR */}
                   <View
                     style={{
+                      width: 10,
+                      height: 10,
+                      borderRadius: 5,
                       marginTop: 6,
-                      flexDirection: "row",
-                      justifyContent: "space-between",
+                      backgroundColor: isCancel
+                        ? "#ff3b30" 
+                        : item.leido
+                        ? "#ccc"
+                        : "#00b518ff", 
                     }}
-                  >
+                  />
+
+                  <View style={{ flex: 1 }}>
                     <Text
                       style={{
-                        fontSize: 11,
-                        color: "#999",
+                        fontWeight: "bold",
+                        marginBottom: 4,
                         fontFamily: "Comfortaa",
                       }}
                     >
-                      {new Date(item.fecha_envio).toLocaleString()}
+                      {item.titulo}
                     </Text>
+
                     <Text
                       style={{
-                        fontSize: 11,
-                        color: "#00b518ff",
-                        fontWeight: "600",
+                        fontSize: 13,
+                        color: "#444",
                         fontFamily: "Comfortaa",
                       }}
                     >
-                      {item.tipo.toUpperCase()}
+                      {item.mensaje}
                     </Text>
+
+                    <View
+                      style={{
+                        marginTop: 6,
+                        flexDirection: "row",
+                        justifyContent: "flex-start",
+                      }}
+                    >
+                      <Text
+                        style={{
+                          fontSize: 11,
+                          color: "#999",
+                          fontFamily: "Comfortaa",
+                        }}
+                      >
+                        {new Date(item.fecha_envio).toLocaleString()}
+                      </Text>
+                    </View>
                   </View>
                 </View>
-              </View>
-            )}
+              );
+            }}
           />
         )}
       </ThemedView>
 
-      {/* FOOTER */}
       <ConsumidorFooter />
     </>
   );

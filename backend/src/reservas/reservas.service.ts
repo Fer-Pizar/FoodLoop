@@ -1,6 +1,8 @@
 // backend/src/reservas/reservas.service.ts
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import { PrismaService } from '../prisma/prisma.service';
+import { NotificacionesService } from '../notificaciones/notificaciones.service'; 
 
 // 👇 TIPOS EXPORTADOS (así no hay drama si luego los usas en otro archivo)
 export type ValidacionReason = 'not_found' | 'used' | 'expired' | 'no_comercio';
@@ -26,7 +28,10 @@ export interface ReservaValidada {
 
 @Injectable()
 export class ReservasService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notificacionesService: NotificacionesService,
+  ) {}
 
   // 🔹 Rol consumidor: obtener reservas del usuario
   async getUserReservations(userId: number) {
@@ -187,8 +192,6 @@ export class ReservasService {
       },
     });
 
-    // TODO: aquí podrías crear registro de auditoría (CA7)
-
     return {
       status: 'confirmed',
       reserva: {
@@ -196,6 +199,56 @@ export class ReservasService {
         estado: 'entregada',
       },
     };
+  }
+
+  // ⚡ NUEVO: cancelación manual con notificación
+  async forceCancel(id_reserva: number) {
+    const r = await this.prisma.reservas.update({
+      where: { id_reserva: BigInt(id_reserva) },
+      data: { estado: 'cancelada', updated_at: new Date() },
+    });
+
+    await this.notificacionesService.crearNotificacionCancelacion(
+      Number(r.id_usuario),
+      Number(r.id_reserva),
+    );
+
+    return { success: true, reserva: r };
+  }
+
+  // ⏰ CRON: auto-cancelar reservas confirmadas vencidas + notificación
+  @Cron(CronExpression.EVERY_5_MINUTES)
+  async autoCancelConfirmadas() {
+    const threshold = new Date(Date.now() - 2 * 60 * 60 * 1000);
+
+    // 1) get reservas that should be cancelled
+    const expiradas = await this.prisma.reservas.findMany({
+      where: {
+        estado: 'confirmada',
+        fecha_reserva: { lte: threshold },
+      },
+    });
+
+    // 2) update them
+    await this.prisma.reservas.updateMany({
+      where: {
+        estado: 'confirmada',
+        fecha_reserva: { lte: threshold },
+      },
+      data: { estado: 'cancelada', updated_at: new Date() },
+    });
+
+    // 3) send notifications (one per consumidor)
+    for (const r of expiradas) {
+      await this.notificacionesService.crearNotificacionCancelacion(
+        Number(r.id_usuario),
+        Number(r.id_reserva),
+      );
+    }
+
+    if (expiradas.length > 0) {
+      console.log(`⏳ Auto-cancelled reservas: ${expiradas.length}`);
+    }
   }
 
   // 🔥 NUEVO HU14 – Historial por comercio (rol comercio)
@@ -212,7 +265,6 @@ export class ReservasService {
     });
 
     if (!comercio) {
-      // CA3 – acceso restringido por rol / pertenencia
       throw new ForbiddenException('Usuario no asociado a un comercio');
     }
 
@@ -241,7 +293,6 @@ export class ReservasService {
       },
     });
 
-    // CA2 + CA4 + CA5 – dto con productos[]
     return reservas.map((r) => ({
       id_reserva: Number(r.id_reserva),
       codigo: r.codigo_validacion,
@@ -256,7 +307,6 @@ export class ReservasService {
         {
           id_producto: Number(r.id_producto),
           nombre: r.producto.nombre,
-          // si en tu schema tienes cantidad, cámbialo a Number(r.cantidad)
           cantidad: 1,
           precio: Number(r.producto.precio_actual ?? r.producto.precio_base),
         },
