@@ -1,13 +1,29 @@
 import { Platform } from "react-native";
 
-// 👇 This will automatically pick the right URL
-// 💻 If you’re running on Web or Emulator → localhost
-// 📱 If you’re running on a real device → replace with your Mac IP
 export const BASE_URL =
   Platform.OS === "web"
     ? "http://localhost:3000/api"
-    : "http://192.168.100.16:3000/api"; 
+    : "https://fergie.ngrok-free.app/api";
 
-// ✅ Example final URLs that will be used:
-//  - Web or simulator → http://localhost:3000/api
-//  - Physical device → http://192.168.100.16:3000/api
+const rawApi =
+  process.env.EXPO_PUBLIC_API_BASE_URL ||
+  process.env.EXPO_PUBLIC_API_BASE ||
+  process.env.VITE_API_URL ||
+  BASE_URL ||
+  "http://localhost:3000/api"; 
+
+function normalizeApi(url: string) {
+  const u = url.trim().replace(/\/+$/, "");
+  return /\/api$/.test(u) ? u : `${u}/api`;
+}
+
+export function getApiBaseUrl(): string {
+  return normalizeApi(rawApi);
+}
+
+export function getImageBaseUrl(): string {
+  const api = getApiBaseUrl();
+  return api.replace(/\/api\/?$/, "");
+}
+
+export const API_BASE = getApiBaseUrl();

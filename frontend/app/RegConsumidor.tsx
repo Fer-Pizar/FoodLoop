@@ -1,15 +1,13 @@
-// app/RegConsumidor.tsx
+// File: FoodLoop/frontend/app/RegConsumidor.tsx
 import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Dimensions, SafeAreaView, ScrollView, KeyboardAvoidingView, Platform,} from "react-native";
+import {View,Text,TextInput,TouchableOpacity,StyleSheet,Dimensions,SafeAreaView,ScrollView,KeyboardAvoidingView,Platform,} from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import {
-  useFonts,
-  Comfortaa_400Regular,
-  Comfortaa_700Bold,
-} from "@expo-google-fonts/comfortaa";
-import { registerUser } from "../src/lib/api";
+import {useFonts,Comfortaa_400Regular,Comfortaa_700Bold,} from "@expo-google-fonts/comfortaa";
+
+// <-- IMPORTANT: this is the auth helper that posts to /auth/register
+import { registerUser } from "../src/api/auth";
 
 const { width } = Dimensions.get("window");
 
@@ -30,13 +28,17 @@ export default function RegConsumidor() {
   const [pass, setPass] = useState("");
   const [confirm, setConfirm] = useState("");
 
-  const [showPw, setShowPw] = useState(false);   
-  const [showPw2, setShowPw2] = useState(false); 
+  // default: passwords are hidden → show slash icon (eye-off)
+  const [showPw, setShowPw] = useState(false);
+  const [showPw2, setShowPw2] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState("");
 
-  const [fontsLoaded] = useFonts({ Comfortaa_400Regular, Comfortaa_700Bold });
+  const [fontsLoaded] = useFonts({
+    Comfortaa_400Regular,
+    Comfortaa_700Bold,
+  });
   if (!fontsLoaded) return null;
 
   const canSubmit =
@@ -51,7 +53,13 @@ export default function RegConsumidor() {
     setMsg("");
     try {
       setLoading(true);
-      const res = await registerUser(name.trim(), email.trim(), pass, confirm);
+      // Pass confirm password too (trimmed)
+      const res = await registerUser(
+        name.trim(),
+        email.trim(),
+        pass.trim(),
+        confirm.trim()
+      );
       if (res?.ok) {
         setMsg("¡Cuenta creada! Redirigiendo…");
         setTimeout(() => router.push("/login"), 1000);
@@ -140,7 +148,7 @@ export default function RegConsumidor() {
                   placeholder=""
                   placeholderTextColor={GRAY_TEXT}
                   style={styles.input}
-                  secureTextEntry={!showPw}
+                  secureTextEntry={!showPw} // hidden by default
                   autoCapitalize="none"
                 />
                 <TouchableOpacity
@@ -149,8 +157,9 @@ export default function RegConsumidor() {
                   activeOpacity={0.7}
                   accessibilityLabel="Mostrar u ocultar contraseña"
                 >
+                  {/* show slash (eye-off) when hidden; open eye when visible */}
                   <Ionicons
-                    name={showPw ? "eye-off" : "eye"}
+                    name={showPw ? "eye" : "eye-off"}
                     size={20}
                     color="#7A7A7A"
                   />
@@ -176,7 +185,7 @@ export default function RegConsumidor() {
                   accessibilityLabel="Mostrar u ocultar confirmación de contraseña"
                 >
                   <Ionicons
-                    name={showPw2 ? "eye-off" : "eye"}
+                    name={showPw2 ? "eye" : "eye-off"}
                     size={20}
                     color="#7A7A7A"
                   />
@@ -206,10 +215,7 @@ export default function RegConsumidor() {
               {/* Link Login */}
               <Text style={styles.helper}>
                 ¿Ya tienes cuenta?{" "}
-                <Text
-                  style={styles.link}
-                  onPress={() => router.push("/login")}
-                >
+                <Text style={styles.link} onPress={() => router.push("/login")}>
                   Inicia Sesión
                 </Text>
               </Text>
@@ -287,7 +293,7 @@ const styles = StyleSheet.create({
     color: "#030000ff",
     fontSize: 17,
     fontFamily: "Comfortaa_400Regular",
-    paddingRight: 40, // espacio para el icono 👁️
+    paddingRight: 40, 
   },
   eyeBtn: {
     position: "absolute",
