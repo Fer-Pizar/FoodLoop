@@ -54,7 +54,7 @@ export default function ProductosNegocioView() {
         <View style={{ flex: 1, paddingHorizontal: 20 }}>
           {/* BACK BUTTON */}
           <TouchableOpacity
-            onPress={() => router.push("/(tabs-consumidor)/Cafeterias")}
+            onPress={() => router.back()}
             style={{
               width: 40,
               height: 40,
@@ -65,6 +65,7 @@ export default function ProductosNegocioView() {
           >
             <Ionicons name="arrow-back" size={26} color={theme.primary} />
           </TouchableOpacity>
+
 
           {/* LOGO */}
           {theme.logo && (

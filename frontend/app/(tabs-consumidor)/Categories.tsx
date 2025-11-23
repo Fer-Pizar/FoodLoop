@@ -80,7 +80,7 @@ export default function Categories() {
           <Item
             icon={<MaterialCommunityIcons name="cupcake" size={28} color={colors.onPrimary} />}
             label="Pastelería"
-            onPress={() => {}}
+            onPress={() => handleOpenCategory("Pastelería")}
           />
           <Item
             icon={<MaterialCommunityIcons name="coffee" size={28} color={colors.onPrimary} />}
@@ -95,7 +95,7 @@ export default function Categories() {
           <Item
             icon={<MaterialCommunityIcons name="silverware-fork-knife" size={28} color={colors.onPrimary} />}
             label="Restaurante"
-            onPress={() => {}}
+            onPress={() => handleOpenCategory("Restaurante")}
           />
         </View>
 
