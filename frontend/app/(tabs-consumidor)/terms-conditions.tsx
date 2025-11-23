@@ -1,22 +1,32 @@
-// frontend/app/(tabs-consumidor)/terms-conditions.tsx
 import React from "react";
 import { View, Text, ScrollView, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import ConsumidorFooter from "@/components/ConsumidorFooter";
+import { useTheme } from "@/src/theme/ThemeProvider";
 
 const RED = "#D82A2A";
 const LIGHT_GRAY = "#F5F5F5";
 
 export default function TermsConditionsScreen() {
+  const { colors } = useTheme();
+
+  // 🌗 Theme-aware colors with safe fallbacks
+  const headerBg = colors.primary ?? RED;
+  const pageBg = colors.bg ?? "#FFFFFF";
+  const cardBg = colors.card ?? LIGHT_GRAY;
+  const headerTextColor = colors.onPrimary ?? "#FFFFFF";
+  const bodyTextColor = colors.subtext ?? "#555";
+  const titleTextColor = colors.text ?? "#000";
+
   return (
     <>
-      <SafeAreaView style={{ flex: 1, backgroundColor: RED }}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: headerBg }}>
         {/* HEADER */}
         <View
           style={{
-            backgroundColor: RED,
+            backgroundColor: headerBg,
             paddingHorizontal: 20,
             paddingTop: 4, // match final fix / Profile header
             paddingBottom: 16, // match final fix / Profile header
@@ -36,13 +46,13 @@ export default function TermsConditionsScreen() {
               marginRight: 12,
             }}
           >
-            <Ionicons name="arrow-back" size={22} color="#FFFFFF" />
+            <Ionicons name="arrow-back" size={22} color={headerTextColor} />
           </TouchableOpacity>
 
           <Text
             style={{
               fontSize: 20,
-              color: "#FFFFFF",
+              color: headerTextColor,
               fontFamily: "Comfortaa",
             }}
           >
@@ -52,7 +62,7 @@ export default function TermsConditionsScreen() {
 
         {/* CONTENT */}
         <ScrollView
-          style={{ flex: 1, backgroundColor: "#FFFFFF" }} // white like Profile / Privacy
+          style={{ flex: 1, backgroundColor: pageBg }} // theme-aware background
           contentContainerStyle={{
             paddingHorizontal: 20,
             paddingTop: 24,
@@ -62,7 +72,7 @@ export default function TermsConditionsScreen() {
           {/* Bloque 1 - Uso de la app */}
           <View
             style={{
-              backgroundColor: LIGHT_GRAY,
+              backgroundColor: cardBg,
               borderRadius: 18,
               padding: 18,
               marginBottom: 16,
@@ -73,6 +83,7 @@ export default function TermsConditionsScreen() {
                 fontSize: 18,
                 marginBottom: 8,
                 fontFamily: "Comfortaa",
+                color: titleTextColor,
               }}
             >
               Uso de FoodLoop
@@ -81,7 +92,7 @@ export default function TermsConditionsScreen() {
               style={{
                 fontSize: 14,
                 lineHeight: 20,
-                color: "#555",
+                color: bodyTextColor,
                 fontFamily: "Comfortaa",
                 textAlign: "justify",
               }}
@@ -98,7 +109,7 @@ export default function TermsConditionsScreen() {
           {/* Bloque 2 - Responsabilidad */}
           <View
             style={{
-              backgroundColor: LIGHT_GRAY,
+              backgroundColor: cardBg,
               borderRadius: 18,
               padding: 18,
               marginBottom: 16,
@@ -109,6 +120,7 @@ export default function TermsConditionsScreen() {
                 fontSize: 18,
                 marginBottom: 8,
                 fontFamily: "Comfortaa",
+                color: titleTextColor,
               }}
             >
               Responsabilidad de los comercios
@@ -117,7 +129,7 @@ export default function TermsConditionsScreen() {
               style={{
                 fontSize: 14,
                 lineHeight: 20,
-                color: "#555",
+                color: bodyTextColor,
                 fontFamily: "Comfortaa",
                 textAlign: "justify",
               }}
@@ -135,7 +147,7 @@ export default function TermsConditionsScreen() {
           {/* Bloque 3 - Datos y privacidad */}
           <View
             style={{
-              backgroundColor: LIGHT_GRAY,
+              backgroundColor: cardBg,
               borderRadius: 18,
               padding: 18,
               marginBottom: 16,
@@ -146,6 +158,7 @@ export default function TermsConditionsScreen() {
                 fontSize: 18,
                 marginBottom: 8,
                 fontFamily: "Comfortaa",
+                color: titleTextColor,
               }}
             >
               Datos personales y privacidad
@@ -154,7 +167,7 @@ export default function TermsConditionsScreen() {
               style={{
                 fontSize: 14,
                 lineHeight: 20,
-                color: "#555",
+                color: bodyTextColor,
                 fontFamily: "Comfortaa",
                 textAlign: "justify",
               }}
@@ -172,7 +185,7 @@ export default function TermsConditionsScreen() {
           {/* Bloque 4 - Cambios en los términos */}
           <View
             style={{
-              backgroundColor: LIGHT_GRAY,
+              backgroundColor: cardBg,
               borderRadius: 18,
               padding: 18,
               marginBottom: 16,
@@ -183,6 +196,7 @@ export default function TermsConditionsScreen() {
                 fontSize: 18,
                 marginBottom: 8,
                 fontFamily: "Comfortaa",
+                color: titleTextColor,
               }}
             >
               Actualizaciones de los términos
@@ -191,7 +205,7 @@ export default function TermsConditionsScreen() {
               style={{
                 fontSize: 14,
                 lineHeight: 20,
-                color: "#555",
+                color: bodyTextColor,
                 fontFamily: "Comfortaa",
                 textAlign: "justify",
               }}

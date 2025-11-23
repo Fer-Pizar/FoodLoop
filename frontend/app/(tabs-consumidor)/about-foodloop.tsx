@@ -5,20 +5,31 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import ConsumidorFooter from "@/components/ConsumidorFooter";
+import { useTheme } from "@/src/theme/ThemeProvider"; // 👈 Dark mode hook
 
+// Fallback colors (keep design reference)
 const RED = "#D82A2A";
 const LIGHT_GRAY = "#F5F5F5";
 
 export default function AboutFoodLoopScreen() {
+  // 🎨 Dark / Light mode colors from theme
+  const { colors } = useTheme();
+
+  const headerBg = colors?.primary ?? RED;
+  const pageBg = colors?.bg ?? "#FFFFFF";
+  const cardBg = colors?.card ?? LIGHT_GRAY;
+  const mainText = colors?.text ?? "#000000";
+  const subText = colors?.subtext ?? "#555555";
+
   return (
     <>
-      <SafeAreaView style={{ flex: 1, backgroundColor: RED }}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: headerBg }}>
         {/* HEADER */}
         <View
           style={{
-            backgroundColor: RED,
+            backgroundColor: headerBg,
             paddingHorizontal: 20,
-            paddingTop: 4,   // final fix
+            paddingTop: 4, // final fix
             paddingBottom: 16, // final fix
             flexDirection: "row",
             alignItems: "center",
@@ -52,7 +63,7 @@ export default function AboutFoodLoopScreen() {
 
         {/* CONTENT */}
         <ScrollView
-          style={{ flex: 1, backgroundColor: "#FFFFFF" }} // match Privacy / Terms
+          style={{ flex: 1, backgroundColor: pageBg }} // 👈 now theme-aware
           contentContainerStyle={{
             paddingHorizontal: 20,
             paddingTop: 24,
@@ -62,7 +73,7 @@ export default function AboutFoodLoopScreen() {
           {/* BLOCK 1 */}
           <View
             style={{
-              backgroundColor: LIGHT_GRAY,
+              backgroundColor: cardBg, // 👈 card background respects theme
               borderRadius: 18,
               padding: 18,
               marginBottom: 16,
@@ -73,6 +84,7 @@ export default function AboutFoodLoopScreen() {
                 fontSize: 18,
                 marginBottom: 8,
                 fontFamily: "Comfortaa",
+                color: mainText, // 👈 title color from theme
               }}
             >
               ¿Qué es FoodLoop?
@@ -82,7 +94,7 @@ export default function AboutFoodLoopScreen() {
               style={{
                 fontSize: 14,
                 lineHeight: 20,
-                color: "#555",
+                color: subText, // 👈 body text from theme
                 fontFamily: "Comfortaa",
                 textAlign: "justify",
               }}
@@ -98,7 +110,7 @@ export default function AboutFoodLoopScreen() {
           {/* BLOCK 2 */}
           <View
             style={{
-              backgroundColor: LIGHT_GRAY,
+              backgroundColor: cardBg,
               borderRadius: 18,
               padding: 18,
               marginBottom: 16,
@@ -109,6 +121,7 @@ export default function AboutFoodLoopScreen() {
                 fontSize: 18,
                 marginBottom: 8,
                 fontFamily: "Comfortaa",
+                color: mainText,
               }}
             >
               Nuestra misión
@@ -118,7 +131,7 @@ export default function AboutFoodLoopScreen() {
               style={{
                 fontSize: 14,
                 lineHeight: 20,
-                color: "#555",
+                color: subText,
                 fontFamily: "Comfortaa",
                 textAlign: "justify",
               }}
@@ -134,7 +147,7 @@ export default function AboutFoodLoopScreen() {
           {/* BLOCK 3 */}
           <View
             style={{
-              backgroundColor: LIGHT_GRAY,
+              backgroundColor: cardBg,
               borderRadius: 18,
               padding: 18,
               marginBottom: 16,
@@ -145,7 +158,7 @@ export default function AboutFoodLoopScreen() {
               style={{
                 fontSize: 14,
                 lineHeight: 20,
-                color: "#555",
+                color: subText,
                 fontFamily: "Comfortaa",
                 textAlign: "justify",
               }}
@@ -162,7 +175,7 @@ export default function AboutFoodLoopScreen() {
               style={{
                 fontSize: 14,
                 lineHeight: 20,
-                color: "#555",
+                color: subText,
                 fontFamily: "Comfortaa",
                 textAlign: "justify",
                 marginTop: 14,

@@ -12,14 +12,14 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import ConsumidorFooter from "@/components/ConsumidorFooter";
-
-const RED = "#D82A2A";
-const LIGHT_GRAY = "#F5F5F5";
+import { useTheme } from "@/src/theme/ThemeProvider";
 
 // 👉 URL pública de tu app (cámbiala cuando tengas el link real)
 const APP_URL = "https://foodloop.app";
 
 export default function ShareAppScreen() {
+  const { colors } = useTheme();
+
   const handleOpenLink = async (url: string) => {
     try {
       const supported = await Linking.canOpenURL(url);
@@ -55,12 +55,12 @@ export default function ShareAppScreen() {
 
   return (
     <>
-      {/* SafeArea con fondo rojo, como en Profile / About / Terms / Privacy */}
-      <SafeAreaView style={{ flex: 1, backgroundColor: RED }}>
+      {/* SafeArea con fondo basado en el tema (rojo en claro, equivalente en oscuro) */}
+      <SafeAreaView style={{ flex: 1, backgroundColor: colors.primary }}>
         {/* HEADER */}
         <View
           style={{
-            backgroundColor: RED,
+            backgroundColor: colors.primary,
             paddingHorizontal: 20,
             paddingTop: 4, // alineado con el patrón que te pasaron
             paddingBottom: 16, // alineado con el patrón que te pasaron
@@ -95,7 +95,7 @@ export default function ShareAppScreen() {
 
         {/* CONTENT */}
         <ScrollView
-          style={{ flex: 1, backgroundColor: "#FFFFFF" }} // fondo blanco como en el patrón
+          style={{ flex: 1, backgroundColor: colors.bg }} // fondo dinámico según tema
           contentContainerStyle={{
             paddingHorizontal: 20,
             paddingTop: 24,
@@ -105,7 +105,7 @@ export default function ShareAppScreen() {
           {/* Intro card */}
           <View
             style={{
-              backgroundColor: LIGHT_GRAY,
+              backgroundColor: colors.card,
               borderRadius: 18,
               padding: 18,
               marginBottom: 20,
@@ -116,6 +116,7 @@ export default function ShareAppScreen() {
                 fontSize: 18,
                 marginBottom: 8,
                 fontFamily: "Comfortaa",
+                color: colors.text,
               }}
             >
               Comparte FoodLoop 💌
@@ -124,7 +125,7 @@ export default function ShareAppScreen() {
               style={{
                 fontSize: 14,
                 lineHeight: 20,
-                color: "#555",
+                color: colors.subtext,
                 fontFamily: "Comfortaa",
                 textAlign: "justify",
               }}
@@ -151,7 +152,7 @@ export default function ShareAppScreen() {
               style={{
                 flex: 1,
                 marginRight: 8,
-                backgroundColor: "#FFFFFF",
+                backgroundColor: colors.card,
                 borderRadius: 16,
                 paddingVertical: 18,
                 alignItems: "center",
@@ -166,6 +167,7 @@ export default function ShareAppScreen() {
                   marginTop: 8,
                   fontSize: 13,
                   fontFamily: "Comfortaa",
+                  color: colors.text,
                 }}
               >
                 Facebook
@@ -178,7 +180,7 @@ export default function ShareAppScreen() {
               style={{
                 flex: 1,
                 marginHorizontal: 4,
-                backgroundColor: "#FFFFFF",
+                backgroundColor: colors.card,
                 borderRadius: 16,
                 paddingVertical: 18,
                 alignItems: "center",
@@ -193,6 +195,7 @@ export default function ShareAppScreen() {
                   marginTop: 8,
                   fontSize: 13,
                   fontFamily: "Comfortaa",
+                  color: colors.text,
                 }}
               >
                 Twitter
@@ -205,7 +208,7 @@ export default function ShareAppScreen() {
               style={{
                 flex: 1,
                 marginLeft: 8,
-                backgroundColor: "#FFFFFF",
+                backgroundColor: colors.card,
                 borderRadius: 16,
                 paddingVertical: 18,
                 alignItems: "center",
@@ -220,6 +223,7 @@ export default function ShareAppScreen() {
                   marginTop: 8,
                   fontSize: 13,
                   fontFamily: "Comfortaa",
+                  color: colors.text,
                 }}
               >
                 Instagram
@@ -232,7 +236,7 @@ export default function ShareAppScreen() {
             style={{
               fontSize: 12,
               lineHeight: 18,
-              color: "#777",
+              color: colors.subtext,
               fontFamily: "Comfortaa",
               textAlign: "center",
               marginTop: 4,

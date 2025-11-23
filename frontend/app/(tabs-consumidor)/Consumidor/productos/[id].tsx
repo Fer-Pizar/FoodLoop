@@ -1,3 +1,4 @@
+// frontend/app/(tabs-consumidor)/productos-negocio-view.tsx
 import {
   View,
   Text,
@@ -18,18 +19,21 @@ import ConsumidorFooter from "@/components/ConsumidorFooter";
 import { useCart } from "@/hooks/useCart";
 import { toAbsoluteUrl } from "../../../../src/api/client";
 import TBold from "@/components/common/TBold";
+import { useTheme } from "@/src/theme/ThemeProvider";
 
 export default function ProductosNegocioView() {
   const { id, nombre } = useLocalSearchParams();
   const idComercio = Number(id);
   const negocioName = String(nombre ?? "");
 
-  const theme =
+  const negocioTheme =
     (NEGOCIO_THEMES as Record<string, any>)[negocioName] ?? {
       bg: "#FFFFFF",
       primary: "#222222",
       accent: "#444444",
     };
+
+  const { colors } = useTheme();
 
   const { productos, loading, error } = useProductos(idComercio);
   const { items, add, update } = useCart();
@@ -54,7 +58,7 @@ export default function ProductosNegocioView() {
       <ActivityIndicator
         style={{ marginTop: 60 }}
         size="large"
-        color={theme.primary}
+        color={negocioTheme.primary}
       />
     );
 
@@ -67,9 +71,9 @@ export default function ProductosNegocioView() {
 
   return (
     <>
-      <SafeAreaView style={{ flex: 1, backgroundColor: theme.primary }}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }}>
         {/* TOP COLORED HEADER (like Starbucks mockup) */}
-        <View style={{ flex: 1, backgroundColor: theme.primary }}>
+        <View style={{ flex: 1, backgroundColor: negocioTheme.primary }}>
           {/* Header content */}
           <View
             style={{
@@ -116,12 +120,11 @@ export default function ProductosNegocioView() {
               </View>
             </View>
 
-
             {/* Logo + negocio name */}
             <View style={{ flexDirection: "row", alignItems: "center" }}>
-              {theme.logo && (
+              {negocioTheme.logo && (
                 <Image
-                  source={theme.logo}
+                  source={negocioTheme.logo}
                   style={{
                     width: 64,
                     height: 64,
@@ -164,7 +167,7 @@ export default function ProductosNegocioView() {
                 borderRadius: 16,
                 paddingHorizontal: 12,
                 paddingVertical: 8,
-                backgroundColor: "#FFFFFF",
+                backgroundColor: colors.card,
                 flexDirection: "row",
                 alignItems: "center",
               }}
@@ -180,6 +183,7 @@ export default function ProductosNegocioView() {
                   marginLeft: 8,
                   fontSize: 14,
                   fontFamily: "Comfortaa",
+                  color: colors.text,
                 }}
               />
             </View>
@@ -212,7 +216,7 @@ export default function ProductosNegocioView() {
                     style={{
                       fontSize: 12,
                       fontFamily: "Comfortaa",
-                      color: idx === 0 ? theme.primary : "#FFFFFF",
+                      color: idx === 0 ? negocioTheme.primary : "#FFFFFF",
                     }}
                   >
                     {label}
@@ -226,7 +230,7 @@ export default function ProductosNegocioView() {
           <View
             style={{
               flex: 1,
-              backgroundColor: "#F5F5F5",
+              backgroundColor: colors.bg,
               borderTopLeftRadius: 24,
               borderTopRightRadius: 24,
               paddingTop: 18,
@@ -248,7 +252,7 @@ export default function ProductosNegocioView() {
                   fontSize: 16,
                   fontFamily: "Comfortaa",
                   fontWeight: "600",
-                  color: "#111827",
+                  color: colors.text,
                 }}
               >
                 Productos del día
@@ -257,7 +261,7 @@ export default function ProductosNegocioView() {
                 style={{
                   fontSize: 12,
                   fontFamily: "Comfortaa",
-                  color: "#6B7280",
+                  color: colors.subtext,
                 }}
               >
                 {filteredProductos.length} resultados
@@ -314,7 +318,7 @@ export default function ProductosNegocioView() {
                   <View style={{ width: "48%", marginBottom: 16 }}>
                     <View
                       style={{
-                        backgroundColor: "#FFFFFF",
+                        backgroundColor: colors.card,
                         padding: 10,
                         borderRadius: 18,
                         shadowColor: "#000",
@@ -344,7 +348,7 @@ export default function ProductosNegocioView() {
                         style={{
                           fontSize: 14,
                           fontWeight: "600",
-                          color: theme.primary,
+                          color: negocioTheme.primary,
                           fontFamily: "Comfortaa",
                         }}
                         numberOfLines={2}
@@ -356,7 +360,7 @@ export default function ProductosNegocioView() {
                       <Text
                         style={{
                           marginTop: 4,
-                          color: "#444",
+                          color: colors.subtext,
                           fontFamily: "Comfortaa",
                           fontSize: 11,
                         }}
@@ -379,7 +383,7 @@ export default function ProductosNegocioView() {
                             style={{
                               fontSize: 12,
                               textDecorationLine: "line-through",
-                              color: "#9CA3AF",
+                              color: colors.subtext,
                               marginRight: 4,
                               fontFamily: "Comfortaa",
                             }}
@@ -392,7 +396,7 @@ export default function ProductosNegocioView() {
                           style={{
                             fontWeight: "bold",
                             fontSize: 14,
-                            color: theme.accent ?? theme.primary,
+                            color: negocioTheme.accent ?? negocioTheme.primary,
                             fontFamily: "Comfortaa",
                           }}
                         >
@@ -428,7 +432,7 @@ export default function ProductosNegocioView() {
                         <Text
                           style={{
                             marginTop: 4,
-                            color: "#6B7280",
+                            color: colors.subtext,
                             fontFamily: "Comfortaa",
                             fontSize: 11,
                           }}
@@ -445,7 +449,7 @@ export default function ProductosNegocioView() {
                             marginTop: 8,
                             backgroundColor:
                               item.cantidad_disponible > 0
-                                ? theme.accent ?? theme.primary
+                                ? negocioTheme.accent ?? negocioTheme.primary
                                 : "#CCCCCC",
                             paddingVertical: 8,
                             borderRadius: 20,
@@ -508,7 +512,7 @@ export default function ProductosNegocioView() {
                             flexDirection: "row",
                             alignItems: "center",
                             justifyContent: "space-between",
-                            backgroundColor: "#F3F4F6",
+                            backgroundColor: colors.card,
                             paddingVertical: 6,
                             paddingHorizontal: 10,
                             borderRadius: 12,
