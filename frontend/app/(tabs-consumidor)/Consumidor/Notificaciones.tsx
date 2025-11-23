@@ -43,7 +43,7 @@ export default function NotificacionesScreen() {
             paddingTop: 50,
             paddingHorizontal: 20,
             paddingBottom: 16,
-            backgroundColor: "#d11212",
+            backgroundColor: colors.primary, // 🌙 uses theme primary instead of hardcoded red
           }}
         >
           <Text
@@ -100,8 +100,14 @@ export default function NotificacionesScreen() {
               justifyContent: "center",
             }}
           >
-            <ActivityIndicator />
-            <Text style={{ marginTop: 8, fontFamily: "Comfortaa" }}>
+            <ActivityIndicator color={colors.primary} />
+            <Text
+              style={{
+                marginTop: 8,
+                fontFamily: "Comfortaa",
+                color: colors.text,
+              }}
+            >
               Cargando notificaciones...
             </Text>
           </View>
@@ -123,7 +129,7 @@ export default function NotificacionesScreen() {
               >
                 <Text
                   style={{
-                    color: "#777",
+                    color: colors.subtext,
                     fontSize: 14,
                     textAlign: "center",
                     fontFamily: "Comfortaa",
@@ -141,7 +147,7 @@ export default function NotificacionesScreen() {
               return (
                 <View
                   style={{
-                    backgroundColor: "#fff",
+                    backgroundColor: colors.card, // 🌙 card respects theme
                     borderRadius: 14,
                     padding: 14,
                     marginBottom: 10,
@@ -162,10 +168,10 @@ export default function NotificacionesScreen() {
                       borderRadius: 5,
                       marginTop: 6,
                       backgroundColor: isCancel
-                        ? "#ff3b30" 
+                        ? "#ff3b30"
                         : item.leido
                         ? "#ccc"
-                        : "#00b518ff", 
+                        : "#00b518ff",
                     }}
                   />
 
@@ -175,6 +181,7 @@ export default function NotificacionesScreen() {
                         fontWeight: "bold",
                         marginBottom: 4,
                         fontFamily: "Comfortaa",
+                        color: colors.text,
                       }}
                     >
                       {item.titulo}
@@ -183,7 +190,7 @@ export default function NotificacionesScreen() {
                     <Text
                       style={{
                         fontSize: 13,
-                        color: "#444",
+                        color: colors.text,
                         fontFamily: "Comfortaa",
                       }}
                     >
@@ -200,7 +207,7 @@ export default function NotificacionesScreen() {
                       <Text
                         style={{
                           fontSize: 11,
-                          color: "#999",
+                          color: colors.subtext,
                           fontFamily: "Comfortaa",
                         }}
                       >

@@ -1,43 +1,64 @@
-import { View, Text, Image, FlatList, ActivityIndicator, TouchableOpacity, Alert,} from "react-native";
+// frontend/app/(tabs-consumidor)/productos-negocio-view.tsx
+import {
+  View,
+  Text,
+  Image,
+  FlatList,
+  ActivityIndicator,
+  TouchableOpacity,
+  Alert,
+  TextInput,
+} from "react-native";
 import { useLocalSearchParams, router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { NEGOCIO_THEMES } from "@/constants/negocioThemes";
 import { useProductos } from "@/hooks/useProductos";
 import ConsumidorFooter from "@/components/ConsumidorFooter";
 import { useCart } from "@/hooks/useCart";
 import { toAbsoluteUrl } from "../../../../src/api/client";
 import TBold from "@/components/common/TBold";
+import { useTheme } from "@/src/theme/ThemeProvider";
 
 export default function ProductosNegocioView() {
   const { id, nombre } = useLocalSearchParams();
   const idComercio = Number(id);
-
   const negocioName = String(nombre ?? "");
 
-  const theme =
+  const negocioTheme =
     (NEGOCIO_THEMES as Record<string, any>)[negocioName] ?? {
       bg: "#FFFFFF",
       primary: "#222222",
       accent: "#444444",
     };
 
-  const { productos, loading, error } = useProductos(idComercio);
+  const { colors } = useTheme();
 
+  const { productos, loading, error } = useProductos(idComercio);
   const { items, add, update } = useCart();
+
   const [localProductos, setLocalProductos] = useState<any[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     setLocalProductos(productos);
   }, [productos]);
+
+  const filteredProductos = useMemo(() => {
+    const term = searchTerm.trim().toLowerCase();
+    if (!term) return localProductos;
+    return localProductos.filter((p) =>
+      String(p.nombre ?? "").toLowerCase().includes(term)
+    );
+  }, [localProductos, searchTerm]);
 
   if (loading)
     return (
       <ActivityIndicator
         style={{ marginTop: 60 }}
         size="large"
-        color={theme.primary}
+        color={negocioTheme.primary}
       />
     );
 
@@ -50,399 +71,557 @@ export default function ProductosNegocioView() {
 
   return (
     <>
-      <SafeAreaView style={{ flex: 1, backgroundColor: theme.bg }}>
-        <View style={{ flex: 1, paddingHorizontal: 20 }}>
-          {/* BACK BUTTON */}
-          <TouchableOpacity
-            onPress={() => router.push("/(tabs-consumidor)/Cafeterias")}
+      <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }}>
+        {/* TOP COLORED HEADER (like Starbucks mockup) */}
+        <View style={{ flex: 1, backgroundColor: negocioTheme.primary }}>
+          {/* Header content */}
+          <View
             style={{
-              width: 40,
-              height: 40,
-              justifyContent: "center",
-              alignItems: "center",
-              marginBottom: 10,
+              paddingHorizontal: 20,
+              paddingTop: 8,
+              paddingBottom: 16,
             }}
           >
-            <Ionicons name="arrow-back" size={26} color={theme.primary} />
-          </TouchableOpacity>
-
-          {/* LOGO */}
-          {theme.logo && (
-            <Image
-              source={theme.logo}
+            {/* Back button + optional favorites icon area */}
+            <View
               style={{
-                width: 140,
-                height: 140,
-                alignSelf: "center",
-                marginBottom: 10,
-                borderRadius: 70,
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+                marginBottom: 16,
               }}
-              resizeMode="contain"
-            />
-          )}
+            >
+              <TouchableOpacity
+                onPress={() => router.back()}
+                style={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: 20,
+                  justifyContent: "center",
+                  alignItems: "center",
+                  backgroundColor: "rgba(255,255,255,0.15)",
+                }}
+              >
+                <Ionicons name="arrow-back" size={22} color="#FFFFFF" />
+              </TouchableOpacity>
 
-          {/* NEGOCIO TITLE (USANDO EL PARAM negocioName) */}
-          <TBold
-            style={{
-              fontSize: 32,
-              marginBottom: 20,
-              marginTop: 10,
-              textAlign: "center",
-              color: theme.primary,
-              fontFamily: "Comfortaa",
-            }}
-          >
-            {negocioName || "Negocio"}
-          </TBold>
+              {/* Favorites icon instead of cart */}
+              <View
+                style={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: 20,
+                  justifyContent: "center",
+                  alignItems: "center",
+                  backgroundColor: "rgba(255,255,255,0.08)",
+                }}
+              >
+                <Ionicons name="heart-outline" size={22} color="#FFFFFF" />
+              </View>
+            </View>
 
-          {/* LISTA EN GRID (2 COLUMNAS) */}
-          <FlatList
-            data={localProductos}
-            numColumns={2}
-            columnWrapperStyle={{
-              justifyContent: "space-between",
-              paddingHorizontal: 8,
-            }}
-            keyExtractor={(item) => item.id_producto.toString()}
-            contentContainerStyle={{ paddingBottom: 90 }}
-            renderItem={({ item }) => {
-              const currentPrice = item.precio_actual ?? item.precio;
-              const basePrice =
-                item.precio_base && item.precio_base !== currentPrice
-                  ? item.precio_base
-                  : null;
+            {/* Logo + negocio name */}
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              {negocioTheme.logo && (
+                <Image
+                  source={negocioTheme.logo}
+                  style={{
+                    width: 64,
+                    height: 64,
+                    borderRadius: 32,
+                    marginRight: 12,
+                  }}
+                  resizeMode="contain"
+                />
+              )}
 
-              const precioMostrar = currentPrice;
-              const hasDiscount =
-                basePrice != null &&
-                Number(precioMostrar) < Number(basePrice);
+              <View style={{ flex: 1 }}>
+                <TBold
+                  style={{
+                    fontSize: 24,
+                    color: "#FFFFFF",
+                    marginBottom: 4,
+                    fontFamily: "Comfortaa",
+                  }}
+                >
+                  {negocioName || "Negocio"}
+                </TBold>
 
-              const pct = hasDiscount
-                ? Math.round(
-                    ((Number(basePrice) - Number(precioMostrar)) /
-                      Number(basePrice)) *
-                      100
-                  )
-                : 0;
+                <Text
+                  style={{
+                    fontSize: 12,
+                    color: "rgba(255,255,255,0.8)",
+                    fontFamily: "Comfortaa",
+                  }}
+                  numberOfLines={1}
+                >
+                  Recoger en local • Ver ofertas del día
+                </Text>
+              </View>
+            </View>
 
-              const badgeColor =
-                pct >= 50
-                  ? "#d11212" 
-                  : pct >= 40
-                  ? "#f59e0b" 
-                  : pct >= 30
-                  ? "#facc15" 
-                  : pct >= 20
-                  ? "#16a34a" 
-                  : "#9ca3af";
+            {/* Search bar */}
+            <View
+              style={{
+                marginTop: 18,
+                borderRadius: 16,
+                paddingHorizontal: 12,
+                paddingVertical: 8,
+                backgroundColor: colors.card,
+                flexDirection: "row",
+                alignItems: "center",
+              }}
+            >
+              <Ionicons name="search" size={18} color="#9CA3AF" />
+              <TextInput
+                placeholder="Buscar un producto"
+                placeholderTextColor="#9CA3AF"
+                value={searchTerm}
+                onChangeText={setSearchTerm}
+                style={{
+                  flex: 1,
+                  marginLeft: 8,
+                  fontSize: 14,
+                  fontFamily: "Comfortaa",
+                  color: colors.text,
+                }}
+              />
+            </View>
 
-              const cartItem = items.find(
-                (c: any) => c.id_producto === item.id_producto
-              );
-              const qtyInCart = cartItem?.cantidad ?? 0;
-
-              return (
-                <View style={{ width: "48%", marginBottom: 16 }}>
-                  <View
+            {/* Static category pills – visual only (like Horneados/Postres/Snacks) */}
+            <View
+              style={{
+                marginTop: 14,
+                flexDirection: "row",
+                gap: 8,
+                flexWrap: "wrap",
+              }}
+            >
+              {["Horneados", "Postres", "Snacks", "Bebidas"].map((label, idx) => (
+                <View
+                  key={label}
+                  style={{
+                    paddingHorizontal: 14,
+                    paddingVertical: 6,
+                    borderRadius: 999,
+                    backgroundColor:
+                      idx === 0
+                        ? "#FFFFFF"
+                        : "rgba(255,255,255,0.15)", // first one highlighted
+                    borderWidth: idx === 0 ? 0 : 1,
+                    borderColor: "rgba(255,255,255,0.35)",
+                  }}
+                >
+                  <Text
                     style={{
-                      backgroundColor: "#FFFFFF",
-                      padding: 16,
-                      borderRadius: 16,
-                      shadowColor: "#000",
-                      shadowOpacity: 0.1,
-                      shadowRadius: 8,
+                      fontSize: 12,
+                      fontFamily: "Comfortaa",
+                      color: idx === 0 ? negocioTheme.primary : "#FFFFFF",
                     }}
                   >
-                    {/* IMAGE */}
-                    {item.imagen_url && (
-                      <Image
-                        source={{
-                          uri: toAbsoluteUrl(item.imagen_url) ?? undefined,
-                        }}
-                        style={{
-                          width: "100%",
-                          height: 140,
-                          borderRadius: 12,
-                          marginBottom: 10,
-                        }}
-                        resizeMode="cover"
-                      />
-                    )}
+                    {label}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          </View>
 
-                    {/* NAME */}
-                    <Text
-                      style={{
-                        fontSize: 16,
-                        fontWeight: "600",
-                        color: theme.primary,
-                        fontFamily: "Comfortaa",
-                      }}
-                      numberOfLines={2}
-                    >
-                      {item.nombre}
-                    </Text>
+          {/* White rounded container with product grid */}
+          <View
+            style={{
+              flex: 1,
+              backgroundColor: colors.bg,
+              borderTopLeftRadius: 24,
+              borderTopRightRadius: 24,
+              paddingTop: 18,
+              paddingHorizontal: 12,
+            }}
+          >
+            {/* Section title like "Postres del día" */}
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+                paddingHorizontal: 8,
+                marginBottom: 10,
+              }}
+            >
+              <Text
+                style={{
+                  fontSize: 16,
+                  fontFamily: "Comfortaa",
+                  fontWeight: "600",
+                  color: colors.text,
+                }}
+              >
+                Productos del día
+              </Text>
+              <Text
+                style={{
+                  fontSize: 12,
+                  fontFamily: "Comfortaa",
+                  color: colors.subtext,
+                }}
+              >
+                {filteredProductos.length} resultados
+              </Text>
+            </View>
 
-                    {/* DESCRIPTION */}
-                    <Text
-                      style={{
-                        marginTop: 6,
-                        color: "#444",
-                        fontFamily: "Comfortaa",
-                        fontSize: 12,
-                      }}
-                      numberOfLines={2}
-                    >
-                      {item.descripcion}
-                    </Text>
+            {/* PRODUCT GRID */}
+            <FlatList
+              data={filteredProductos}
+              numColumns={2}
+              keyExtractor={(item) => item.id_producto.toString()}
+              columnWrapperStyle={{
+                justifyContent: "space-between",
+                paddingHorizontal: 8,
+              }}
+              contentContainerStyle={{ paddingBottom: 90 }}
+              renderItem={({ item }) => {
+                const currentPrice = item.precio_actual ?? item.precio;
+                const basePrice =
+                  item.precio_base && item.precio_base !== currentPrice
+                    ? item.precio_base
+                    : null;
 
-                    {/* PRICES + BADGE DE DESCUENTO */}
+                const precioMostrar = currentPrice;
+                const hasDiscount =
+                  basePrice != null &&
+                  Number(precioMostrar) < Number(basePrice);
+
+                const pct = hasDiscount
+                  ? Math.round(
+                      ((Number(basePrice) - Number(precioMostrar)) /
+                        Number(basePrice)) *
+                        100
+                    )
+                  : 0;
+
+                const badgeColor =
+                  pct >= 50
+                    ? "#d11212"
+                    : pct >= 40
+                    ? "#f59e0b"
+                    : pct >= 30
+                    ? "#facc15"
+                    : pct >= 20
+                    ? "#16a34a"
+                    : "#9ca3af";
+
+                const cartItem = items.find(
+                  (c: any) => c.id_producto === item.id_producto
+                );
+                const qtyInCart = cartItem?.cantidad ?? 0;
+
+                return (
+                  <View style={{ width: "48%", marginBottom: 16 }}>
                     <View
                       style={{
-                        marginTop: 8,
-                        flexDirection: "row",
-                        alignItems: "center",
-                        flexWrap: "wrap",
-                        gap: 6,
+                        backgroundColor: colors.card,
+                        padding: 10,
+                        borderRadius: 18,
+                        shadowColor: "#000",
+                        shadowOpacity: 0.08,
+                        shadowRadius: 10,
+                        elevation: 2,
                       }}
                     >
-                      {basePrice && (
-                        <Text
-                          style={{
-                            fontSize: 14,
-                            textDecorationLine: "line-through",
-                            color: "#777",
-                            fontFamily: "Comfortaa",
+                      {/* IMAGE */}
+                      {item.imagen_url && (
+                        <Image
+                          source={{
+                            uri: toAbsoluteUrl(item.imagen_url) ?? undefined,
                           }}
-                        >
-                          Bs. {basePrice}
-                        </Text>
+                          style={{
+                            width: "100%",
+                            height: 110,
+                            borderRadius: 12,
+                            marginBottom: 8,
+                          }}
+                          resizeMode="cover"
+                        />
                       )}
 
+                      {/* NAME */}
                       <Text
                         style={{
-                          fontWeight: "bold",
-                          fontSize: 16,
-                          color: theme.accent ?? theme.primary,
+                          fontSize: 14,
+                          fontWeight: "600",
+                          color: negocioTheme.primary,
                           fontFamily: "Comfortaa",
                         }}
+                        numberOfLines={2}
                       >
-                        Bs. {precioMostrar}
+                        {item.nombre}
                       </Text>
 
-                      {hasDiscount && (
-                        <View
-                          style={{
-                            marginLeft: 4,
-                            backgroundColor: badgeColor,
-                            paddingHorizontal: 6,
-                            paddingVertical: 2,
-                            borderRadius: 6,
-                          }}
-                        >
-                          <Text
-                            style={{
-                              color: "#fff",
-                              fontSize: 10,
-                              fontFamily: "Comfortaa",
-                              fontWeight: "600",
-                            }}
-                          >
-                            -{pct}%
-                          </Text>
-                        </View>
-                      )}
-                    </View>
-
-                    {/* STOCK */}
-                    {item.cantidad_disponible != null && (
+                      {/* DESCRIPTION */}
                       <Text
                         style={{
                           marginTop: 4,
-                          color: "#666",
+                          color: colors.subtext,
                           fontFamily: "Comfortaa",
-                          fontSize: 12,
+                          fontSize: 11,
                         }}
+                        numberOfLines={2}
                       >
-                        Stock: {item.cantidad_disponible} unidades
+                        {item.descripcion}
                       </Text>
-                    )}
 
-                    {/* ============ 🛒 CART CONTROLS ============ */}
-                    {qtyInCart === 0 ? (
-                      <TouchableOpacity
-                        activeOpacity={0.9}
-                        style={{
-                          marginTop: 8,
-                          backgroundColor:
-                            item.cantidad_disponible > 0
-                              ? theme.accent ?? theme.primary
-                              : "#CCCCCC",
-                          paddingVertical: 8,
-                          borderRadius: 24,
-                          alignItems: "center",
-                        }}
-                        disabled={item.cantidad_disponible <= 0}
-                        onPress={async () => {
-                          try {
-                            const productId = Number(item.id_producto);
-                            if (!Number.isInteger(productId) || productId < 1)
-                              return Alert.alert("Ups 😢", "Id inválido");
-
-                            const res = await add(productId, 1);
-
-                            setLocalProductos((prev) =>
-                              prev.map((p) =>
-                                p.id_producto === item.id_producto
-                                  ? {
-                                      ...p,
-                                      cantidad_disponible:
-                                        p.cantidad_disponible - 1,
-                                    }
-                                  : p
-                              )
-                            );
-
-                            Alert.alert(
-                              "Listo ✅",
-                              res?.message ?? "Producto agregado al carrito"
-                            );
-                          } catch (err: any) {
-                            Alert.alert(
-                              "Oops 😥",
-                              err?.response?.data?.message ||
-                                err?.message ||
-                                "No se pudo agregar al carrito"
-                            );
-                          }
-                        }}
-                      >
-                        <Text
-                          style={{
-                            color: "#FFFFFF",
-                            fontWeight: "bold",
-                            fontSize: 14,
-                            fontFamily: "Comfortaa",
-                          }}
-                        >
-                          Agregar al carrito
-                        </Text>
-                      </TouchableOpacity>
-                    ) : (
+                      {/* PRICES + DISCOUNT BADGE */}
                       <View
                         style={{
                           marginTop: 8,
                           flexDirection: "row",
                           alignItems: "center",
-                          justifyContent: "space-between",
-                          backgroundColor: "#F4F4F4",
-                          padding: 8,
-                          borderRadius: 12,
+                          flexWrap: "wrap",
                         }}
                       >
-                        {/* MINUS */}
-                        <TouchableOpacity
-                          onPress={() => {
-                            const newQty = qtyInCart - 1;
-                            update(item.id_producto, newQty);
+                        {basePrice && (
+                          <Text
+                            style={{
+                              fontSize: 12,
+                              textDecorationLine: "line-through",
+                              color: colors.subtext,
+                              marginRight: 4,
+                              fontFamily: "Comfortaa",
+                            }}
+                          >
+                            Bs. {basePrice}
+                          </Text>
+                        )}
 
-                            if (newQty === 0) {
+                        <Text
+                          style={{
+                            fontWeight: "bold",
+                            fontSize: 14,
+                            color: negocioTheme.accent ?? negocioTheme.primary,
+                            fontFamily: "Comfortaa",
+                          }}
+                        >
+                          Bs. {precioMostrar}
+                        </Text>
+
+                        {hasDiscount && (
+                          <View
+                            style={{
+                              marginLeft: 4,
+                              backgroundColor: badgeColor,
+                              paddingHorizontal: 6,
+                              paddingVertical: 2,
+                              borderRadius: 6,
+                            }}
+                          >
+                            <Text
+                              style={{
+                                color: "#fff",
+                                fontSize: 10,
+                                fontFamily: "Comfortaa",
+                                fontWeight: "600",
+                              }}
+                            >
+                              -{pct}%
+                            </Text>
+                          </View>
+                        )}
+                      </View>
+
+                      {/* STOCK */}
+                      {item.cantidad_disponible != null && (
+                        <Text
+                          style={{
+                            marginTop: 4,
+                            color: colors.subtext,
+                            fontFamily: "Comfortaa",
+                            fontSize: 11,
+                          }}
+                        >
+                          Stock: {item.cantidad_disponible} unidades
+                        </Text>
+                      )}
+
+                      {/* CART CONTROLS – logic unchanged */}
+                      {qtyInCart === 0 ? (
+                        <TouchableOpacity
+                          activeOpacity={0.9}
+                          style={{
+                            marginTop: 8,
+                            backgroundColor:
+                              item.cantidad_disponible > 0
+                                ? negocioTheme.accent ?? negocioTheme.primary
+                                : "#CCCCCC",
+                            paddingVertical: 8,
+                            borderRadius: 20,
+                            alignItems: "center",
+                          }}
+                          disabled={item.cantidad_disponible <= 0}
+                          onPress={async () => {
+                            try {
+                              const productId = Number(item.id_producto);
+                              if (
+                                !Number.isInteger(productId) ||
+                                productId < 1
+                              )
+                                return Alert.alert("Ups 😢", "Id inválido");
+
+                              const res = await add(productId, 1);
+
                               setLocalProductos((prev) =>
                                 prev.map((p) =>
                                   p.id_producto === item.id_producto
                                     ? {
                                         ...p,
                                         cantidad_disponible:
-                                          p.cantidad_disponible + qtyInCart,
+                                          p.cantidad_disponible - 1,
                                       }
                                     : p
                                 )
                               );
-                            } else {
-                              setLocalProductos((prev) =>
-                                prev.map((p) =>
-                                  p.id_producto === item.id_producto
-                                    ? {
-                                        ...p,
-                                        cantidad_disponible:
-                                          p.cantidad_disponible + 1,
-                                      }
-                                    : p
-                                )
+
+                              Alert.alert(
+                                "Listo ✅",
+                                res?.message ??
+                                  "Producto agregado al carrito"
+                              );
+                            } catch (err: any) {
+                              Alert.alert(
+                                "Oops 😥",
+                                err?.response?.data?.message ||
+                                  err?.message ||
+                                  "No se pudo agregar al carrito"
                               );
                             }
                           }}
                         >
                           <Text
                             style={{
-                              fontSize: 20,
+                              color: "#FFFFFF",
+                              fontWeight: "bold",
+                              fontSize: 13,
                               fontFamily: "Comfortaa",
                             }}
                           >
-                            −
+                            Agregar al carrito
                           </Text>
                         </TouchableOpacity>
-
-                        {/* QTY */}
-                        <Text
+                      ) : (
+                        <View
                           style={{
-                            fontSize: 16,
-                            fontWeight: "600",
-                            fontFamily: "Comfortaa",
+                            marginTop: 8,
+                            flexDirection: "row",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                            backgroundColor: colors.card,
+                            paddingVertical: 6,
+                            paddingHorizontal: 10,
+                            borderRadius: 12,
                           }}
                         >
-                          {qtyInCart}
-                        </Text>
+                          {/* MINUS */}
+                          <TouchableOpacity
+                            onPress={() => {
+                              const newQty = qtyInCart - 1;
+                              update(item.id_producto, newQty);
 
-                        {/* PLUS */}
-                        <TouchableOpacity
-                          onPress={() => {
-                            const newQty = qtyInCart + 1;
-                            update(item.id_producto, newQty);
+                              if (newQty === 0) {
+                                setLocalProductos((prev) =>
+                                  prev.map((p) =>
+                                    p.id_producto === item.id_producto
+                                      ? {
+                                          ...p,
+                                          cantidad_disponible:
+                                            p.cantidad_disponible + qtyInCart,
+                                        }
+                                      : p
+                                  )
+                                );
+                              } else {
+                                setLocalProductos((prev) =>
+                                  prev.map((p) =>
+                                    p.id_producto === item.id_producto
+                                      ? {
+                                          ...p,
+                                          cantidad_disponible:
+                                            p.cantidad_disponible + 1,
+                                        }
+                                      : p
+                                  )
+                                );
+                              }
+                            }}
+                          >
+                            <Text
+                              style={{
+                                fontSize: 18,
+                                fontFamily: "Comfortaa",
+                              }}
+                            >
+                              −
+                            </Text>
+                          </TouchableOpacity>
 
-                            setLocalProductos((prev) =>
-                              prev.map((p) =>
-                                p.id_producto === item.id_producto
-                                  ? {
-                                      ...p,
-                                      cantidad_disponible:
-                                        p.cantidad_disponible - 1,
-                                    }
-                                  : p
-                              )
-                            );
-                          }}
-                        >
+                          {/* QTY */}
                           <Text
                             style={{
-                              fontSize: 20,
+                              fontSize: 15,
+                              fontWeight: "600",
                               fontFamily: "Comfortaa",
                             }}
                           >
-                            +
+                            {qtyInCart}
                           </Text>
-                        </TouchableOpacity>
-                      </View>
-                    )}
 
-                    {/* small tag */}
-                    {qtyInCart > 0 && (
-                      <Text
-                        style={{
-                          marginTop: 4,
-                          color: "#0c3b2e",
-                          fontWeight: "600",
-                          fontFamily: "Comfortaa",
-                          fontSize: 12,
-                        }}
-                      >
-                        En carrito: {qtyInCart}
-                      </Text>
-                    )}
+                          {/* PLUS */}
+                          <TouchableOpacity
+                            onPress={() => {
+                              const newQty = qtyInCart + 1;
+                              update(item.id_producto, newQty);
+
+                              setLocalProductos((prev) =>
+                                prev.map((p) =>
+                                  p.id_producto === item.id_producto
+                                    ? {
+                                        ...p,
+                                        cantidad_disponible:
+                                          p.cantidad_disponible - 1,
+                                        }
+                                      : p
+                                )
+                              );
+                            }}
+                          >
+                            <Text
+                              style={{
+                                fontSize: 18,
+                                fontFamily: "Comfortaa",
+                              }}
+                            >
+                              +
+                            </Text>
+                          </TouchableOpacity>
+                        </View>
+                      )}
+
+                      {qtyInCart > 0 && (
+                        <Text
+                          style={{
+                            marginTop: 4,
+                            color: "#0c3b2e",
+                            fontWeight: "600",
+                            fontFamily: "Comfortaa",
+                            fontSize: 11,
+                          }}
+                        >
+                          En carrito: {qtyInCart}
+                        </Text>
+                      )}
+                    </View>
                   </View>
-                </View>
-              );
-            }}
-          />
+                );
+              }}
+            />
+          </View>
         </View>
       </SafeAreaView>
 

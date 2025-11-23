@@ -145,8 +145,7 @@ export class AuthService {
           telefono: dto.telefono ?? null,
           direccion: dto.direccion ?? null,
           id_categoria, 
-          latitud: dto.latitud ? new Prisma.Decimal(dto.latitud as any) : null,
-          longitud: dto.longitud ? new Prisma.Decimal(dto.longitud as any) : null,
+          categoria: dto.categoria ?? null,
         },
       });
 

@@ -25,7 +25,11 @@ export default function CafeteriasList() {
       <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }}>
         {/* Header */}
         <View style={[styles.header, { backgroundColor: "transparent" }]}>
-          <TouchableOpacity onPress={() => router.back()}>
+          
+          {/* ⬅️ FIXED BACK BUTTON */}
+          <TouchableOpacity
+            onPress={() => router.push("/(tabs-consumidor)/Categories")}
+          >
             <Ionicons name="arrow-back" size={24} color={RED} />
           </TouchableOpacity>
 
@@ -64,10 +68,12 @@ export default function CafeteriasList() {
                   activeOpacity={0.9}
                   onPress={() =>
                     router.push({
-                      pathname: "/(tabs-consumidor)/Consumidor/productos/[id]",
+                      pathname:
+                        "/(tabs-consumidor)/Consumidor/productos/[id]",
                       params: {
                         id: String(item.idComercio),
                         nombre: item.nombreNegocio,
+                        categoria: categoriaFinal,
                       },
                     })
                   }
@@ -82,7 +88,7 @@ export default function CafeteriasList() {
 
           {!loading && !error && comercios.length === 0 && (
             <Text style={{ marginTop: 8, color: colors.subtext }}>
-              No hay comercios en esta categoría todavía. 😌
+              No hay comercios en esta categoría todavía...
             </Text>
           )}
         </View>

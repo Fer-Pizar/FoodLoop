@@ -1,10 +1,19 @@
 import React from "react";
-import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, FlatList, Alert,} from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  ActivityIndicator,
+  FlatList,
+  Alert,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useCart } from "@/hooks/useCart";
 import ConsumidorFooter from "@/components/ConsumidorFooter";
+import { useTheme } from "@/src/theme/ThemeProvider";
 
 const RED = "#D82A2A";
 
@@ -15,6 +24,7 @@ const toNumber = (value: any): number => {
 
 export default function CartScreen() {
   const router = useRouter();
+  const { colors } = useTheme();
 
   const {
     items,
@@ -56,22 +66,53 @@ export default function CartScreen() {
 
   return (
     <>
-      <SafeAreaView style={{ flex: 1, backgroundColor: "#F8F8F8" }}>
+      <SafeAreaView
+        style={{ flex: 1, backgroundColor: colors.bg }}
+      >
         {/* Header */}
-        <View style={styles.header}>
+        <View
+          style={[
+            styles.header,
+            {
+              backgroundColor: colors.card,
+              borderBottomColor: colors.border,
+            },
+          ]}
+        >
           <TouchableOpacity onPress={() => router.back()}>
-            <Ionicons name="arrow-back" size={24} color={RED} />
+            <Ionicons
+              name="arrow-back"
+              size={24}
+              color={colors.primary}
+            />
           </TouchableOpacity>
 
-          <Text style={styles.headerTitle}>Mi Carrito</Text>
+          <Text
+            style={[
+              styles.headerTitle,
+              { color: colors.text },
+            ]}
+          >
+            Mi Carrito
+          </Text>
 
           <View style={{ width: 24 }} />
         </View>
 
         {/* Content */}
-        <View style={{ flex: 1, paddingHorizontal: 16, paddingBottom: 90 }}>
+        <View
+          style={{
+            flex: 1,
+            paddingHorizontal: 16,
+            paddingBottom: 90,
+            backgroundColor: colors.bg,
+          }}
+        >
           {loading && (
-            <ActivityIndicator style={{ marginTop: 24 }} color={RED} />
+            <ActivityIndicator
+              style={{ marginTop: 24 }}
+              color={colors.primary}
+            />
           )}
 
           {!loading && !hasItems && (
@@ -79,14 +120,26 @@ export default function CartScreen() {
               <Ionicons
                 name="cart-outline"
                 size={120}
-                color="rgba(0,0,0,0.18)"
+                color="rgba(115, 115, 115, 1)"
               />
-              <Text style={styles.emptyText}>Tu carrito está vacío</Text>
+              <Text
+                style={[
+                  styles.emptyText,
+                  { color: colors.subtext },
+                ]}
+              >
+                Tu carrito está vacío
+              </Text>
               <TouchableOpacity
-                style={styles.primaryButton}
+                style={[
+                  styles.primaryButton,
+                  { backgroundColor: colors.primary },
+                ]}
                 onPress={goToProducts}
               >
-                <Text style={styles.primaryButtonText}>Ver productos</Text>
+                <Text style={styles.primaryButtonText}>
+                  Ver productos
+                </Text>
               </TouchableOpacity>
             </View>
           )}
@@ -96,17 +149,41 @@ export default function CartScreen() {
               <FlatList
                 data={items}
                 keyExtractor={(item) => String(item.id_producto)}
-                ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
+                ItemSeparatorComponent={() => (
+                  <View style={{ height: 12 }} />
+                )}
                 renderItem={({ item }) => {
                   const unitPrice = toNumber(item.precio_actual);
                   const subtotal = toNumber(item.subtotal);
 
                   return (
-                    <View style={styles.card}>
-                      <View style={{ flexDirection: "row", marginBottom: 6 }}>
+                    <View
+                      style={[
+                        styles.card,
+                        { backgroundColor: colors.card },
+                      ]}
+                    >
+                      <View
+                        style={{
+                          flexDirection: "row",
+                          marginBottom: 6,
+                        }}
+                      >
                         <View style={{ flex: 1 }}>
-                          <Text style={styles.productName}>{item.nombre}</Text>
-                          <Text style={styles.productPrice}>
+                          <Text
+                            style={[
+                              styles.productName,
+                              { color: colors.text },
+                            ]}
+                          >
+                            {item.nombre}
+                          </Text>
+                          <Text
+                            style={[
+                              styles.productPrice,
+                              { color: colors.primary },
+                            ]}
+                          >
                             Bs. {unitPrice.toFixed(2)}
                           </Text>
                         </View>
@@ -115,7 +192,14 @@ export default function CartScreen() {
                         <TouchableOpacity
                           onPress={() => remove(item.id_producto)}
                         >
-                          <Text style={styles.removeText}>Eliminar</Text>
+                          <Text
+                            style={[
+                              styles.removeText,
+                              { color: "#D32F2F" },
+                            ]}
+                          >
+                            Eliminar
+                          </Text>
                         </TouchableOpacity>
                       </View>
 
@@ -129,29 +213,74 @@ export default function CartScreen() {
                       >
                         <View style={styles.qtyContainer}>
                           <TouchableOpacity
-                            style={styles.qtyButton}
+                            style={[
+                              styles.qtyButton,
+                              { backgroundColor: colors.card },
+                            ]}
                             onPress={() =>
-                              update(item.id_producto, item.cantidad - 1)
+                              update(
+                                item.id_producto,
+                                item.cantidad - 1
+                              )
                             }
                           >
-                            <Text style={styles.qtyButtonText}>-</Text>
+                            <Text
+                              style={[
+                                styles.qtyButtonText,
+                                { color: colors.text },
+                              ]}
+                            >
+                              -
+                            </Text>
                           </TouchableOpacity>
 
-                          <Text style={styles.qtyValue}>{item.cantidad}</Text>
+                          <Text
+                            style={[
+                              styles.qtyValue,
+                              { color: colors.text },
+                            ]}
+                          >
+                            {item.cantidad}
+                          </Text>
 
                           <TouchableOpacity
-                            style={styles.qtyButton}
+                            style={[
+                              styles.qtyButton,
+                              { backgroundColor: colors.card },
+                            ]}
                             onPress={() =>
-                              update(item.id_producto, item.cantidad + 1)
+                              update(
+                                item.id_producto,
+                                item.cantidad + 1
+                              )
                             }
                           >
-                            <Text style={styles.qtyButtonText}>+</Text>
+                            <Text
+                              style={[
+                                styles.qtyButtonText,
+                                { color: colors.text },
+                              ]}
+                            >
+                              +
+                            </Text>
                           </TouchableOpacity>
                         </View>
 
                         <View>
-                          <Text style={styles.subtotalLabel}>Subtotal</Text>
-                          <Text style={styles.subtotalValue}>
+                          <Text
+                            style={[
+                              styles.subtotalLabel,
+                              { color: colors.subtext },
+                            ]}
+                          >
+                            Subtotal
+                          </Text>
+                          <Text
+                            style={[
+                              styles.subtotalValue,
+                              { color: colors.text },
+                            ]}
+                          >
                             Bs. {subtotal.toFixed(2)}
                           </Text>
                         </View>
@@ -162,21 +291,52 @@ export default function CartScreen() {
               />
 
               {/* Total */}
-              <View style={styles.totalBox}>
+              <View
+                style={[
+                  styles.totalBox,
+                  { backgroundColor: colors.card },
+                ]}
+              >
                 <View>
-                  <Text style={styles.totalLabel}>Total general</Text>
-                  <Text style={styles.totalValue}>
+                  <Text
+                    style={[
+                      styles.totalLabel,
+                      { color: colors.subtext },
+                    ]}
+                  >
+                    Total general
+                  </Text>
+                  <Text
+                    style={[
+                      styles.totalValue,
+                      { color: colors.primary },
+                    ]}
+                  >
                     Bs. {toNumber(total).toFixed(2)}
                   </Text>
                 </View>
 
                 {/* RESERVAR ACTUALIZADO */}
-                <View style={{ flexDirection: "row", gap: 8 }}>
+                <View
+                  style={{ flexDirection: "row", gap: 8 }}
+                >
                   <TouchableOpacity
-                    style={[styles.secondaryButton, { flex: 1 }]}
+                    style={[
+                      styles.secondaryButton,
+                      {
+                        flex: 1,
+                        borderColor: colors.primary,
+                        backgroundColor: colors.bg,
+                      },
+                    ]}
                     onPress={goToProducts}
                   >
-                    <Text style={styles.secondaryButtonText}>
+                    <Text
+                      style={[
+                        styles.secondaryButtonText,
+                        { color: colors.primary },
+                      ]}
+                    >
                       Seguir comprando
                     </Text>
                   </TouchableOpacity>
@@ -186,22 +346,35 @@ export default function CartScreen() {
                     onPress={handleReserve}
                     style={[
                       styles.primaryButton,
-                      { flex: 1 },
+                      {
+                        flex: 1,
+                        backgroundColor: colors.primary,
+                      },
                       loadingReserve && { opacity: 0.6 },
                     ]}
                   >
                     <Text style={styles.primaryButtonText}>
-                      {loadingReserve ? "Procesando..." : "Reservar"}
+                      {loadingReserve
+                        ? "Procesando..."
+                        : "Reservar"}
                     </Text>
                   </TouchableOpacity>
                 </View>
 
                 {/* Vaciar carrito */}
                 <TouchableOpacity
-                  style={{ marginTop: 8, alignSelf: "flex-end" }}
+                  style={{
+                    marginTop: 8,
+                    alignSelf: "flex-end",
+                  }}
                   onPress={() => clear()}
                 >
-                  <Text style={{ color: "#999", fontFamily: "Comfortaa" }}>
+                  <Text
+                    style={{
+                      color: colors.subtext,
+                      fontFamily: "Comfortaa",
+                    }}
+                  >
                     Vaciar carrito
                   </Text>
                 </TouchableOpacity>

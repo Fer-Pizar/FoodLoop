@@ -1,5 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { SafeAreaView, View, Text, ActivityIndicator, ScrollView,} from "react-native";
+import {
+  SafeAreaView,
+  View,
+  Text,
+  ActivityIndicator,
+  ScrollView,
+} from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import { api } from "@/src/api/client";
 import { Reserva } from "@/src/api/types";
@@ -33,35 +39,55 @@ export default function ReservaDetalle() {
     loadReserva();
   }, []);
 
+  // 🔄 Loading state (now theme-aware)
   if (loading) {
     return (
-      <View
-        style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
+      <SafeAreaView
+        style={{
+          flex: 1,
+          backgroundColor: colors.bg,
+          alignItems: "center",
+          justifyContent: "center",
+        }}
       >
-        <ActivityIndicator size="large" />
-      </View>
+        <ActivityIndicator size="large" color={colors.primary} />
+      </SafeAreaView>
     );
   }
 
+  // ❌ Not found state (theme-aware)
   if (!reserva) {
     return (
-      <View
-        style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
+      <SafeAreaView
+        style={{
+          flex: 1,
+          backgroundColor: colors.bg,
+          alignItems: "center",
+          justifyContent: "center",
+        }}
       >
-        <Text style={{ fontSize: 18, color: "#888", fontFamily: "Comfortaa" }}>
+        <Text
+          style={{
+            fontSize: 18,
+            color: colors.subtext,
+            fontFamily: "Comfortaa",
+          }}
+        >
           Reservation not found 😢
         </Text>
-      </View>
+
+        <ConsumidorFooter />
+      </SafeAreaView>
     );
   }
 
+  // ✅ Main UI
   return (
     <>
-      {/* Screen */}
       <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }}>
         <ScrollView
           contentContainerStyle={{
-            paddingHorizontal: 24, 
+            paddingHorizontal: 24,
             paddingTop: 20,
             paddingBottom: 120,
           }}
@@ -79,24 +105,47 @@ export default function ReservaDetalle() {
           </Text>
 
           <Text
-            style={{ fontSize: 18, marginBottom: 10, color: colors.text, fontFamily: "Comfortaa" }}
+            style={{
+              fontSize: 18,
+              marginBottom: 10,
+              color: colors.text,
+              fontFamily: "Comfortaa",
+            }}
           >
-            Estado: <Text style={{ fontWeight: "bold", fontFamily: "Comfortaa" }}>{reserva.estado}</Text>
+            Estado:{" "}
+            <Text
+              style={{
+                fontWeight: "bold",
+                fontFamily: "Comfortaa",
+                color: colors.text,
+              }}
+            >
+              {reserva.estado}
+            </Text>
           </Text>
 
           <Text
-            style={{ fontSize: 18, marginBottom: 10, color: colors.text, fontFamily: "Comfortaa" }}
+            style={{
+              fontSize: 18,
+              marginBottom: 10,
+              color: colors.text,
+              fontFamily: "Comfortaa",
+            }}
           >
             Total: Bs. {reserva.total}
           </Text>
 
           <Text
-            style={{ fontSize: 18, marginBottom: 10, color: colors.text, fontFamily: "Comfortaa" }}
+            style={{
+              fontSize: 18,
+              marginBottom: 10,
+              color: colors.text,
+              fontFamily: "Comfortaa",
+            }}
           >
-            Gracias por tu preferencia! Te notificaremos cuando tu pedido esté listo.
+            Gracias por tu preferencia! Te notificaremos cuando tu pedido esté
+            listo.
           </Text>
-
-          
         </ScrollView>
       </SafeAreaView>
 

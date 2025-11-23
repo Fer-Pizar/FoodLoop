@@ -1,9 +1,7 @@
-// frontend/src/api/client.ts
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 let AUTH_TOKEN: string | null = null;
 
-// ✅ 1️⃣ Permite setear el token (desde login o recuperación)
 export async function setAuthToken(t: string | null) {
   AUTH_TOKEN = t;
   if (t) {
@@ -14,7 +12,6 @@ export async function setAuthToken(t: string | null) {
   }
 }
 
-// ✅ 2️⃣ Carga el token al iniciar la app (para reusar sesiones)
 export async function initAuthToken() {
   const token = await AsyncStorage.getItem("foodloop_token");
   if (token) {
@@ -25,18 +22,15 @@ export async function initAuthToken() {
   }
 }
 
-// ✅ 3️⃣ URL base (sin slash al final)
 const BASE = (process.env.EXPO_PUBLIC_API_BASE ?? "").replace(/\/$/, "");
 
-// ✅ 4️⃣ Headers dinámicos con Authorization
 function authHeaders(): HeadersInit {
   return {
     ...(AUTH_TOKEN ? { Authorization: `Bearer ${AUTH_TOKEN}` } : {}),
-    "ngrok-skip-browser-warning": "true", // evita el HTML de ngrok
+    "ngrok-skip-browser-warning": "true",
   };
 }
 
-// ✅ 5️⃣ Manejo de respuestas del servidor
 async function parseBody(res: Response) {
   const ct = res.headers.get("content-type") || "";
   if (ct.includes("application/json")) return res.json();
@@ -59,16 +53,17 @@ async function handle<T>(res: Response): Promise<T> {
   return body as T;
 }
 
-// ✅ 6️⃣ Métodos disponibles
 export const api = {
   get: <T>(path: string) =>
     fetch(`${BASE}${path}`, { headers: authHeaders() }).then(handle<T>),
+
   post: <T>(path: string, body: any) =>
-  fetch(`${BASE}${path}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", ...authHeaders() },
-    body: JSON.stringify(body),
-  }).then(handle<T>),
+    fetch(`${BASE}${path}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...authHeaders() },
+      body: JSON.stringify(body),
+    }).then(handle<T>),
+
   patch: <T>(path: string, body: any) =>
     fetch(`${BASE}${path}`, {
       method: "PATCH",
@@ -76,17 +71,13 @@ export const api = {
       body: JSON.stringify(body),
     }).then(handle<T>),
 
-  // ⬇️⬇️⬇️  AÑADIDOS SOLO PARA FOTOS  ⬇️⬇️⬇️
-
-  // POST multipart/form-data (subir imagen/archivo)
   upload: <T>(path: string, form: FormData) =>
     fetch(`${BASE}${path}`, {
       method: "POST",
-      headers: { ...authHeaders() }, 
+      headers: { ...authHeaders() },
       body: form,
     }).then(handle<T>),
 
-  // DELETE (eliminar recurso, p.ej. foto)
   del: <T>(path: string) =>
     fetch(`${BASE}${path}`, {
       method: "DELETE",
@@ -97,7 +88,6 @@ export const api = {
 export const setToken = setAuthToken;
 export const initToken = initAuthToken;
 
-// ✅ 7️⃣ Función para cerrar sesión (limpia token y storage)
 export async function logout() {
   try {
     await AsyncStorage.multiRemove(["foodloop_token", "user"]);
@@ -109,9 +99,7 @@ export async function logout() {
   }
 }
 
-// ⬇️⬇️⬇️  HELPERS específicos para avatar del negocio  ⬇️⬇️⬇️
 
-// Sube avatar del comercio desde un URI local (cámara/galería)
 export async function uploadMyAvatarFromUri(uri: string) {
   const filename = uri.split("/").pop() ?? "avatar.jpg";
   const ext = filename.split(".").pop()?.toLowerCase();
@@ -119,25 +107,33 @@ export async function uploadMyAvatarFromUri(uri: string) {
     ext === "png" ? "image/png" :
     ext === "webp" ? "image/webp" :
     "image/jpeg";
+
   const form = new FormData();
   form.append("file", { uri, name: filename, type: mime } as any);
-  return api.upload<{ ok?: boolean; url?: string; usuario?: any; comercio?: any }>("/negocio/me/avatar", form);
+
+  return api.upload<{ ok?: boolean; url?: string; usuario?: any; comercio?: any }>(
+    "/negocio/me/avatar",
+    form
+  );
 }
 
-// Elimina avatar del comercio
 export async function deleteMyAvatar() {
   return api.del<{ ok?: boolean }>("/negocio/me/avatar");
 }
 
-export function toAbsoluteUrl(p?: string | null): string | undefined {
-  if (!p) return undefined;
+export function toAbsoluteUrl(path?: string | null): string | undefined {
+  if (!path) return undefined;
+
+  if (path.startsWith("http://") || path.startsWith("https://")) {
+    return path;
+  }
+
   const base = (process.env.EXPO_PUBLIC_API_BASE ?? "").replace(/\/api\/?$/, "");
-  let url = p.startsWith("http") ? p : `${base}${p.startsWith("/") ? "" : "/"}${p}`;
-  // 👇 ngrok exige el query correcto con GUIONES
+  let url = `${base}${path.startsWith("/") ? "" : "/"}${path}`;
+
   if (/ngrok/.test(url) && !/[?&]ngrok-skip-browser-warning=/.test(url)) {
     url += (url.includes("?") ? "&" : "?") + "ngrok-skip-browser-warning=true";
   }
+
   return url;
 }
-
-

@@ -1,14 +1,7 @@
-// src/products/negocio-products.service.ts
-import {
-  Injectable,
-  ForbiddenException,
-  NotFoundException,
-  BadRequestException,
-} from '@nestjs/common';
+import { Injectable, ForbiddenException, NotFoundException, BadRequestException,} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import * as fs from 'fs/promises';
-import * as path from 'path';
 import { effectivePricingAuto } from './discount.util';
+import { uploadToCloudinary } from '../cloudinary'; 
 
 type ListQuery = {
   page?: string;
@@ -31,7 +24,6 @@ export class NegocioProductsService {
     return com.idComercio;
   }
 
-  /** Normaliza y valida el DTO de entrada (sin precio manual). */
   private parseDto(dto: any) {
     const out: any = {};
 
@@ -47,9 +39,7 @@ export class NegocioProductsService {
       out.precio_base = n;
     }
 
-    // ❌ No aceptamos precio manual: se ignora si viene
     if ('precio_actual' in dto) {
-      // no guardamos precio manual (se calculará)
     }
 
     if (dto?.cantidad_disponible !== undefined) {
@@ -76,14 +66,12 @@ export class NegocioProductsService {
     return out;
   }
 
-  /** Lista de productos, recalculando el precio efectivo “hoy” según reglas. */
   async list(userId: bigint, q: ListQuery = {}) {
     const idComercio = await this.comercioIdFromUser(userId);
     const page = Math.max(1, parseInt(q.page ?? '1'));
     const limit = Math.min(50, Math.max(5, parseInt(q.limit ?? '10')));
     const skip = (page - 1) * limit;
 
-    // Filtros sin tipos de Prisma
     const where: any = { id_comercio: idComercio };
     if (q.estado && q.estado !== 'todos') where.estado = q.estado === 'activo';
     if (q.search) where.nombre = { contains: q.search, mode: 'insensitive' };
@@ -110,16 +98,13 @@ export class NegocioProductsService {
       return {
         ...p,
         precio_base: base,
-        // 👇 Lo que mostramos al front siempre es lo recalculado "hoy"
         precio_actual: ep.precioFinal,
         precioFinal: ep.precioFinal,
         descuentoPct: ep.descuentoPct,
         descuentoAbs: Number((base - ep.precioFinal).toFixed(2)),
         origenDescuento: 'auto' as const,
         diasParaVencer: ep.diasParaVencer,
-        imagen_url: p.imagen_url
-          ? `/uploads/productos/${path.basename(p.imagen_url)}`
-          : null,
+        imagen_url: p.imagen_url ?? null,
       };
     });
 
@@ -147,7 +132,6 @@ export class NegocioProductsService {
     return { activos, inactivos, porVencer };
   }
 
-  /** Crea producto y **persiste** el precio_actual calculado por reglas. */
   async create(userId: bigint, dto: any) {
     const idComercio = await this.comercioIdFromUser(userId);
     const parsed = this.parseDto(dto);
@@ -167,7 +151,6 @@ export class NegocioProductsService {
         nombre: parsed.nombre,
         descripcion: parsed.descripcion ?? null,
         precio_base: parsed.precio_base,
-        // ✅ Persistimos el precio calculado
         precio_actual: ep.precioFinal,
         fecha_vencimiento: parsed.fecha_vencimiento ?? null,
         cantidad_disponible: parsed.cantidad_disponible ?? 0,
@@ -187,11 +170,6 @@ export class NegocioProductsService {
     return prod;
   }
 
-  /**
-   * Actualiza y **recalcula** precio_actual según reglas.
-   * Si no se envía precio_base/fecha_vencimiento en el DTO,
-   * usamos los valores actuales para el cálculo.
-   */
   async update(userId: bigint, id: bigint, dto: any) {
     await this.ensureOwner(userId, id);
 
@@ -218,7 +196,6 @@ export class NegocioProductsService {
       fecha_vencimiento: fechaToUse,
     });
 
-    // ✅ persistimos el nuevo precio calculado
     parsed.precio_actual = ep.precioFinal;
 
     return this.prisma.productos.update({
@@ -237,34 +214,33 @@ export class NegocioProductsService {
 
   async uploadImage(userId: bigint, id: bigint, file: Express.Multer.File) {
     await this.ensureOwner(userId, id);
+
     if (!file) throw new BadRequestException('Falta archivo');
+    if (!file.mimetype?.startsWith('image/')) {
+      throw new BadRequestException('Solo se permiten imágenes');
+    }
 
-    const ext = (file.mimetype.split('/')[1] || 'jpg').toLowerCase();
-    const fname = `p_${id}_${Date.now()}.${ext}`;
-    const dir = path.join(process.cwd(), 'uploads', 'productos');
-    await fs.mkdir(dir, { recursive: true });
-    await fs.writeFile(path.join(dir, fname), file.buffer);
+    const folder = 'foodloop/productos';
+    const publicId = `p_${id}_${Date.now()}`;
 
-    const rel = `/uploads/productos/${fname}`;
+    const { url } = await uploadToCloudinary(file.buffer, folder, publicId);
+
     const updated = await this.prisma.productos.update({
       where: { id_producto: id },
-      data: { imagen_url: rel },
+      data: { imagen_url: url },
     });
-    return { ok: true, url: rel, producto: updated };
+
+    return { ok: true, url, producto: updated };
   }
 
   async deleteImage(userId: bigint, id: bigint) {
-    const prod = await this.ensureOwner(userId, id);
-    if (prod.imagen_url) {
-      const file = path.join(process.cwd(), prod.imagen_url.replace(/^\//, ''));
-      try {
-        await fs.unlink(file);
-      } catch {}
-    }
+    await this.ensureOwner(userId, id);
+
     await this.prisma.productos.update({
       where: { id_producto: id },
       data: { imagen_url: null },
     });
+
     return { ok: true };
   }
 }
