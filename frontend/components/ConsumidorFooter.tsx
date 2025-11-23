@@ -52,7 +52,7 @@ export default function ConsumidorFooter() {
 
       {/* Cart */}
       <TouchableOpacity onPress={goCart} activeOpacity={0.7}>
-        <Ionicons name="bag-handle-outline" size={22} color={WHITE} />
+        <Ionicons name="cart-outline" size={22} color={WHITE} />
       </TouchableOpacity>
 
       <View style={styles.sep} />

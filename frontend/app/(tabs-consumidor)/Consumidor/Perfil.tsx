@@ -219,6 +219,7 @@ export default function PerfilConsumidorScreen() {
             styles.row,
             { borderBottomColor: colors.border, backgroundColor: colors.card },
           ]}
+          onPress={() => router.push("/(tabs-consumidor)/about-foodloop")}   // 👉 added
         >
           <View style={styles.rowLeft}>
             <Ionicons name="phone-portrait-outline" size={20} color={colors.icon} />
@@ -229,7 +230,9 @@ export default function PerfilConsumidorScreen() {
           <Ionicons name="chevron-forward" size={18} color={colors.chevron} />
         </TouchableOpacity>
 
+        {/* Términos & Condiciones */}
         <TouchableOpacity
+          onPress={() => router.push("/(tabs-consumidor)/terms-conditions")}
           style={[
             styles.row,
             { borderBottomColor: colors.border, backgroundColor: colors.card },
@@ -237,14 +240,21 @@ export default function PerfilConsumidorScreen() {
         >
           <View style={styles.rowLeft}>
             <Ionicons name="document-text-outline" size={20} color={colors.icon} />
-            <Text style={[styles.rowTitle, { marginLeft: 12, color: colors.text }]}>
+            <Text
+              style={[
+                styles.rowTitle,
+                { marginLeft: 12, color: colors.text },
+              ]}
+            >
               Términos & Condiciones
             </Text>
           </View>
           <Ionicons name="chevron-forward" size={18} color={colors.chevron} />
         </TouchableOpacity>
 
+
         <TouchableOpacity
+          onPress={() => router.push("/(tabs-consumidor)/privacy-policy")}
           style={[
             styles.row,
             { borderBottomColor: colors.border, backgroundColor: colors.card },
@@ -264,10 +274,20 @@ export default function PerfilConsumidorScreen() {
             styles.row,
             { borderBottomColor: colors.border, backgroundColor: colors.card },
           ]}
+          onPress={() => router.push("/(tabs-consumidor)/share-app")} // 👈 NEW
         >
           <View style={styles.rowLeft}>
-            <Ionicons name="share-social-outline" size={20} color={colors.icon} />
-            <Text style={[styles.rowTitle, { marginLeft: 12, color: colors.text }]}>
+            <Ionicons
+              name="share-social-outline"
+              size={20}
+              color={colors.icon}
+            />
+            <Text
+              style={[
+                styles.rowTitle,
+                { marginLeft: 12, color: colors.text },
+              ]}
+            >
               Share This App
             </Text>
           </View>
