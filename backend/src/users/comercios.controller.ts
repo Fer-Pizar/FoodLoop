@@ -1,55 +1,75 @@
-import { Controller, Get, Param, Query } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
+import { Controller, Get, Patch, UseGuards, Req, Body, BadRequestException, UseInterceptors, UploadedFile, Delete,} from '@nestjs/common';
 
-@Controller('comercios')
-export class ComerciosController {
-  constructor(private readonly prisma: PrismaService) {}
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { UsersService, toPublic } from './users.service';
+import { UpdateConsumidorDto } from './dto/update-consumidor.dto';
 
-  @Get()
-  async list(
-    @Query('id_categoria') idCategoria?: string,
-    @Query('categoria') categoria?: string,  
-    @Query('q') q?: string,                 
-  ) {
-    const where: any = { estado: true };
+import { FileInterceptor } from '@nestjs/platform-express';
+  import { memoryStorage } from 'multer';
+import { Request } from 'express';
 
-    if (idCategoria) {
-      where.id_categoria = Number(idCategoria);
-    } else if (categoria) {
-      const cat = await this.prisma.categorias.findFirst({
-        where: { nombre: categoria },
-        select: { id_categoria: true },
-      });
-      if (cat) where.id_categoria = Number(cat.id_categoria);
-    }
+import { uploadToCloudinary } from '../cloudinary';
+import { extractUserId, JwtUser } from '../auth/jwt.types';
 
-    if (q) where.nombreNegocio = { contains: q, mode: 'insensitive' };
+@Controller('consumidor')
+@UseGuards(JwtAuthGuard)
+export class ConsumidorController {
+  constructor(private readonly usersService: UsersService) {}
 
-    return this.prisma.comercio.findMany({
-      where,
-      orderBy: { nombreNegocio: 'asc' },
-      select: {
-        idComercio: true,
-        nombreNegocio: true,
-        direccion: true,
-        telefono: true,
-        id_categoria: true,
-      },
-    });
+  @Get('me')
+  async me(@Req() req: Request & { user?: JwtUser }) {
+    const userId = extractUserId(req);
+    if (!userId) throw new BadRequestException('Invalid token user');
+
+    const user = await this.usersService.findByIdOrThrow(userId);
+    return toPublic(user);
   }
 
-  @Get(':id')
-  async byId(@Param('id') id: string) {
-    const idComercio = Number(id);
-    return this.prisma.comercio.findUnique({
-      where: { idComercio },
-      select: {
-        idComercio: true,
-        nombreNegocio: true,
-        direccion: true,
-        telefono: true,
-        id_categoria: true,
+  @Patch()
+  async update(
+    @Req() req: Request & { user?: JwtUser },
+    @Body() dto: UpdateConsumidorDto,
+  ) {
+    const userId = extractUserId(req);
+    if (!userId) throw new BadRequestException('Invalid token user');
+
+    const updated = await this.usersService.updateConsumidor(userId, dto);
+    return toPublic(updated);
+  }
+
+  @Patch('avatar')
+  @UseInterceptors(
+    FileInterceptor('avatar', {
+      storage: memoryStorage(),
+      fileFilter: (req, file, cb) => {
+        const ok = /image\/(png|jpe?g|webp)/i.test(file.mimetype);
+        cb(ok ? null : new BadRequestException('Only PNG/JPG/WEBP'), ok);
       },
-    });
+      limits: { fileSize: 3 * 1024 * 1024 },
+    }),
+  )
+  async uploadAvatar(
+    @Req() req: Request & { user?: JwtUser },
+    @UploadedFile() file?: Express.Multer.File,
+  ) {
+    const userId = extractUserId(req);
+    if (!userId) throw new BadRequestException('Invalid token user');
+    if (!file) throw new BadRequestException('avatar file is required');
+
+    const folder = 'foodloop/avatars';
+    const publicId = `consumidor_${userId}_${Date.now()}`;
+    const { url } = await uploadToCloudinary(file.buffer, folder, publicId);
+
+    const updated = await this.usersService.updateAvatar(userId, url);
+    return toPublic(updated);
+  }
+
+  @Delete('avatar')
+  async deleteAvatar(@Req() req: Request & { user?: JwtUser }) {
+    const userId = extractUserId(req);
+    if (!userId) throw new BadRequestException('Invalid token user');
+
+    await this.usersService.updateAvatar(userId, null);
+    return { ok: true, foto_perfil: null };
   }
 }

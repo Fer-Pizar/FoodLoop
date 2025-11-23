@@ -1,14 +1,5 @@
 import React, { useMemo } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  Image,
-  ActivityIndicator,
-  Alert,
-  Switch,
-} from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, Image, ActivityIndicator, Alert, Switch,} from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { useActionSheet } from "@expo/react-native-action-sheet";
@@ -35,10 +26,16 @@ export default function PerfilConsumidorScreen() {
     avatarUrl,
   } = useConsumidor();
 
-  const photo = useMemo(
-    () => (me?.foto_perfil ? avatarUrl(me.foto_perfil) : undefined),
-    [me?.foto_perfil, avatarUrl]
-  );
+  const photo = useMemo(() => {
+  const raw = me?.foto_perfil;
+    if (!raw) return undefined;
+    if (raw.startsWith("http://") || raw.startsWith("https://")) {
+      return raw;
+    }
+
+    return avatarUrl(raw);
+  }, [me?.foto_perfil, avatarUrl]);
+
 
   const openPhotoMenu = () => {
     const options = ["Tomar una foto", "Elegir de la galería", "Eliminar foto", "Cancelar"];
@@ -59,7 +56,6 @@ export default function PerfilConsumidorScreen() {
     );
   };
 
-  // ===== Logout handler (borra claves y navega a /login)
   const handleLogout = async () => {
     try {
       await AsyncStorage.multiRemove(["user", "token"]);
@@ -69,7 +65,6 @@ export default function PerfilConsumidorScreen() {
     }
   };
 
-  // Confirmación antes de cerrar sesión
   const confirmLogout = () => {
     Alert.alert(
       "Cerrar sesión",

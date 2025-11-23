@@ -3,10 +3,11 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { UsersService, toPublic } from './users.service';
 import { UpdateConsumidorDto } from './dto/update-consumidor.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
+import { diskStorage, memoryStorage } from 'multer'; 
 import { extname, join } from 'path';
 import { existsSync, unlinkSync } from 'fs';
 import { Request } from 'express';
+import { uploadToCloudinary } from '../cloudinary';
 
 const AVATARS_DIR = join(process.cwd(), 'uploads', 'avatars');
 
@@ -41,8 +42,8 @@ function avatarFileName(userId: number, originalName: string) {
 function toAbsolutePath(storedPath: string | null) {
   if (!storedPath) return null;
   if (storedPath.startsWith('/') || storedPath.startsWith('\\')) {
-    return storedPath; 
-    }
+    return storedPath;
+  }
   return join(process.cwd(), storedPath);
 }
 
@@ -75,18 +76,7 @@ export class ConsumidorController {
   @Patch('avatar')
   @UseInterceptors(
     FileInterceptor('avatar', {
-      storage: diskStorage({
-        destination: AVATARS_DIR,
-        filename: (req: Request & { user?: JwtUser }, file, cb) => {
-          try {
-            const userId = extractUserId(req);
-            if (!userId) return cb(new BadRequestException('Invalid token user'), '');
-            cb(null, avatarFileName(userId, file.originalname));
-          } catch (e) {
-            cb(e as any, '');
-          }
-        },
-      }),
+      storage: memoryStorage(),
       fileFilter: (req, file, cb) => {
         const ok = /image\/(png|jpe?g|webp)/i.test(file.mimetype);
         cb(ok ? null : new BadRequestException('Only PNG/JPG/WEBP'), ok);
@@ -102,9 +92,8 @@ export class ConsumidorController {
     if (!userId) throw new BadRequestException('Invalid token user');
     if (!file) throw new BadRequestException('avatar file is required');
 
-    const relPath = `uploads/avatars/${file.filename}`;
-
     const user = await this.usersService.findByIdOrThrow(userId);
+
     if (user.fotoPerfil) {
       const abs = toAbsolutePath(user.fotoPerfil);
       if (abs && existsSync(abs)) {
@@ -115,7 +104,14 @@ export class ConsumidorController {
       }
     }
 
-    const updated = await this.usersService.updateAvatar(userId, relPath);
+    const { url } = await uploadToCloudinary(
+      file.buffer, 
+      'foodloop/avatars',
+      `consumidor_${userId}_${Date.now()}`,
+    );
+
+    const updated = await this.usersService.updateAvatar(userId, url);
+
     return toPublic(updated);
   }
 
