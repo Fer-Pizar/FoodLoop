@@ -12,6 +12,8 @@
       "supportsTablet": true
     },
     "android": {
+      "package": "com.fer.foodloop",
+      "versionCode": 1,
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -48,7 +50,7 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "409449eb-592f-4a1f-8e49-5274b588e1ba"
+        "projectId": "c2c1edf9-7b27-47fa-8985-41fb7daa6f5e"
       }
     }
   }
