@@ -19,6 +19,10 @@ async function bootstrap() {
     "ngrok-skip-browser-warning", 
   ],
 });
+app.use((req, res, next) => {
+  res.setHeader("ngrok-skip-browser-warning", "true");
+  next();
+});
 
 
   app.useGlobalPipes(

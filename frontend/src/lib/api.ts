@@ -5,19 +5,28 @@ function trimSlash(s?: string | null) {
   return (s || "").replace(/\/+$/, "");
 }
 
-const expoBase = trimSlash(process.env.EXPO_PUBLIC_API_BASE);
+// ❌ process.env.* NO funciona en Expo
+// const expoBase = trimSlash(process.env.EXPO_PUBLIC_API_BASE);
+
+// ✅ Leer correctamente desde app.config.ts
 const cfgBase = trimSlash(API_BASE);
 const defaultBase = "http://localhost:3000/api";
-const baseURL = expoBase || cfgBase || defaultBase;
 
-if (!expoBase) {
-  console.warn("[api] EXPO_PUBLIC_API_BASE not set. Using fallback:", baseURL);
+// EXPO → usa cfgBase
+// WEB → podría usar process.env
+const baseURL = cfgBase || defaultBase;
+
+if (!cfgBase) {
+  console.warn("[api] BACKEND_URL not set. Using fallback:", baseURL);
 }
 
 export const api = axios.create({
   baseURL,
   timeout: 15000,
-  headers: { "Content-Type": "application/json" },
+  headers: { 
+    "Content-Type": "application/json",
+    "ngrok-skip-browser-warning": "true",
+  },
 });
 
 export async function getHealth() {
