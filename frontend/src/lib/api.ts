@@ -1,5 +1,6 @@
 import axios, { AxiosError } from "axios";
 import { API_BASE } from "../config/env"; 
+console.log("🔥 API_BASE (APK):", API_BASE);
 
 function trimSlash(s?: string | null) {
   return (s || "").replace(/\/+$/, "");
