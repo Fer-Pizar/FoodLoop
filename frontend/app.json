@@ -66,12 +66,13 @@
     },
 
     "extra": {
-      "router": {},
-      "BACKEND_URL": "https://uninterested-tamera-unseraphic.ngrok-free.dev/api",
-      "eas": {
-        "projectId": "cc18fde9-e405-4a24-8f0f-c945614bad14"
-      }
-    }
+  "router": {},
+  "BACKEND_URL": "https://foodloop-backend.onrender.com/api",
+  "eas": {
+    "projectId": "cc18fde9-e405-4a24-8f0f-c945614bad14"
+  }
+}
+
   }
 }
 

@@ -1,15 +1,13 @@
-import "dotenv/config";
-
 export default ({ config }) => ({
   ...config,
-
   android: {
     ...config.android,
     package: "com.valedaza.foodloop",
   },
-
   extra: {
     ...config.extra,
-    BACKEND_URL: process.env.EXPO_PUBLIC_API_BASE,
+    // URL de tu backend en Render
+    BACKEND_URL: "https://foodloop-backend.onrender.com/api",
   },
 });
+
