@@ -1,4 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import Constants from "expo-constants";
 
 let AUTH_TOKEN: string | null = null;
 
@@ -22,12 +23,11 @@ export async function initAuthToken() {
   }
 }
 
-const BASE = (process.env.EXPO_PUBLIC_API_BASE ?? "").replace(/\/$/, "");
+const BASE = (Constants.expoConfig?.extra?.BACKEND_URL ?? "").replace(/\/$/, "");
 
 function authHeaders(): HeadersInit {
   return {
     ...(AUTH_TOKEN ? { Authorization: `Bearer ${AUTH_TOKEN}` } : {}),
-    "ngrok-skip-browser-warning": "true",
   };
 }
 
@@ -99,7 +99,6 @@ export async function logout() {
   }
 }
 
-
 export async function uploadMyAvatarFromUri(uri: string) {
   const filename = uri.split("/").pop() ?? "avatar.jpg";
   const ext = filename.split(".").pop()?.toLowerCase();
@@ -128,12 +127,6 @@ export function toAbsoluteUrl(path?: string | null): string | undefined {
     return path;
   }
 
-  const base = (process.env.EXPO_PUBLIC_API_BASE ?? "").replace(/\/api\/?$/, "");
-  let url = `${base}${path.startsWith("/") ? "" : "/"}${path}`;
-
-  if (/ngrok/.test(url) && !/[?&]ngrok-skip-browser-warning=/.test(url)) {
-    url += (url.includes("?") ? "&" : "?") + "ngrok-skip-browser-warning=true";
-  }
-
-  return url;
+  const base = (Constants.expoConfig?.extra?.BACKEND_URL ?? "").replace(/\/$/, "");
+  return `${base}${path.startsWith("/") ? "" : "/"}${path}`;
 }

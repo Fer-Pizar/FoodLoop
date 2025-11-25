@@ -1,34 +1,20 @@
 import axios, { AxiosError } from "axios";
-import { API_BASE } from "../config/env"; 
-console.log("🔥 API_BASE (APK):", API_BASE);
+import { getApiBaseUrl } from "../config/env";
 
-function trimSlash(s?: string | null) {
-  return (s || "").replace(/\/+$/, "");
-}
-
-// ❌ process.env.* NO funciona en Expo
-// const expoBase = trimSlash(process.env.EXPO_PUBLIC_API_BASE);
-
-// ✅ Leer correctamente desde app.config.ts
-const cfgBase = trimSlash(API_BASE);
-const defaultBase = "http://localhost:3000/api";
-
-// EXPO → usa cfgBase
-// WEB → podría usar process.env
-const baseURL = cfgBase || defaultBase;
-
-if (!cfgBase) {
-  console.warn("[api] BACKEND_URL not set. Using fallback:", baseURL);
-}
+const baseURL = getApiBaseUrl();
+console.log("🔥 API_BASE:", baseURL);
 
 export const api = axios.create({
   baseURL,
   timeout: 15000,
-  headers: { 
+  headers: {
     "Content-Type": "application/json",
-    "ngrok-skip-browser-warning": "true",
   },
 });
+
+// ----------------------------
+// Funciones de utilidad
+// ----------------------------
 
 export async function getHealth() {
   const res = await api.get("/health");
@@ -58,7 +44,7 @@ export async function registerUser(
 export async function loginUser(email: string, password: string) {
   try {
     const res = await api.post("/auth/login", { email, password });
-    return res.data; 
+    return res.data;
   } catch (err) {
     const error = err as AxiosError<any>;
     const msg =
@@ -80,7 +66,7 @@ export async function registerNegocio(payload: {
 }) {
   try {
     const res = await api.post("/auth/register-negocio", payload);
-    return res.data; 
+    return res.data;
   } catch (err) {
     const error = err as AxiosError<any>;
     const msg =

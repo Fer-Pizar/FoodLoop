@@ -1,5 +1,9 @@
-import Constants from "expo-constants";
+// env.ts
+export function getApiBaseUrl() {
+  return "https://foodloop-backend.onrender.com/api"; // Render
+}
 
-export const API_BASE =
-  Constants.expoConfig?.extra?.BACKEND_URL || "http://localhost:3000/api";
+export function getImageBaseUrl() {
+  return "https://foodloop-backend.onrender.com"; // Render
+}
 
