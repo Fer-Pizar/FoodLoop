@@ -119,7 +119,7 @@ export default function ShareAppScreen() {
                 color: colors.text,
               }}
             >
-              Comparte FoodLoop 💌
+              Comparte FoodLoop
             </Text>
             <Text
               style={{
@@ -134,7 +134,7 @@ export default function ShareAppScreen() {
               rescatar aún más comida. Puedes compartir la app en tus redes
               favoritas con un solo toque. Cada nueva persona que se une, ayuda
               a reducir el desperdicio de alimentos y apoya a los negocios
-              locales. 💚
+              locales.
             </Text>
           </View>
 
@@ -243,7 +243,7 @@ export default function ShareAppScreen() {
             }}
           >
             También puedes copiar y pegar el link de FoodLoop en cualquier otra
-            app de mensajería para invitar a más personas. ✨
+            app de mensajería para invitar a más personas.
           </Text>
         </ScrollView>
       </SafeAreaView>

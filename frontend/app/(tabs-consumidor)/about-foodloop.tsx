@@ -103,7 +103,7 @@ export default function AboutFoodLoopScreen() {
               para rescatar comida en perfecto estado que, de otra forma, se
               desperdiciaría. A través de ofertas con descuento, ayudamos a que
               más personas accedan a productos de calidad y al mismo tiempo
-              apoyamos a los negocios locales. 🌍🥐
+              apoyamos a los negocios locales.
             </Text>
           </View>
 
@@ -140,7 +140,7 @@ export default function AboutFoodLoopScreen() {
               ecosistema donde todos ganan: los comercios recuperan parte de sus
               costos, las personas encuentran buenas ofertas y el planeta recibe
               un respiro al aprovechar mejor los recursos. Cada pedido que haces
-              en FoodLoop es un pequeño paso hacia un consumo más consciente. ✨
+              en FoodLoop es un pequeño paso hacia un consumo más consciente.
             </Text>
           </View>
 
@@ -184,7 +184,7 @@ export default function AboutFoodLoopScreen() {
               Cada vez que reservas una sorpresa o aprovechas una oferta,
               ayudas a que FoodLoop siga creciendo. Gracias por ser parte de
               esta comunidad y por demostrar que, con pequeños cambios en la
-              forma en que consumimos, podemos generar un impacto real. 💚
+              forma en que consumimos, podemos generar un impacto real.
             </Text>
           </View>
         </ScrollView>

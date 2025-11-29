@@ -18,7 +18,7 @@
       
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-
+      "softwareKeyboardLayoutMode": "pan",
       "usesCleartextTraffic": true,
 
       "intentFilters": [

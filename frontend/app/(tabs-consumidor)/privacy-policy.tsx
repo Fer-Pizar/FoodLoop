@@ -173,7 +173,7 @@ export default function PrivacyPolicyScreen() {
               información, como almacenamiento cifrado, comunicación segura con
               HTTPS y controles internos para evitar accesos no autorizados.
               Mantenemos actualizadas estas medidas para garantizar la
-              protección continua de tus datos personales. 🔒
+              protección continua de tus datos personales.
             </Text>
           </View>
         </ScrollView>
