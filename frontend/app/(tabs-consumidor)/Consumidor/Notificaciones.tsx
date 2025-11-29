@@ -67,28 +67,7 @@ export default function NotificacionesScreen() {
             Aquí verás los cambios importantes de tus reservas 🛎️
           </Text>
 
-          <TouchableOpacity
-            onPress={clearLocalNotifs}
-            style={{
-              marginTop: 14,
-              alignSelf: "flex-start",
-              backgroundColor: "#ffffff33",
-              paddingHorizontal: 14,
-              paddingVertical: 6,
-              borderRadius: 8,
-            }}
-          >
-            <Text
-              style={{
-                color: "#fff",
-                fontSize: 13,
-                fontFamily: "Comfortaa",
-                fontWeight: "600",
-              }}
-            >
-              Limpiar notificaciones
-            </Text>
-          </TouchableOpacity>
+          
         </View>
 
         {/* LOADING */}

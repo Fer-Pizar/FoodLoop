@@ -3,8 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Dimensions,
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useFonts, Comfortaa_400Regular, Comfortaa_700Bold,
-} from "@expo-google-fonts/comfortaa";
+import { useFonts, Comfortaa_400Regular, Comfortaa_700Bold,} from "@expo-google-fonts/comfortaa";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { loginUser } from "../src/api/auth";
 import { setAuthToken } from "../src/api/client";
