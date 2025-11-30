@@ -3,9 +3,10 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  provider     = "postgresql"
+  url          = env("DATABASE_URL")
+  directUrl    = env("DIRECT_URL")
+  relationMode = "prisma"
 }
 
 model categorias {
@@ -30,15 +31,14 @@ model Comercio {
   estado        Boolean     @default(true)
   updatedAt     DateTime    @default(now()) @map("updated_at") @db.Timestamptz(6)
   id_categoria  BigInt
-  usuario       Usuario     @relation(fields: [idUsuario], references: [idUsuario], onDelete: Cascade, onUpdate: NoAction)
-  categorias    categorias  @relation(fields: [id_categoria], references: [id_categoria], onDelete: NoAction, onUpdate: NoAction, map: "fk_comercio_categoria")
+  usuario       Usuario     @relation(fields: [idUsuario], references: [idUsuario], onDelete: Cascade, onUpdate: Restrict)
+  categorias    categorias  @relation(fields: [id_categoria], references: [id_categoria], onDelete: Restrict, onUpdate: Restrict, map: "fk_comercio_categoria")
   productos     productos[]
 
   @@index([idUsuario], map: "idx_comercios_id_usuario")
   @@map("comercios")
 }
 
-/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model notificaciones {
   id_notificacion BigInt   @id @default(autoincrement())
   id_usuario      BigInt
@@ -48,10 +48,9 @@ model notificaciones {
   fecha_envio     DateTime @default(now()) @db.Timestamptz(6)
   leido           Boolean  @default(false)
   updated_at      DateTime @default(now()) @db.Timestamptz(6)
-  usuario         Usuario  @relation(fields: [id_usuario], references: [idUsuario], onDelete: Cascade, onUpdate: NoAction)
+  usuario         Usuario  @relation(fields: [id_usuario], references: [idUsuario], onDelete: Cascade, onUpdate: Restrict)
 }
 
-/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model productos {
   id_producto         BigInt     @id @default(autoincrement())
   id_comercio         BigInt
@@ -66,8 +65,8 @@ model productos {
   fecha_publicacion   DateTime   @default(now()) @db.Timestamptz(6)
   estado              Boolean    @default(true)
   updated_at          DateTime   @default(now()) @db.Timestamptz(6)
-  categorias          categorias @relation(fields: [id_categoria], references: [id_categoria], onDelete: NoAction, onUpdate: NoAction, map: "fk_producto_categoria")
-  comercio            Comercio   @relation(fields: [id_comercio], references: [idComercio], onDelete: Cascade, onUpdate: NoAction)
+  categorias          categorias @relation(fields: [id_categoria], references: [id_categoria], onDelete: Restrict, onUpdate: Restrict, map: "fk_producto_categoria")
+  comercio            Comercio   @relation(fields: [id_comercio], references: [idComercio], onDelete: Cascade, onUpdate: Restrict)
   reservas            reservas[]
 
   @@index([estado, fecha_publicacion(sort: Desc)], map: "idx_productos_estado_fecha_pub")
@@ -76,7 +75,6 @@ model productos {
   @@index([id_comercio], map: "idx_productos_id_comercio")
 }
 
-/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model reservas {
   id_reserva            BigInt         @id @default(autoincrement())
   id_usuario            BigInt
@@ -89,8 +87,8 @@ model reservas {
   ventana_retiro_inicio DateTime?      @db.Timestamptz(6)
   ventana_retiro_fin    DateTime?      @db.Timestamptz(6)
   updated_at            DateTime       @default(now()) @db.Timestamptz(6)
-  producto              productos      @relation(fields: [id_producto], references: [id_producto], onDelete: Cascade, onUpdate: NoAction)
-  usuario               Usuario        @relation(fields: [id_usuario], references: [idUsuario], onDelete: Cascade, onUpdate: NoAction)
+  producto              productos      @relation(fields: [id_producto], references: [id_producto], onDelete: Cascade, onUpdate: Restrict)
+  usuario               Usuario        @relation(fields: [id_usuario], references: [idUsuario], onDelete: Cascade, onUpdate: Restrict)
 
   @@index([id_producto], map: "idx_reservas_id_producto")
   @@index([id_usuario], map: "idx_reservas_id_usuario")

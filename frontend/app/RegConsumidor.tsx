@@ -1,12 +1,27 @@
 // File: FoodLoop/frontend/app/RegConsumidor.tsx
 import React, { useState } from "react";
-import {View,Text,TextInput,TouchableOpacity,StyleSheet,Dimensions,SafeAreaView,ScrollView,KeyboardAvoidingView,Platform,} from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  Dimensions,
+  SafeAreaView,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+} from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import {useFonts,Comfortaa_400Regular,Comfortaa_700Bold,} from "@expo-google-fonts/comfortaa";
+import {
+  useFonts,
+  Comfortaa_400Regular,
+  Comfortaa_700Bold,
+} from "@expo-google-fonts/comfortaa";
 
-// <-- IMPORTANT: this is the auth helper that posts to /auth/register
+// <-- IMPORTANT: this posts to /auth/register
 import { registerUser } from "../src/api/auth";
 
 const { width } = Dimensions.get("window");
@@ -28,7 +43,6 @@ export default function RegConsumidor() {
   const [pass, setPass] = useState("");
   const [confirm, setConfirm] = useState("");
 
-  // default: passwords are hidden → show slash icon (eye-off)
   const [showPw, setShowPw] = useState(false);
   const [showPw2, setShowPw2] = useState(false);
 
@@ -41,25 +55,37 @@ export default function RegConsumidor() {
   });
   if (!fontsLoaded) return null;
 
+  // ✅ Validate alphanumeric + contains letters + contains numbers
+  const isAlphanumeric = (pwd: string) => {
+    const regex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]+$/;
+    return regex.test(pwd);
+  };
+
+  const passwordValid =
+    isAlphanumeric(pass.trim()) && pass.trim().length >= 8;
+
   const canSubmit =
     !!name.trim() &&
     !!email.trim() &&
     !!pass.trim() &&
     !!confirm.trim() &&
-    pass === confirm;
+    pass === confirm &&
+    passwordValid;
 
   const handleRegister = async () => {
     if (!canSubmit || loading) return;
+
     setMsg("");
     try {
       setLoading(true);
-      // Pass confirm password too (trimmed)
+
       const res = await registerUser(
         name.trim(),
         email.trim(),
         pass.trim(),
         confirm.trim()
       );
+
       if (res?.ok) {
         setMsg("¡Cuenta creada! Redirigiendo…");
         setTimeout(() => router.push("/login"), 1000);
@@ -148,16 +174,14 @@ export default function RegConsumidor() {
                   placeholder=""
                   placeholderTextColor={GRAY_TEXT}
                   style={styles.input}
-                  secureTextEntry={!showPw} // hidden by default
+                  secureTextEntry={!showPw}
                   autoCapitalize="none"
                 />
                 <TouchableOpacity
                   style={styles.eyeBtn}
                   onPress={() => setShowPw((s) => !s)}
                   activeOpacity={0.7}
-                  accessibilityLabel="Mostrar u ocultar contraseña"
                 >
-                  {/* show slash (eye-off) when hidden; open eye when visible */}
                   <Ionicons
                     name={showPw ? "eye" : "eye-off"}
                     size={20}
@@ -165,6 +189,17 @@ export default function RegConsumidor() {
                   />
                 </TouchableOpacity>
               </View>
+
+              {/* ⚠️ Errores de contraseña */}
+              {pass.length > 0 && !isAlphanumeric(pass) && (
+                <Text style={styles.error}>
+                  La contraseña debe incluir letras y números.
+                </Text>
+              )}
+
+              {pass.length > 0 && pass.length < 8 && (
+                <Text style={styles.error}>Mínimo 8 caracteres.</Text>
+              )}
 
               {/* Confirmar */}
               <Text style={styles.label}>CONFIRMAR CONTRASEÑA</Text>
@@ -182,7 +217,6 @@ export default function RegConsumidor() {
                   style={styles.eyeBtn}
                   onPress={() => setShowPw2((s) => !s)}
                   activeOpacity={0.7}
-                  accessibilityLabel="Mostrar u ocultar confirmación de contraseña"
                 >
                   <Ionicons
                     name={showPw2 ? "eye" : "eye-off"}
@@ -191,6 +225,10 @@ export default function RegConsumidor() {
                   />
                 </TouchableOpacity>
               </View>
+
+              {confirm.length > 0 && pass !== confirm && (
+                <Text style={styles.error}>Las contraseñas no coinciden.</Text>
+              )}
 
               {/* Botón */}
               <TouchableOpacity
@@ -293,7 +331,7 @@ const styles = StyleSheet.create({
     color: "#030000ff",
     fontSize: 17,
     fontFamily: "Comfortaa_400Regular",
-    paddingRight: 40, 
+    paddingRight: 40,
   },
   eyeBtn: {
     position: "absolute",
@@ -301,6 +339,12 @@ const styles = StyleSheet.create({
     height: "100%",
     justifyContent: "center",
     alignItems: "center",
+  },
+
+  error: {
+    color: WHITE,
+    marginBottom: 6,
+    fontFamily: "Comfortaa_700Bold",
   },
 
   primaryBtn: {

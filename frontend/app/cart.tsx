@@ -244,26 +244,46 @@ export default function CartScreen() {
                           </Text>
 
                           <TouchableOpacity
-                            style={[
-                              styles.qtyButton,
-                              { backgroundColor: colors.card },
-                            ]}
-                            onPress={() =>
-                              update(
-                                item.id_producto,
-                                item.cantidad + 1
-                              )
-                            }
-                          >
-                            <Text
-                              style={[
-                                styles.qtyButtonText,
-                                { color: colors.text },
-                              ]}
-                            >
-                              +
-                            </Text>
-                          </TouchableOpacity>
+  style={[
+    styles.qtyButton,
+    { backgroundColor: colors.card },
+  ]}
+  onPress={async () => {
+    const before = item.cantidad;
+
+    // Intentar aumentar como siempre
+    const res = await update(
+      item.id_producto,
+      item.cantidad + 1
+    );
+
+    // Buscar el item actualizado devuelto por la API
+    const updated = res?.items?.find(
+      (p: any) => p.id_producto === item.id_producto
+    );
+
+    const after = updated?.cantidad ?? before;
+
+    // Si no cambió → no había stock
+    if (after === before) {
+      Alert.alert(
+        "Sin stock disponible",
+        "Ya no puedes agregar más unidades de este producto.",
+        [{ text: "Entendido" }]
+      );
+    }
+  }}
+>
+  <Text
+    style={[
+      styles.qtyButtonText,
+      { color: colors.text },
+    ]}
+  >
+    +
+  </Text>
+</TouchableOpacity>
+
                         </View>
 
                         <View>
