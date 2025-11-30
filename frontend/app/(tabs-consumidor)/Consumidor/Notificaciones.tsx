@@ -66,8 +66,6 @@ export default function NotificacionesScreen() {
           >
             Aquí verás los cambios importantes de tus reservas 🛎️
           </Text>
-
-          
         </View>
 
         {/* LOADING */}
